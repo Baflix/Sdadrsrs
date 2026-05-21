@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -774,14 +775,14 @@
         import { getFirestore, collection, getDocs, doc, getDoc, addDoc, updateDoc, setDoc, increment, serverTimestamp, query, where, orderBy, startAfter, limit, deleteField } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
-  apiKey: "AIzaSyA3okSnZJrF9ooUp12KihKISR2VRZq5Ju8",
-  authDomain: "baflix-man.firebaseapp.com",
-  projectId: "baflix-man",
-  storageBucket: "baflix-man.firebasestorage.app",
-  messagingSenderId: "1041860946828",
-  appId: "1:1041860946828:web:fa8b976dc07ced6ce704a9",
-  measurementId: "G-XDZ9EFWCX5"
-};
+            apiKey: "AIzaSyA3okSnZJrF9ooUp12KihKISR2VRZq5Ju8",
+            authDomain: "baflix-man.firebaseapp.com",
+            projectId: "baflix-man",
+            storageBucket: "baflix-man.firebasestorage.app",
+            messagingSenderId: "1041860946828",
+            appId: "1:1041860946828:web:fa8b976dc07ced6ce704a9",
+            measurementId: "G-XDZ9EFWCX5"
+        };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -828,14 +829,6 @@
             let popupLinkUrl = '';
             let hasShownPopup = false;
             let isUserProcessed = false;
-
-            // ==========================================
-            // গ্লোবাল ডিফল্ট অ্যাড লিংক
-            // ==========================================
-            const adLinks = [
-                "https://example.com/ad1" 
-            ];
-            // ==========================================
 
             document.body.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
@@ -977,8 +970,6 @@
                 try {
                     const moviesCollection = collection(db, 'movies');
                     
-                    // সকল অ্যাক্টিভ মুভিগুলো ফেচ করা হচ্ছে যেন জাভাস্ক্রিপ্ট এর সাহায্যে
-                    // case-insensitive এবং substring ম্যাচিং করানো যায়।
                     const q = query(
                         moviesCollection,
                         where('status', '==', 'active')
@@ -989,13 +980,11 @@
                     
                     const filteredMovies = snapshot.docs
                         .map(doc => ({ id: doc.id, ...doc.data() }))
-                        // এখানে title কে lowercase করে ইউজারের search word এর সাথে মেলানো হচ্ছে
                         .filter(movie => movie.title && movie.title.toLowerCase().includes(searchTermLower));
                     
                     currentlyLoadedMovies = filteredMovies;
                     movieGrid.classList.add('list-view');
                     
-                    // একসাথে অনেক রেজাল্ট আসলে যেন ল্যাগ না করে, তাই limit করে দেয়া হচ্ছে (সর্বোচ্চ ৫০টি রেজাল্ট)
                     renderMovies(filteredMovies.slice(0, 50));
 
                     if (filteredMovies.length === 0) {
@@ -1334,10 +1323,10 @@
                         button.className = 'download-btn';
                         
                         let currentBtnAdLinks = [];
-                        if (link.ads && link.ads.trim() !== '') {
+                        // অ্যাড লিংক যদি ডাটাবেসে দেওয়া থাকে, তবেই সেটিকে অ্যাররে-তে যুক্ত করবে।
+                        // অন্যথায় currentBtnAdLinks ফাঁকাই থাকবে এবং ইউজার কোনো অ্যাডে যাবে না।
+                        if (link.ads && typeof link.ads === 'string' && link.ads.trim() !== '') {
                             currentBtnAdLinks = link.ads.split(',').map(u => u.trim()).filter(u => u);
-                        } else {
-                            currentBtnAdLinks = adLinks; 
                         }
 
                         let clickCount = 0; 
@@ -1346,10 +1335,12 @@
                             e.preventDefault();
                             e.stopPropagation(); 
                             
-                            if (clickCount < currentBtnAdLinks.length) {
+                            // যদি অ্যাড লিংক থাকে এবং সেটাতে এখনো ক্লিক করা বাকি থাকে
+                            if (currentBtnAdLinks.length > 0 && clickCount < currentBtnAdLinks.length) {
                                 openSafeLink(currentBtnAdLinks[clickCount]);
                                 clickCount++;
                             } else {
+                                // অ্যাড না থাকলে অথবা অ্যাড ক্লিক করা শেষ হয়ে গেলে সরাসরি ডাউনলোডে নিয়ে যাবে
                                 incrementDownloadCount(movie.id);
                                 if (link.url) {
                                     openSafeLink(link.url);
@@ -1395,10 +1386,9 @@
                                         button.className = 'download-btn';
                                         
                                         let currentBtnAdLinks = [];
-                                        if (link.ads && link.ads.trim() !== '') {
+                                        // অ্যাড লিংক থাকলে শুধুমাত্র সেগুলো যুক্ত হবে
+                                        if (link.ads && typeof link.ads === 'string' && link.ads.trim() !== '') {
                                             currentBtnAdLinks = link.ads.split(',').map(u => u.trim()).filter(u => u);
-                                        } else {
-                                            currentBtnAdLinks = adLinks; 
                                         }
 
                                         let clickCount = 0; 
@@ -1407,10 +1397,12 @@
                                             e.preventDefault();
                                             e.stopPropagation(); 
                                             
-                                            if (clickCount < currentBtnAdLinks.length) {
+                                            // যদি অ্যাড লিংক থাকে তবে অ্যাড শো করবে
+                                            if (currentBtnAdLinks.length > 0 && clickCount < currentBtnAdLinks.length) {
                                                 openSafeLink(currentBtnAdLinks[clickCount]);
                                                 clickCount++;
                                             } else {
+                                                // অ্যাড লিংক না থাকলে সরাসরি ডাউনলোড হবে
                                                 incrementDownloadCount(movie.id);
                                                 if (link.url) {
                                                     openSafeLink(link.url);
