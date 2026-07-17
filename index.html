@@ -102,7 +102,6 @@
         .filter { padding: 8px 15px; border-radius: 20px; background: var(--light-dark); color: var(--text); cursor: pointer; transition: background 0.3s, transform 0.2s; }
         .filter.active { background: var(--primary); font-weight: bold; }
 
-        /* User Info Section */
         .user-info-section {
             background: linear-gradient(145deg, #1a1a1a, #222);
             border-radius: 15px;
@@ -219,7 +218,7 @@
         .movie-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .movie-info { padding: 10px; }
         .movie-title { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 5px; }
-        .movie-series-info, .movie-genres, .movie-rating, .movie-year, .movie-language {
+        .movie-series-info, .movie-genres, .movie-rating, .movie-year {
             font-size: 0.7rem;
             color: var(--text-secondary);
             white-space: nowrap;
@@ -240,7 +239,6 @@
             font-weight: bold;
             z-index: 1;
         }
-        
         .upload-date-badge {
             position: absolute;
             top: 8px;
@@ -260,7 +258,6 @@
         .movie-grid.list-view .movie-poster { flex: 0 0 100px; height: 150px; aspect-ratio: auto; position: relative; border-radius: 5px; }
         .movie-grid.list-view .movie-info { padding: 0; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
         .movie-grid.list-view .movie-title { font-size: 1.1rem; white-space: normal; }
-
         .movie-grid.list-view .movie-description-snippet {
             font-size: 0.85rem;
             color: var(--text-secondary);
@@ -289,26 +286,6 @@
         @-webkit-keyframes shimmer { 100% { left: 100%; } }
         @keyframes shimmer { 100% { left: 100%; } }
 
-        .social-icons a:hover { transform: scale(1.15) rotate(5deg); }
-        .search-btn, .filter, #sort-by {
-            transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), background-color 0.3s ease, box-shadow 0.3s ease;
-            will-change: transform;
-        }
-        .search-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-        }
-        .filter:not(.active):hover {
-            background-color: var(--secondary);
-            transform: scale(1.05) translateY(-2px);
-        }
-        .search-btn:active, .filter:active {
-            transform: scale(0.97) translateY(0);
-            box-shadow: none;
-            transition-duration: 0.1s;
-        }
-
-        /* Welcome Popup Styles */
         .welcome-popup-overlay {
             position: fixed;
             top: 0;
@@ -363,11 +340,8 @@
             transition: all 0.3s ease;
             border: 1px solid rgba(255, 255, 255, 0.2);
             opacity: 0;
-            transition: opacity 0.3s ease, transform 0.3s ease, background 0.3s ease;
         }
-        .welcome-popup-close.visible {
-            opacity: 1;
-        }
+        .welcome-popup-close.visible { opacity: 1; }
         .welcome-popup-close:hover {
             background: var(--primary);
             transform: rotate(90deg);
@@ -386,7 +360,6 @@
             box-shadow: 0 2px 10px rgba(229, 9, 20, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.3);
             backdrop-filter: blur(5px);
-            letter-spacing: 0.5px;
             animation: pulse 1s infinite;
         }
         @keyframes pulse {
@@ -417,9 +390,7 @@
             object-fit: cover;
             transition: transform 0.5s ease;
         }
-        .welcome-popup-image:hover img {
-            transform: scale(1.1);
-        }
+        .welcome-popup-image:hover img { transform: scale(1.1); }
         .welcome-popup-text {
             padding: 25px 20px 30px;
             text-align: center;
@@ -449,13 +420,9 @@
             border-radius: 30px;
             border: 1px dashed rgba(229, 9, 20, 0.3);
         }
-        .welcome-popup-click-hint i {
-            color: var(--primary);
-        }
+        .welcome-popup-click-hint i { color: var(--primary); }
 
-        @media (min-width: 600px) {
-            .modal-content { width: 80%; }
-        }
+        @media (min-width: 600px) { .modal-content { width: 80%; } }
     </style>
 </head>
 <body>
@@ -486,9 +453,7 @@
     <!-- User Info Section -->
     <div id="user-info-section" class="user-info-section">
         <div class="user-info-header">
-            <div class="user-avatar">
-                <i class="fas fa-user"></i>
-            </div>
+            <div class="user-avatar"><i class="fas fa-user"></i></div>
             <div class="user-welcome-text">
                 <h3 id="welcome-user-name"></h3>
                 <p>Welcome to Baflix!</p>
@@ -496,9 +461,7 @@
         </div>
         <div class="user-details">
             <div class="user-detail-item">
-                <div class="detail-icon">
-                    <i class="fas fa-user-circle"></i>
-                </div>
+                <div class="detail-icon"><i class="fas fa-user-circle"></i></div>
                 <div class="detail-content">
                     <div class="detail-label">Telegram Name</div>
                     <div class="detail-value" id="user-telegram-name"></div>
@@ -508,9 +471,7 @@
                 </button>
             </div>
             <div class="user-detail-item">
-                <div class="detail-icon">
-                    <i class="fas fa-id-card"></i>
-                </div>
+                <div class="detail-icon"><i class="fas fa-id-card"></i></div>
                 <div class="detail-content">
                     <div class="detail-label">Chat ID</div>
                     <div class="detail-value" id="user-chat-id"></div>
@@ -520,9 +481,7 @@
                 </button>
             </div>
             <div class="user-detail-item">
-                <div class="detail-icon">
-                    <i class="fas fa-at"></i>
-                </div>
+                <div class="detail-icon"><i class="fas fa-at"></i></div>
                 <div class="detail-content">
                     <div class="detail-label">Username</div>
                     <div class="detail-value small" id="user-username"></div>
@@ -572,10 +531,9 @@
         <p>No content found. Please add content from the admin panel.</p>
     </div>
 
-    <!-- Firebase Modular SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, setDoc, increment, serverTimestamp, query, where, orderBy, startAfter, limit } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, setDoc, increment, serverTimestamp, query, where, orderBy, startAfter, limit, addDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA3okSnZJrF9ooUp12KihKISR2VRZq5Ju8",
@@ -601,14 +559,12 @@
             const sortBySelect = document.getElementById('sort-by');
             const homeLogo = document.getElementById('home-logo');
 
-            // User Info Elements
             const userInfoSection = document.getElementById('user-info-section');
             const welcomeUserName = document.getElementById('welcome-user-name');
             const userTelegramName = document.getElementById('user-telegram-name');
             const userChatId = document.getElementById('user-chat-id');
             const userUsername = document.getElementById('user-username');
 
-            // Welcome Popup Elements
             const welcomePopup = document.getElementById('welcome-popup');
             const welcomePopupClose = document.getElementById('welcome-popup-close');
             const welcomePopupTimer = document.getElementById('welcome-popup-timer');
@@ -628,9 +584,7 @@
             let popupLinkUrl = '';
             let hasShownPopup = false;
 
-            document.body.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-            });
+            document.body.addEventListener('contextmenu', (e) => e.preventDefault());
             
             const parseEpisodeNumber = (epNumStr) => {
                 const str = String(epNumStr).trim();
@@ -644,45 +598,34 @@
                     }
                 }
                 const singleNum = parseInt(str, 10);
-                if (!isNaN(singleNum)) {
-                    return { count: 1, highest: singleNum };
-                }
+                if (!isNaN(singleNum)) return { count: 1, highest: singleNum };
                 return { count: 1, highest: 0 };
-            };
-
-            const incrementDownloadCount = async (movieId) => {
-                if (!movieId) return;
-                const movieRef = doc(db, 'movies', movieId);
-                try {
-                    await updateDoc(movieRef, {
-                        downloadCount: increment(1)
-                    });
-                } catch (error) {
-                    console.error("Error incrementing download count:", error);
-                }
             };
 
             const openSafeLink = (url) => {
                 const tgApp = window.Telegram?.WebApp;
                 if (tgApp && tgApp.initData) {
                     if (url.includes('t.me/')) {
-                        try {
-                            tgApp.openTelegramLink(url);
-                        } catch (e) {
-                            tgApp.openLink(url);
-                        }
-                    } else {
-                        tgApp.openLink(url);
-                    }
-                } else {
-                    window.open(url, '_blank');
-                }
+                        try { tgApp.openTelegramLink(url); } catch (e) { tgApp.openLink(url); }
+                    } else { tgApp.openLink(url); }
+                } else { window.open(url, '_blank'); }
             };
 
+            // Open movie details in a separate page
             const openMovieDetails = (movieId) => {
-                const botUsername = "BaflixStreamBot";
-                const deepLink = `https://t.me/${botUsername}?startapp=movie_${movieId}`;
-                openSafeLink(deepLink);
+                const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+                const detailsUrl = `${baseUrl}details.html?id=${movieId}`;
+                
+                const tgApp = window.Telegram?.WebApp;
+                if (tgApp && tgApp.initData) {
+                    // In Telegram, use the bot deep link to open the details page
+                    const botUsername = "BaflixStreamBot";
+                    const deepLink = `https://t.me/${botUsername}?startapp=movie_${movieId}`;
+                    openSafeLink(deepLink);
+                } else {
+                    // In browser, open the details page directly
+                    window.location.href = detailsUrl;
+                }
             };
 
             const fetchAndRenderMovies = async (isInitial = false) => {
@@ -707,13 +650,10 @@
                     if (currentFilter !== 'All') {
                         queryConstraints.push(where('categories', 'array-contains', currentFilter));
                     }
-                    
                     queryConstraints.push(orderBy(sortField, sortDirection));
-                    
                     if (!isInitial && lastVisible) {
                         queryConstraints.push(startAfter(lastVisible));
                     }
-                    
                     queryConstraints.push(limit(MOVIES_PER_PAGE));
 
                     const q = query(moviesCollection, ...queryConstraints);
@@ -758,7 +698,6 @@
                 }
                 
                 const searchTermLower = searchTerm.toLowerCase();
-
                 movieGrid.innerHTML = '';
                 movieGrid.style.display = 'none';
                 noMoviesMessage.style.display = 'none';
@@ -766,12 +705,7 @@
 
                 try {
                     const moviesCollection = collection(db, 'movies');
-                    
-                    const q = query(
-                        moviesCollection,
-                        where('status', '==', 'active')
-                    );
-
+                    const q = query(moviesCollection, where('status', '==', 'active'));
                     const snapshot = await getDocs(q);
                     skeletonLoader.style.display = 'none';
                     
@@ -781,14 +715,12 @@
                     
                     currentlyLoadedMovies = filteredMovies;
                     movieGrid.classList.add('list-view');
-                    
                     renderMovies(filteredMovies.slice(0, 50));
 
                     if (filteredMovies.length === 0) {
                         noMoviesMessage.querySelector('p').textContent = `"${searchTerm}" এর জন্য কোনো কন্টেন্ট পাওয়া যায়নি।`;
                         noMoviesMessage.style.display = 'block';
                     }
-
                 } catch (error) {
                     console.error("Error fetching movies for search:", error);
                     skeletonLoader.style.display = 'none';
@@ -812,7 +744,6 @@
                     if (isSeries && movie.seasons && movie.seasons.length > 0) {
                         const sortedSeasons = [...movie.seasons].sort((a, b) => b.season_number - a.season_number);
                         const latestSeason = sortedSeasons[0];
-
                         if (latestSeason && latestSeason.episodes && latestSeason.episodes.length > 0) {
                             const sortedEpisodes = [...latestSeason.episodes].sort((a, b) => {
                                 const highestA = parseEpisodeNumber(a.episode_number).highest;
@@ -820,7 +751,6 @@
                                 return highestB - highestA;
                             });
                             const latestEpisode = sortedEpisodes[0];
-                            
                             if (latestEpisode) {
                                 const latestEpisodeInfo = parseEpisodeNumber(latestEpisode.episode_number);
                                 seriesInfoHTML = `<p class="movie-series-info">S${latestSeason.season_number} | E${latestEpisodeInfo.highest}</p>`;
@@ -830,7 +760,6 @@
 
                     let cardHTML = '';
                     let languageBadgeHTML = movie.language ? `<div class="language-badge">${movie.language}</div>` : '';
-                    
                     let uploadDateHTML = '';
                     if (movie.createdAt && typeof movie.createdAt.toDate === 'function') {
                         const uploadDate = movie.createdAt.toDate();
@@ -841,8 +770,7 @@
                     if (isListView) {
                         cardHTML = `
                             <div class="movie-poster">
-                                ${uploadDateHTML}
-                                ${languageBadgeHTML}
+                                ${uploadDateHTML}${languageBadgeHTML}
                                 <img src="${movie.posterUrl}" alt="${movie.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x450/222/fff?text=Error'">
                             </div>
                             <div class="movie-info">
@@ -856,8 +784,7 @@
                     } else {
                         cardHTML = `
                             <div class="movie-poster">
-                                ${uploadDateHTML}
-                                ${languageBadgeHTML}
+                                ${uploadDateHTML}${languageBadgeHTML}
                                 <img src="${movie.posterUrl}" alt="${movie.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x450/222/fff?text=Error'">
                             </div>
                             <div class="movie-info">
@@ -897,7 +824,7 @@
             };
 
             const setupFilters = async () => {
-                 try {
+                try {
                     const q = query(collection(db, 'filters'), orderBy('name'));
                     const filtersSnapshot = await getDocs(q);
                     const filters = filtersSnapshot.docs.map(doc => doc.data().name);
@@ -941,12 +868,10 @@
                 popupTimeLeft = 5;
                 welcomePopupTimer.textContent = `${popupTimeLeft}s`;
                 welcomePopupClose.classList.remove('visible');
-                
                 if (popupTimer) clearInterval(popupTimer);
                 popupTimer = setInterval(() => {
                     popupTimeLeft--;
                     welcomePopupTimer.textContent = `${popupTimeLeft}s`;
-                    
                     if (popupTimeLeft <= 0) {
                         clearInterval(popupTimer);
                         welcomePopupClose.classList.add('visible');
@@ -957,26 +882,19 @@
 
             const closeWelcomePopup = () => {
                 welcomePopup.classList.remove('visible');
-                if (popupTimer) {
-                    clearInterval(popupTimer);
-                }
+                if (popupTimer) clearInterval(popupTimer);
                 welcomePopupTimer.style.display = 'block';
-            };
-
-            const handleWelcomePopupClick = () => {
-                if (popupLinkUrl) {
-                    openSafeLink(popupLinkUrl);
-                }
-                closeWelcomePopup();
             };
 
             welcomePopupClose.addEventListener('click', (e) => {
                 e.stopPropagation();
                 closeWelcomePopup();
             });
+            welcomePopupContent.addEventListener('click', () => {
+                if (popupLinkUrl) openSafeLink(popupLinkUrl);
+                closeWelcomePopup();
+            });
 
-            welcomePopupContent.addEventListener('click', handleWelcomePopupClick);
-            
             const copyToClipboard = (text, button) => {
                 const originalText = button.innerHTML;
                 const showSuccess = () => {
@@ -984,9 +902,7 @@
                     setTimeout(() => { button.innerHTML = originalText; }, 2000);
                 };
                 if (navigator.clipboard && window.isSecureContext) {
-                    navigator.clipboard.writeText(text).then(showSuccess).catch(err => {
-                        fallbackCopy(text, button, originalText);
-                    });
+                    navigator.clipboard.writeText(text).then(showSuccess).catch(() => fallbackCopy(text, button, originalText));
                 } else {
                     fallbackCopy(text, button, originalText);
                 }
@@ -1002,45 +918,35 @@
                 try {
                     const successful = document.execCommand('copy');
                     if (successful) {
-                         button.innerHTML = `<i class="fas fa-check"></i> Copied!`;
-                         setTimeout(() => { button.innerHTML = originalText; }, 2000);
+                        button.innerHTML = `<i class="fas fa-check"></i> Copied!`;
+                        setTimeout(() => { button.innerHTML = originalText; }, 2000);
                     }
                 } catch (err) { console.error("Error during fallback copy:", err); }
                 document.body.removeChild(textArea);
             };
 
             let tg = null;
-            let backButton = null;
-
             const saveOrUpdateTelegramUser = async (user) => {
                 if (!user || !user.id) return;
-                
                 const userDocRef = doc(db, "telegramUsers", String(user.id));
-                
                 try {
                     const docSnap = await getDoc(userDocRef);
                     const now = new Date();
-                    
                     const userData = {
                         id: user.id,
                         firstName: user.first_name || '',
                         lastName: user.last_name || '',
                         username: user.username || '',
                         lastSeen: serverTimestamp(),
-                        lastActive: serverTimestamp(), 
+                        lastActive: serverTimestamp(),
                         lastVisit: now.toISOString(),
                         visitCount: increment(1)
                     };
-
                     if (docSnap.exists()) {
                         await updateDoc(userDocRef, userData);
-                        console.log("✅ Existing user updated with lastActive:", user.id);
-                        
                         const currentVisits = (docSnap.data().visitCount || 0) + 1;
                         if (currentVisits % 5 === 0 && !localStorage.getItem('userInfoShown')) {
-                            setTimeout(() => {
-                                userInfoSection.classList.add('visible');
-                            }, 1000);
+                            setTimeout(() => userInfoSection.classList.add('visible'), 1000);
                         }
                     } else {
                         userData.createdAt = serverTimestamp();
@@ -1048,24 +954,18 @@
                         userData.visitCount = 1;
                         userData.firstVisit = now.toISOString();
                         await setDoc(userDocRef, userData);
-                        console.log("✅ New user created with lastActive:", user.id);
-                        
                         setTimeout(() => {
                             if (!localStorage.getItem('userInfoShown')) {
                                 userInfoSection.classList.add('visible');
                             }
                         }, 1000);
                     }
-                    
                     const fullName = user.first_name + (user.last_name ? ' ' + user.last_name : '');
                     if (welcomeUserName) welcomeUserName.textContent = `Welcome, ${fullName}!`;
                     if (userTelegramName) userTelegramName.textContent = fullName;
                     if (userChatId) userChatId.textContent = user.id;
                     if (userUsername) userUsername.textContent = user.username ? '@' + user.username : 'No username';
-                    
-                } catch (error) {
-                    console.error("Error saving or updating user data:", error);
-                }
+                } catch (error) { console.error("Error saving or updating user data:", error); }
             };
             
             const logVisit = async (user) => {
@@ -1077,62 +977,37 @@
                         platform: navigator.platform,
                         language: navigator.language
                     });
-                    console.log('✅ Visit logged successfully.');
-                } catch (error) {
-                    console.error("Failed to log visit:", error);
-                }
+                } catch (error) { console.error("Failed to log visit:", error); }
             };
 
             const initializeApp = async (tgInstance) => {
                 console.log("Initializing app...");
-                
                 if (tgInstance) {
                     tg = tgInstance;
                     tg.expand();
-                    
                     if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                        console.log("Telegram user detected:", tg.initDataUnsafe.user);
-                        
                         await saveOrUpdateTelegramUser(tg.initDataUnsafe.user);
                         await logVisit(tg.initDataUnsafe.user);
-                        
                     } else {
-                        console.log("No Telegram user data");
                         await logVisit(null);
                     }
                 } else {
-                    console.log('Not running in Telegram. Initializing in standalone mode.');
                     await logVisit(null);
                 }
-
-                await Promise.all([
-                    renderSocialLinks(),
-                    setupFilters()
-                ]);
-
+                await Promise.all([renderSocialLinks(), setupFilters()]);
                 await loadWelcomePopupSettings();
-
-                if (tg) {
-                    const startParam = tg.initDataUnsafe?.start_param;
-                    if (startParam && startParam.startsWith('movie_')) {
-                        const movieId = startParam.split('_')[1];
-                        openMovieDetails(movieId);
-                    }
-                }
-
                 await fetchAndRenderMovies(true);
-                
                 console.log("App initialization complete");
             };
 
             // Event Listeners
             searchForm.addEventListener('submit', (e) => {
-                e.preventDefault(); 
+                e.preventDefault();
                 performSearch();
                 searchBar.blur();
             });
 
-            searchBar.addEventListener('input', () => { 
+            searchBar.addEventListener('input', () => {
                 if (searchBar.value.trim() === '') {
                     movieGrid.classList.remove('list-view');
                     fetchAndRenderMovies(true);
@@ -1163,9 +1038,7 @@
                 }
             });
 
-            homeLogo.addEventListener('click', () => {
-                window.location.reload();
-            });
+            homeLogo.addEventListener('click', () => window.location.reload());
 
             window.addEventListener('scroll', () => {
                 if (movieGrid.classList.contains('list-view') || isFetchingMore || !lastVisible) return;
@@ -1175,7 +1048,6 @@
                 }
             });
 
-            // User Info Functions
             window.closeUserInfo = () => {
                 userInfoSection.classList.remove('visible');
                 localStorage.setItem('userInfoShown', 'true');
@@ -1191,13 +1063,10 @@
                     tempInput.select();
                     document.execCommand('copy');
                     document.body.removeChild(tempInput);
-                    
                     const copyBtn = event.currentTarget;
                     const originalHTML = copyBtn.innerHTML;
                     copyBtn.innerHTML = '<i class="fas fa-check"></i>';
-                    setTimeout(() => {
-                        copyBtn.innerHTML = originalHTML;
-                    }, 2000);
+                    setTimeout(() => { copyBtn.innerHTML = originalHTML; }, 2000);
                 }
             };
 
@@ -1213,7 +1082,7 @@
             window.addEventListener('offline', handleConnectionChange);
             
             try {
-                 if (!navigator.onLine) {
+                if (!navigator.onLine) {
                     handleConnectionChange();
                     return;
                 }
@@ -1221,7 +1090,6 @@
                 if (webApp && webApp.initData) {
                     initializeApp(webApp);
                 } else {
-                    console.log('Not running in Telegram. Initializing in standalone mode.');
                     initializeApp(null);
                 }
             } catch (error) {
