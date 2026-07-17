@@ -611,19 +611,28 @@
                 } else { window.open(url, '_blank'); }
             };
 
-            // Open movie details in a separate page
+            // ========== গুরুত্বপূর্ণ: মুভি ডিটেইলস ওপেন করার ফাংশন ==========
             const openMovieDetails = (movieId) => {
-                const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
-                const detailsUrl = `${baseUrl}details.html?id=${movieId}`;
+                // বর্তমান URL থেকে পাথ বের করা
+                const currentPath = window.location.pathname;
+                const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+                
+                // ডিটেইলস পেজের URL তৈরি করা (movieId সহ)
+                const detailsUrl = `${basePath}details.html?id=${movieId}`;
+                
+                console.log('Opening details URL:', detailsUrl);
                 
                 const tgApp = window.Telegram?.WebApp;
                 if (tgApp && tgApp.initData) {
-                    // In Telegram, use the bot deep link to open the details page
-                    const botUsername = "BaflixStreamBot";
-                    const deepLink = `https://t.me/${botUsername}?startapp=movie_${movieId}`;
-                    openSafeLink(deepLink);
+                    // টেলিগ্রাম ওয়েবঅ্যাপে - সরাসরি লিংক ওপেন
+                    try {
+                        tgApp.openLink(detailsUrl);
+                    } catch (e) {
+                        // যদি openLink কাজ না করে, তাহলে window.open ব্যবহার
+                        window.open(detailsUrl, '_blank');
+                    }
                 } else {
-                    // In browser, open the details page directly
+                    // ব্রাউজারে - সরাসরি নেভিগেট
                     window.location.href = detailsUrl;
                 }
             };
@@ -1031,9 +1040,11 @@
                 fetchAndRenderMovies(true);
             });
 
+            // ========== গুরুত্বপূর্ণ: মুভি কার্ডে ক্লিক ইভেন্ট ==========
             movieGrid.addEventListener('click', (e) => {
                 const card = e.target.closest('.movie-card');
                 if (card && card.dataset.movieId) {
+                    console.log('Movie card clicked, ID:', card.dataset.movieId);
                     openMovieDetails(card.dataset.movieId);
                 }
             });
