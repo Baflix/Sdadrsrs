@@ -501,12 +501,23 @@
             document.body.removeChild(textArea);
         };
 
+        // ========== গুরুত্বপূর্ণ: হোম পেজে ফিরে যাওয়ার ফাংশন ==========
         const goHome = () => {
+            const currentPath = window.location.pathname;
+            const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+            const homeUrl = `${basePath}index.html`;
+            
+            console.log('Going home to:', homeUrl);
+            
             const tgApp = window.Telegram?.WebApp;
             if (tgApp && tgApp.initData) {
-                tgApp.close();
+                try {
+                    tgApp.openLink(homeUrl);
+                } catch (e) {
+                    window.location.href = homeUrl;
+                }
             } else {
-                window.location.href = window.location.pathname.replace('details.html', 'index.html');
+                window.location.href = homeUrl;
             }
         };
 
@@ -527,13 +538,20 @@
             }
         });
 
+        // ========== URL থেকে মুভি আইডি বের করা ==========
         const getMovieIdFromUrl = () => {
             const params = new URLSearchParams(window.location.search);
-            return params.get('id');
+            const id = params.get('id');
+            console.log('Movie ID from URL:', id);
+            return id;
         };
 
+        // ========== মুভি ডিটেইলস লোড করা ==========
         const loadMovieDetails = async (movieId) => {
+            console.log('Loading movie details for ID:', movieId);
+            
             if (!movieId) {
+                console.error('No movie ID provided');
                 loadingIndicator.style.display = 'none';
                 errorMessage.style.display = 'block';
                 return;
@@ -541,6 +559,7 @@
 
             try {
                 const docSnap = await getDoc(doc(db, 'movies', movieId));
+                console.log('Movie doc exists:', docSnap.exists());
 
                 if (!docSnap.exists()) {
                     loadingIndicator.style.display = 'none';
@@ -549,6 +568,7 @@
                 }
 
                 const movie = { id: docSnap.id, ...docSnap.data() };
+                console.log('Movie data loaded:', movie.title);
 
                 if (movie.status !== 'active') {
                     loadingIndicator.style.display = 'none';
@@ -614,16 +634,14 @@
             const actionsContainer = document.getElementById('detail-actions');
             actionsContainer.innerHTML = '';
 
-            const botUsername = "BaflixStreamBot";
-            const deepLink = `https://t.me/${botUsername}?startapp=movie_${movie.id}`;
-            const shareMessage = `🎬 "${movie.title}" Watch now on Baflix!\n\nClick on the link to watch the movie `;
-            const fullTextToCopy = `${shareMessage}\n${deepLink}`;
+            const shareUrl = window.location.href;
+            const shareMessage = `🎬 "${movie.title}" Watch now on Baflix!\n\n${shareUrl}`;
 
             const shareBtn = document.createElement('button');
             shareBtn.className = 'action-btn';
             shareBtn.innerHTML = `<i class="fas fa-share-alt"></i> Share`;
             shareBtn.onclick = () => {
-                const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(deepLink)}&text=${encodeURIComponent(shareMessage)}`;
+                const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareMessage)}`;
                 openSafeLink(telegramShareUrl);
             };
             actionsContainer.appendChild(shareBtn);
@@ -631,7 +649,7 @@
             const copyBtn = document.createElement('button');
             copyBtn.className = 'action-btn copy';
             copyBtn.innerHTML = `<i class="fas fa-copy"></i> Copy Link`;
-            copyBtn.onclick = (e) => copyToClipboard(fullTextToCopy, e.currentTarget);
+            copyBtn.onclick = (e) => copyToClipboard(shareUrl, e.currentTarget);
             actionsContainer.appendChild(copyBtn);
 
             const downloadsContainer = document.getElementById('detail-downloads');
@@ -742,6 +760,7 @@
                 });
             }
 
+            // Telegram BackButton
             const tgApp = window.Telegram?.WebApp;
             if (tgApp && tgApp.BackButton) {
                 tgApp.BackButton.onClick(goHome);
@@ -749,14 +768,24 @@
             }
         };
 
+        // Handle Telegram back button
         const tgApp = window.Telegram?.WebApp;
         if (tgApp && tgApp.BackButton) {
             tgApp.BackButton.onClick(goHome);
             tgApp.BackButton.show();
         }
 
+        // ========== অ্যাপ্লিকেশন শুরু করা ==========
+        console.log('Details page loaded. URL:', window.location.href);
         const movieId = getMovieIdFromUrl();
-        loadMovieDetails(movieId);
+        
+        if (movieId) {
+            loadMovieDetails(movieId);
+        } else {
+            // URL-এ ID না থাকলে হোম পেজে রিডাইরেক্ট
+            console.warn('No movie ID found in URL, redirecting to home');
+            goHome();
+        }
     </script>
 </body>
 </html>
