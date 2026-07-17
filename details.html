@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Baflix - Movie Details</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=default,es6,fetch"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; }
@@ -501,7 +500,6 @@
             document.body.removeChild(textArea);
         };
 
-        // ========== গুরুত্বপূর্ণ: হোম পেজে ফিরে যাওয়ার ফাংশন ==========
         const goHome = () => {
             const currentPath = window.location.pathname;
             const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
@@ -538,7 +536,6 @@
             }
         });
 
-        // ========== URL থেকে মুভি আইডি বের করা ==========
         const getMovieIdFromUrl = () => {
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
@@ -546,7 +543,6 @@
             return id;
         };
 
-        // ========== মুভি ডিটেইলস লোড করা ==========
         const loadMovieDetails = async (movieId) => {
             console.log('Loading movie details for ID:', movieId);
             
@@ -760,7 +756,6 @@
                 });
             }
 
-            // Telegram BackButton
             const tgApp = window.Telegram?.WebApp;
             if (tgApp && tgApp.BackButton) {
                 tgApp.BackButton.onClick(goHome);
@@ -768,21 +763,18 @@
             }
         };
 
-        // Handle Telegram back button
         const tgApp = window.Telegram?.WebApp;
         if (tgApp && tgApp.BackButton) {
             tgApp.BackButton.onClick(goHome);
             tgApp.BackButton.show();
         }
 
-        // ========== অ্যাপ্লিকেশন শুরু করা ==========
         console.log('Details page loaded. URL:', window.location.href);
         const movieId = getMovieIdFromUrl();
         
         if (movieId) {
             loadMovieDetails(movieId);
         } else {
-            // URL-এ ID না থাকলে হোম পেজে রিডাইরেক্ট
             console.warn('No movie ID found in URL, redirecting to home');
             goHome();
         }
