@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Baflix - Premium Streaming</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=default,es6,fetch"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --dark-green: #218838; }
@@ -611,28 +610,21 @@
                 } else { window.open(url, '_blank'); }
             };
 
-            // ========== গুরুত্বপূর্ণ: মুভি ডিটেইলস ওপেন করার ফাংশন ==========
             const openMovieDetails = (movieId) => {
-                // বর্তমান URL থেকে পাথ বের করা
                 const currentPath = window.location.pathname;
                 const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
-                
-                // ডিটেইলস পেজের URL তৈরি করা (movieId সহ)
                 const detailsUrl = `${basePath}details.html?id=${movieId}`;
                 
                 console.log('Opening details URL:', detailsUrl);
                 
                 const tgApp = window.Telegram?.WebApp;
                 if (tgApp && tgApp.initData) {
-                    // টেলিগ্রাম ওয়েবঅ্যাপে - সরাসরি লিংক ওপেন
                     try {
                         tgApp.openLink(detailsUrl);
                     } catch (e) {
-                        // যদি openLink কাজ না করে, তাহলে window.open ব্যবহার
                         window.open(detailsUrl, '_blank');
                     }
                 } else {
-                    // ব্রাউজারে - সরাসরি নেভিগেট
                     window.location.href = detailsUrl;
                 }
             };
@@ -1040,7 +1032,6 @@
                 fetchAndRenderMovies(true);
             });
 
-            // ========== গুরুত্বপূর্ণ: মুভি কার্ডে ক্লিক ইভেন্ট ==========
             movieGrid.addEventListener('click', (e) => {
                 const card = e.target.closest('.movie-card');
                 if (card && card.dataset.movieId) {
