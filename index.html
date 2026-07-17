@@ -29,6 +29,7 @@
             -webkit-animation: flicker 1.5s infinite alternate;
             animation: flicker 1.5s infinite alternate;
             margin-bottom: 15px;
+            cursor: pointer;
         }
         @-webkit-keyframes flicker { 0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { text-shadow: 0 0 4px #fff, 0 0 11px #fff, 0 0 40px var(--primary), 0 0 80px var(--primary); } 20%, 24%, 55% { text-shadow: none; } }
         @keyframes flicker { 0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { text-shadow: 0 0 4px #fff, 0 0 11px #fff, 0 0 40px var(--primary), 0 0 80px var(--primary); } 20%, 24%, 55% { text-shadow: none; } }
@@ -210,6 +211,10 @@
             cursor: pointer;
             position: relative;
         }
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
         .movie-poster { width: 100%; aspect-ratio: 2 / 3; background-color: #333; overflow: hidden; position: relative; }
         .movie-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .movie-info { padding: 10px; }
@@ -284,137 +289,12 @@
         @-webkit-keyframes shimmer { 100% { left: 100%; } }
         @keyframes shimmer { 100% { left: 100%; } }
 
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.85);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1002;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-        .modal-overlay.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-        .modal-content {
-            background: var(--light-dark);
-            width: 100%;
-            max-width: 500px;
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-            border-radius: 8px;
-            transform: scale(0.95);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .modal-overlay.visible .modal-content {
-            transform: scale(1);
-        }
-        
-        .modal-close-btn { position: absolute; top: 15px; right: 20px; background: none; border: none; color: #fff; font-size: 2.5rem; cursor: pointer; z-index: 2; line-height: 1; }
-        .modal-body { display: flex; flex-direction: column; overflow-y: auto; height: 100%; }
-        .modal-header { display: flex; flex-direction: column; gap: 20px; padding: 25px; background-color: #1a1a1a; }
-        .modal-poster img { width: 150px; border-radius: 5px; }
-        .modal-details { flex: 1; }
-        .modal-title { font-size: 2.2rem; margin-bottom: 10px; }
-        .modal-meta { color: var(--text-secondary); margin-bottom: 8px; font-size: 1rem; }
-        #modal-series-info { font-weight: bold; color: var(--green); }
-        .modal-description { padding: 25px; font-size: 1rem; line-height: 1.7; }
-        .modal-downloads { padding: 0 25px 25px; }
-
-        /* ====== NEW INSTAGRAM STYLE DOWNLOAD BUTTON ====== */
-        .download-btn {
-            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
-            background-size: 300% 300%;
-            color: #fff;
-            text-decoration: none;
-            padding: 15px 20px;
-            border-radius: 12px;
-            font-size: 1.05rem;
-            font-weight: bold;
-            cursor: pointer;
-            display: block; /* Stack vertically */
-            width: 100%; /* Full width */
-            margin: 12px 0; /* Spacing between buttons */
-            border: none;
-            box-shadow: 0 5px 15px rgba(220, 39, 67, 0.4);
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-            animation: instaGradient 5s ease infinite;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            font-family: 'Arial', sans-serif;
-            z-index: 1;
-        }
-
-        .download-btn::before {
-            content: '\f019';
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
-            margin-right: 10px;
-        }
-
-        .download-btn::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 50%;
-            height: 100%;
-            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
-            transform: skewX(-25deg);
-            animation: shine 3s infinite;
-            z-index: -1;
-        }
-
-        @keyframes instaGradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        @keyframes shine {
-            0% { left: -100%; }
-            20% { left: 200%; }
-            100% { left: 200%; }
-        }
-
-        .download-btn:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 25px rgba(220, 39, 67, 0.6);
-        }
-
-        .download-btn:active {
-            transform: translateY(1px) scale(0.98);
-            box-shadow: 0 2px 10px rgba(220, 39, 67, 0.4);
-        }
-        /* =================================================== */
-
-        .trailer-btn { background: var(--primary); color: #fff; text-decoration: none; padding: 12px 18px; border-radius: 5px; transition: background 0.3s; font-size: 0.95rem; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer;}
-        
-        .modal-actions { padding: 0 25px 25px; display: flex; flex-wrap: wrap; gap: 15px; border-top: 1px solid #333; margin: 0 25px; padding-top: 25px; }
-        .action-btn { background: #007bff; color: #fff; text-decoration: none; padding: 12px 18px; border-radius: 5px; transition: background 0.3s; font-size: 0.95rem; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: none; }
-        .action-btn.copy { background: #6c757d; }
-        
-        #trailer-modal .modal-content { max-width: 800px; background: #000; }
-        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
-        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        
         .social-icons a:hover { transform: scale(1.15) rotate(5deg); }
-        .search-btn, .filter, .trailer-btn, .action-btn, #sort-by {
+        .search-btn, .filter, #sort-by {
             transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), background-color 0.3s ease, box-shadow 0.3s ease;
             will-change: transform;
         }
-        .search-btn:hover, .trailer-btn:hover, .action-btn:hover {
+        .search-btn:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
         }
@@ -422,74 +302,11 @@
             background-color: var(--secondary);
             transform: scale(1.05) translateY(-2px);
         }
-        .search-btn:active, .filter:active, .trailer-btn:active, .action-btn:active {
+        .search-btn:active, .filter:active {
             transform: scale(0.97) translateY(0);
             box-shadow: none;
             transition-duration: 0.1s;
         }
-
-        .season-accordion { margin-bottom: 5px; }
-        .season-accordion-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 20px;
-            cursor: pointer;
-            width: 100%;
-            border-radius: 8px;
-            background: linear-gradient(145deg, #2c3e50, #34495e);
-            border: 1px solid #4a627a;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .season-accordion-header:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
-            background: linear-gradient(145deg, #34495e, #4a627a);
-        }
-        .season-accordion-header h4 { font-size: 1.1rem; color: var(--text); font-weight: bold; margin: 0; }
-        .season-accordion-header .fas { transition: transform 0.2s cubic-bezier(0.645, 0.045, 0.355, 1); color: var(--text-secondary); font-size: 1rem; }
-        .season-accordion.active .season-accordion-header {
-            background: linear-gradient(145deg, #3a506b, #4a627a);
-            border-bottom-left-radius: 0;
-            border-bottom-right-radius: 0;
-        }
-        .season-accordion.active .season-accordion-header .fas { transform: rotate(180deg); color: var(--text); }
-        .season-accordion-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), padding 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease-out;
-            background-color: rgba(0,0,0,0.2);
-            border-bottom-left-radius: 8px;
-            border-bottom-right-radius: 8px;
-            padding: 0 15px;
-            opacity: 0;
-        }
-        .season-accordion.active .season-accordion-content {
-            max-height: 2000px;
-            padding: 20px 15px 5px;
-            opacity: 1;
-            transition: max-height 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), padding 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease-in 0.1s;
-        }
-        .episode-container {
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px dashed #383838;
-            opacity: 0;
-            transform: translateY(-15px);
-            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-        }
-        .episode-container:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        .season-accordion.active .episode-container { opacity: 1; transform: translateY(0); }
-        .season-accordion.active .episode-container:nth-child(1) { transition-delay: 0.1s; }
-        .season-accordion.active .episode-container:nth-child(2) { transition-delay: 0.15s; }
-        .season-accordion.active .episode-container:nth-child(3) { transition-delay: 0.2s; }
-        .season-accordion.active .episode-container:nth-child(4) { transition-delay: 0.25s; }
-        .season-accordion.active .episode-container:nth-child(5) { transition-delay: 0.3s; }
-        .season-accordion.active .episode-container:nth-child(n+6) { transition-delay: 0.35s; }
-        .episode-title { color: var(--text-secondary); margin-bottom: 10px; font-weight: bold; }
-        
-        @media (min-width: 600px) { .modal-header { flex-direction: row; } .modal-poster img { width: 180px; } .modal-content { width: 80%; } }
 
         /* Welcome Popup Styles */
         .welcome-popup-overlay {
@@ -635,6 +452,10 @@
         .welcome-popup-click-hint i {
             color: var(--primary);
         }
+
+        @media (min-width: 600px) {
+            .modal-content { width: 80%; }
+        }
     </style>
 </head>
 <body>
@@ -658,7 +479,7 @@
     </div>
 
     <header>
-        <h1 class="logo">Baflix</h1>
+        <h1 class="logo" id="home-logo">Baflix</h1>
         <div class="social-icons"></div>
     </header>
 
@@ -751,45 +572,10 @@
         <p>No content found. Please add content from the admin panel.</p>
     </div>
 
-    <!-- Details Modal -->
-    <div id="details-modal" class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close-btn" data-target="details-modal">&times;</button>
-            <div class="modal-body">
-                <div class="modal-header">
-                    <div class="modal-poster"><img id="modal-poster-img" src="" alt="Poster"></div>
-                    <div class="modal-details">
-                        <h2 id="modal-title"></h2>
-                        <p id="modal-series-info" class="modal-meta"></p>
-                        <p id="modal-genres" class="modal-meta"></p>
-                        <p id="modal-rating" class="modal-meta"></p>
-                        <p id="modal-year" class="modal-meta"></p>
-                        <p id="modal-language" class="modal-meta"></p>
-                        <div id="modal-trailer-container" style="margin-top: 15px;"></div>
-                    </div>
-                </div>
-                <div id="modal-description" class="modal-description"></div>
-                <div id="modal-actions" class="modal-actions"></div>
-                <div id="modal-downloads" class="modal-downloads"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Trailer Modal -->
-    <div id="trailer-modal" class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close-btn" data-target="trailer-modal">&times;</button>
-            <div class="video-container">
-                <iframe id="youtube-trailer-iframe" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
-            </div>
-        </div>
-    </div>
-
-
     <!-- Firebase Modular SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, getDoc, addDoc, updateDoc, setDoc, increment, serverTimestamp, query, where, orderBy, startAfter, limit, deleteField } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, setDoc, increment, serverTimestamp, query, where, orderBy, startAfter, limit } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA3okSnZJrF9ooUp12KihKISR2VRZq5Ju8",
@@ -807,15 +593,13 @@
         document.addEventListener('DOMContentLoaded', () => {
             const movieGrid = document.querySelector('.movie-grid');
             const skeletonLoader = document.getElementById('skeleton-loader');
-            const detailsModal = document.getElementById('details-modal');
-            const trailerModal = document.getElementById('trailer-modal');
-            const youtubeTrailerIframe = document.getElementById('youtube-trailer-iframe');
             const noMoviesMessage = document.getElementById('no-movies-message');
             const socialIconsContainer = document.querySelector('.social-icons');
             const filterContainer = document.querySelector('.filter-container');
             const searchBar = document.getElementById('search-bar');
             const searchForm = document.getElementById('search-form');
             const sortBySelect = document.getElementById('sort-by');
+            const homeLogo = document.getElementById('home-logo');
 
             // User Info Elements
             const userInfoSection = document.getElementById('user-info-section');
@@ -832,8 +616,6 @@
             const welcomePopupTitle = document.getElementById('welcome-popup-title');
             const welcomePopupDescription = document.getElementById('welcome-popup-description');
             const welcomePopupContent = document.getElementById('welcome-popup-content');
-            const welcomePopupImage = document.getElementById('welcome-popup-image');
-            const welcomePopupText = document.getElementById('welcome-popup-text');
 
             let currentlyLoadedMovies = [];
             let isFetchingMore = false;
@@ -845,7 +627,6 @@
             let popupTimeLeft = 5;
             let popupLinkUrl = '';
             let hasShownPopup = false;
-            let isUserProcessed = false;
 
             document.body.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
@@ -881,9 +662,6 @@
                 }
             };
 
-            // ==========================================
-            // লিংক ওপেন করার সেফ ফাংশন 
-            // ==========================================
             const openSafeLink = (url) => {
                 const tgApp = window.Telegram?.WebApp;
                 if (tgApp && tgApp.initData) {
@@ -899,6 +677,12 @@
                 } else {
                     window.open(url, '_blank');
                 }
+            };
+
+            const openMovieDetails = (movieId) => {
+                const botUsername = "BaflixStreamBot";
+                const deepLink = `https://t.me/${botUsername}?startapp=movie_${movieId}`;
+                openSafeLink(deepLink);
             };
 
             const fetchAndRenderMovies = async (isInitial = false) => {
@@ -965,9 +749,6 @@
                 }
             };
             
-            // ==========================================
-            // Updated Case-Insensitive Search
-            // ==========================================
             const performSearch = async () => {
                 const searchTerm = searchBar.value.trim();
                 if (!searchTerm) {
@@ -976,7 +757,6 @@
                     return;
                 }
                 
-                // সার্চের টেক্সট ছোট হাতের (lowercase) করে নেওয়া হচ্ছে
                 const searchTermLower = searchTerm.toLowerCase();
 
                 movieGrid.innerHTML = '';
@@ -1228,329 +1008,10 @@
                 } catch (err) { console.error("Error during fallback copy:", err); }
                 document.body.removeChild(textArea);
             };
-            const getYoutubeVideoId = (url) => {
-                if(!url) return null;
-                let videoId = null;
-                try {
-                    const urlObj = new URL(url);
-                    if (urlObj.hostname === 'youtu.be') videoId = urlObj.pathname.slice(1);
-                    else if (urlObj.hostname.includes('youtube.com')) videoId = urlObj.searchParams.get('v');
-                } catch (e) {
-                    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-                    const match = url.match(regex);
-                    if (match) videoId = match[1];
-                }
-                return videoId;
-            };
+
             let tg = null;
             let backButton = null;
-            function updateBackButton() {
-                if (!backButton) return;
-                const visibleModal = document.querySelector('.modal-overlay.visible');
-                if (visibleModal) {
-                    backButton.show();
-                } else {
-                    backButton.hide();
-                }
-            }
 
-            const openDetailsModal = (movie) => {
-                document.querySelector('#details-modal .modal-body').scrollTop = 0;
-
-                document.getElementById('modal-poster-img').src = movie.posterUrl;
-                document.getElementById('modal-title').textContent = movie.title;
-                document.getElementById('modal-genres').textContent = movie.genres || 'N/A';
-                document.getElementById('modal-rating').innerHTML = `<i class="fas fa-star" style="color:gold;"></i> ${movie.rating || 'N/A'}/10`;
-                document.getElementById('modal-year').textContent = `Year: ${movie.year || 'N/A'}`;
-                document.getElementById('modal-language').textContent = `Language: ${movie.language || 'N/A'}`;
-                document.getElementById('modal-description').textContent = movie.description || 'No description available.';
-
-                const modalSeriesInfo = document.getElementById('modal-series-info');
-                const isSeries = movie.type !== 'movie';
-
-                if (isSeries && movie.seasons && movie.seasons.length > 0) {
-                    const seasonCount = movie.seasons.length;
-                    const episodeCount = movie.seasons.reduce((totalAcc, season) => {
-                        if (!season.episodes || season.episodes.length === 0) {
-                            return totalAcc;
-                        }
-                        const seasonEpisodeCount = season.episodes.reduce((seasonAcc, episode) => {
-                            const episodeInfo = parseEpisodeNumber(episode.episode_number);
-                            return seasonAcc + episodeInfo.count;
-                        }, 0);
-                        return totalAcc + seasonEpisodeCount;
-                    }, 0);
-                    modalSeriesInfo.textContent = `Total Seasons: ${seasonCount} | Total Episodes: ${episodeCount}`;
-                    modalSeriesInfo.style.display = 'block';
-                } else {
-                    modalSeriesInfo.style.display = 'none';
-                }
-                
-                const trailerContainer = document.getElementById('modal-trailer-container');
-                const downloadsContainer = document.getElementById('modal-downloads');
-                const actionsContainer = document.getElementById('modal-actions');
-                
-                trailerContainer.innerHTML = '';
-                downloadsContainer.innerHTML = '';
-                actionsContainer.innerHTML = '';
-
-                if (movie.trailerUrl) {
-                    const trailerBtn = document.createElement('button');
-                    trailerBtn.className = 'trailer-btn';
-                    trailerBtn.innerHTML = `<i class="fas fa-play"></i> Watch Trailer`;
-                    trailerBtn.onclick = () => {
-                        const videoId = getYoutubeVideoId(movie.trailerUrl);
-                        if (videoId) {
-                            youtubeTrailerIframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&fs=0&rel=0`;
-                            trailerModal.classList.add('visible');
-                            updateBackButton();
-                        } else {
-                            alert("Invalid trailer link provided.");
-                        }
-                    };
-                    trailerContainer.appendChild(trailerBtn);
-                }
-                
-                const botUsername = "BaflixStreamBot"; 
-                const deepLink = `https://t.me/${botUsername}?startapp=movie_${movie.id}`;
-
-                const shareMessage = `🎬 "${movie.title}" Watch now a Baflix!\n\nClick on the link to watch the movie `;
-                const fullTextToCopy = `${shareMessage}\n${deepLink}`;
-
-                const shareBtn = document.createElement('button');
-                shareBtn.className = 'action-btn';
-                shareBtn.innerHTML = `<i class="fas fa-share-alt"></i> Share`;
-                shareBtn.onclick = () => {
-                    const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(deepLink)}&text=${encodeURIComponent(shareMessage)}`;
-                    openSafeLink(telegramShareUrl);
-                };
-                actionsContainer.appendChild(shareBtn);
-                
-                const copyBtn = document.createElement('button');
-                copyBtn.className = 'action-btn copy';
-                copyBtn.innerHTML = `<i class="fas fa-copy"></i> Copy Link`;
-                copyBtn.onclick = (e) => copyToClipboard(fullTextToCopy, e.currentTarget);
-                actionsContainer.appendChild(copyBtn);
-
-                if (movie.type === 'movie' && movie.downloadLinks && movie.downloadLinks.length > 0) {
-                     const linksWrapper = document.createElement('div');
-                    movie.downloadLinks.forEach(link => {
-                        const button = document.createElement('button');
-                        button.textContent = link.name;
-                        button.className = 'download-btn';
-                        
-                        let currentBtnAdLinks = [];
-                        // অ্যাড লিংক যদি ডাটাবেসে দেওয়া থাকে, তবেই সেটিকে অ্যাররে-তে যুক্ত করবে।
-                        // অন্যথায় currentBtnAdLinks ফাঁকাই থাকবে এবং ইউজার কোনো অ্যাডে যাবে গ্যা।
-                        if (link.ads && typeof link.ads === 'string' && link.ads.trim() !== '') {
-                            currentBtnAdLinks = link.ads.split(',').map(u => u.trim()).filter(u => u);
-                        }
-
-                        let clickCount = 0; 
-                        
-                        button.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            e.stopPropagation(); 
-                            
-                            // যদি অ্যাড লিংক থাকে এবং সেটাতে এখনো ক্লিক করা বাকি থাকে
-                            if (currentBtnAdLinks.length > 0 && clickCount < currentBtnAdLinks.length) {
-                                openSafeLink(currentBtnAdLinks[clickCount]);
-                                clickCount++;
-                            } else {
-                                // অ্যাড না থাকলে অথবা অ্যাড ক্লিক করা শেষ হয়ে গেলে সরাসরি ডাউনলোডে নিয়ে যাবে
-                                incrementDownloadCount(movie.id);
-                                if (link.url) {
-                                    openSafeLink(link.url);
-                                }
-                            }
-                        });
-                        button.addEventListener('contextmenu', (e) => e.preventDefault());
-                        linksWrapper.appendChild(button);
-                    });
-                    downloadsContainer.appendChild(linksWrapper);
-                } 
-                else if (movie.seasons && movie.seasons.length > 0) {
-                    movie.seasons.sort((a, b) => a.season_number - b.season_number).forEach(season => {
-                        
-                        const seasonAccordion = document.createElement('div');
-                        seasonAccordion.className = 'season-accordion';
-
-                        const seasonHeader = document.createElement('div');
-                        seasonHeader.className = 'season-accordion-header';
-                        seasonHeader.innerHTML = `<h4>Season ${season.season_number}</h4><i class="fas fa-chevron-down"></i>`;
-                        
-                        const seasonContent = document.createElement('div');
-                        seasonContent.className = 'season-accordion-content';
-
-                        if (season.episodes && season.episodes.length > 0) {
-                            season.episodes.sort((a, b) => {
-                                const highestA = parseEpisodeNumber(a.episode_number).highest;
-                                const highestB = parseEpisodeNumber(b.episode_number).highest;
-                                return highestA - highestB;
-                            }).forEach(episode => {
-                                const episodeContainer = document.createElement('div');
-                                episodeContainer.className = 'episode-container';
-
-                                const episodeTitle = document.createElement('p');
-                                episodeTitle.className = 'episode-title';
-                                episodeTitle.textContent = `Episode ${episode.episode_number}` + (episode.title ? `: ${episode.title}` : '');
-                                episodeContainer.appendChild(episodeTitle);
-                                
-                                if (episode.downloadLinks && episode.downloadLinks.length > 0) {
-                                    episode.downloadLinks.forEach(link => {
-                                        const button = document.createElement('button');
-                                        button.textContent = link.name;
-                                        button.className = 'download-btn';
-                                        
-                                        let currentBtnAdLinks = [];
-                                        // অ্যাড লিংক থাকলে শুধুমাত্র সেগুলো যুক্ত হবে
-                                        if (link.ads && typeof link.ads === 'string' && link.ads.trim() !== '') {
-                                            currentBtnAdLinks = link.ads.split(',').map(u => u.trim()).filter(u => u);
-                                        }
-
-                                        let clickCount = 0; 
-                                        
-                                        button.addEventListener('click', (e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation(); 
-                                            
-                                            // যদি অ্যাড লিংক থাকে তবে অ্যাড শো করবে
-                                            if (currentBtnAdLinks.length > 0 && clickCount < currentBtnAdLinks.length) {
-                                                openSafeLink(currentBtnAdLinks[clickCount]);
-                                                clickCount++;
-                                            } else {
-                                                // অ্যাড লিংক না থাকলে সরাসরি ডাউনলোড হবে
-                                                incrementDownloadCount(movie.id);
-                                                if (link.url) {
-                                                    openSafeLink(link.url);
-                                                }
-                                            }
-                                        });
-                                        button.addEventListener('contextmenu', (e) => e.preventDefault());
-                                        episodeContainer.appendChild(button);
-                                    });
-                                } else {
-                                    const noLinksText = document.createElement('p');
-                                    noLinksText.textContent = 'No links for this episode.';
-                                    noLinksText.style.cssText = "font-size: 0.8rem; color: #777;";
-                                    episodeContainer.appendChild(noLinksText);
-                                }
-                                seasonContent.appendChild(episodeContainer);
-                            });
-                        }
-                        seasonAccordion.appendChild(seasonHeader);
-                        seasonAccordion.appendChild(seasonContent);
-                        downloadsContainer.appendChild(seasonAccordion);
-                    });
-                }
-                
-                detailsModal.classList.add('visible');
-                updateBackButton();
-            };
-
-            const closeModal = (modalOrId) => {
-                 let modal;
-                if (typeof modalOrId === 'string') modal = document.getElementById(modalOrId);
-                else modal = modalOrId;
-                if (!modal) return;
-                modal.classList.remove('visible');
-                if (modal.id === 'trailer-modal') youtubeTrailerIframe.src = '';
-                updateBackButton();
-            };
-            
-            document.getElementById('modal-downloads').addEventListener('click', function(e) {
-                const header = e.target.closest('.season-accordion-header');
-                if (header) {
-                    const accordion = header.parentElement;
-                    accordion.classList.toggle('active');
-                }
-            });
-
-            searchForm.addEventListener('submit', (e) => {
-                e.preventDefault(); 
-                performSearch();
-                searchBar.blur();
-            });
-
-            searchBar.addEventListener('input', () => { 
-                if (searchBar.value.trim() === '') {
-                    movieGrid.classList.remove('list-view');
-                    fetchAndRenderMovies(true);
-                }
-            });
-
-            filterContainer.addEventListener('click', (e) => {
-                if (e.target.classList.contains('filter')) {
-                    const newFilter = e.target.dataset.filter;
-                    if (newFilter === currentFilter) return;
-                    currentFilter = newFilter;
-                    searchBar.value = '';
-                    document.querySelector('.filter.active').classList.remove('active');
-                    e.target.classList.add('active');
-                    fetchAndRenderMovies(true);
-                }
-            });
-
-            sortBySelect.addEventListener('change', (e) => {
-                currentSort = e.target.value;
-                fetchAndRenderMovies(true);
-            });
-
-            movieGrid.addEventListener('click', (e) => {
-                const card = e.target.closest('.movie-card');
-                 if (card && card.dataset.movieId) {
-                    const movie = currentlyLoadedMovies.find(m => m.id == card.dataset.movieId);
-                    if (movie) openDetailsModal(movie);
-                }
-            });
-
-            window.addEventListener('scroll', () => {
-                if (movieGrid.classList.contains('list-view') || isFetchingMore || !lastVisible) return;
-                const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
-                if (clientHeight + scrollTop >= scrollHeight - 300) {
-                    fetchAndRenderMovies(false);
-                }
-            });
-
-            document.querySelectorAll('.modal-close-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const modal = document.getElementById(btn.dataset.target);
-                    if(modal) closeModal(modal);
-                });
-            });
-            
-            document.querySelectorAll('.modal-overlay').forEach(modal => {
-                modal.addEventListener('click', (e) => {
-                     if (e.target === modal) closeModal(modal);
-                });
-            });
-
-            // User Info Functions
-            window.closeUserInfo = () => {
-                userInfoSection.classList.remove('visible');
-                localStorage.setItem('userInfoShown', 'true');
-            };
-
-            window.copyToClipboard = (elementId) => {
-                const element = document.getElementById(elementId);
-                if (element) {
-                    const text = element.textContent;
-                    const tempInput = document.createElement('input');
-                    tempInput.value = text;
-                    document.body.appendChild(tempInput);
-                    tempInput.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(tempInput);
-                    
-                    const copyBtn = event.currentTarget;
-                    const originalHTML = copyBtn.innerHTML;
-                    copyBtn.innerHTML = '<i class="fas fa-check"></i>';
-                    setTimeout(() => {
-                        copyBtn.innerHTML = originalHTML;
-                    }, 2000);
-                }
-            };
-            
             const saveOrUpdateTelegramUser = async (user) => {
                 if (!user || !user.id) return;
                 
@@ -1639,23 +1100,6 @@
                         console.log("No Telegram user data");
                         await logVisit(null);
                     }
-
-                    backButton = tg.BackButton;
-                    
-                    const handleBackClick = () => {
-                        const visibleModal = document.querySelector('.modal-overlay.visible');
-                        if (visibleModal) {
-                            closeModal(visibleModal);
-                        } else {
-                            tg.close();
-                        }
-                    };
-
-                    if (backButton) {
-                        backButton.onClick(handleBackClick);
-                        tg.onEvent('backButtonClicked', handleBackClick);
-                        backButton.hide();
-                    }
                 } else {
                     console.log('Not running in Telegram. Initializing in standalone mode.');
                     await logVisit(null);
@@ -1672,22 +1116,89 @@
                     const startParam = tg.initDataUnsafe?.start_param;
                     if (startParam && startParam.startsWith('movie_')) {
                         const movieId = startParam.split('_')[1];
-                        try {
-                            const movieDoc = await getDoc(doc(db, 'movies', movieId));
-                            if (movieDoc.exists()) {
-                                const movieData = { id: movieDoc.id, ...movieDoc.data() };
-                                currentlyLoadedMovies.push(movieData);
-                                openDetailsModal(movieData);
-                            }
-                        } catch (e) {
-                            console.error("Failed to fetch deep-linked movie:", e);
-                        }
+                        openMovieDetails(movieId);
                     }
                 }
 
                 await fetchAndRenderMovies(true);
                 
                 console.log("App initialization complete");
+            };
+
+            // Event Listeners
+            searchForm.addEventListener('submit', (e) => {
+                e.preventDefault(); 
+                performSearch();
+                searchBar.blur();
+            });
+
+            searchBar.addEventListener('input', () => { 
+                if (searchBar.value.trim() === '') {
+                    movieGrid.classList.remove('list-view');
+                    fetchAndRenderMovies(true);
+                }
+            });
+
+            filterContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('filter')) {
+                    const newFilter = e.target.dataset.filter;
+                    if (newFilter === currentFilter) return;
+                    currentFilter = newFilter;
+                    searchBar.value = '';
+                    document.querySelector('.filter.active').classList.remove('active');
+                    e.target.classList.add('active');
+                    fetchAndRenderMovies(true);
+                }
+            });
+
+            sortBySelect.addEventListener('change', (e) => {
+                currentSort = e.target.value;
+                fetchAndRenderMovies(true);
+            });
+
+            movieGrid.addEventListener('click', (e) => {
+                const card = e.target.closest('.movie-card');
+                if (card && card.dataset.movieId) {
+                    openMovieDetails(card.dataset.movieId);
+                }
+            });
+
+            homeLogo.addEventListener('click', () => {
+                window.location.reload();
+            });
+
+            window.addEventListener('scroll', () => {
+                if (movieGrid.classList.contains('list-view') || isFetchingMore || !lastVisible) return;
+                const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+                if (clientHeight + scrollTop >= scrollHeight - 300) {
+                    fetchAndRenderMovies(false);
+                }
+            });
+
+            // User Info Functions
+            window.closeUserInfo = () => {
+                userInfoSection.classList.remove('visible');
+                localStorage.setItem('userInfoShown', 'true');
+            };
+
+            window.copyToClipboard = (elementId) => {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    const text = element.textContent;
+                    const tempInput = document.createElement('input');
+                    tempInput.value = text;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    
+                    const copyBtn = event.currentTarget;
+                    const originalHTML = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalHTML;
+                    }, 2000);
+                }
             };
 
             const handleConnectionChange = () => {
