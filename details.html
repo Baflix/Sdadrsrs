@@ -9,14 +9,13 @@
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default,es6,fetch"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --dark-green: #218838; }
+        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; -webkit-tap-highlight-color: transparent; }
         body {
             background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
             color: var(--text);
             min-height: 100vh;
             overflow-x: hidden;
-            -webkit-text-size-adjust: 100%;
         }
         
         .back-header {
@@ -29,6 +28,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         .back-btn {
             background: none;
@@ -43,9 +43,7 @@
             align-items: center;
             justify-content: center;
         }
-        .back-btn:hover {
-            background: rgba(255,255,255,0.1);
-        }
+        .back-btn:hover { background: rgba(255,255,255,0.1); }
         .back-header .logo-text {
             font-size: 1.5rem;
             font-weight: 700;
@@ -53,6 +51,7 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            cursor: pointer;
         }
 
         #loading-indicator {
@@ -71,9 +70,7 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .details-container {
             max-width: 800px;
@@ -100,9 +97,7 @@
             width: 100%;
             display: block;
         }
-        .movie-info-details {
-            flex: 1;
-        }
+        .movie-info-details { flex: 1; }
         .movie-title-large {
             font-size: 2.2rem;
             margin-bottom: 10px;
@@ -133,9 +128,7 @@
             cursor: pointer;
             margin-top: 15px;
         }
-        .trailer-btn:hover {
-            background: var(--secondary);
-        }
+        .trailer-btn:hover { background: var(--secondary); }
 
         .movie-description-full {
             padding: 20px 0;
@@ -167,14 +160,9 @@
             gap: 8px;
             border: none;
         }
-        .action-btn.copy {
-            background: #6c757d;
-        }
-        .action-btn:hover {
-            opacity: 0.8;
-        }
+        .action-btn.copy { background: #6c757d; }
+        .action-btn:hover { opacity: 0.8; }
 
-        /* Download Buttons */
         .download-btn {
             background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
             background-size: 300% 300%;
@@ -211,18 +199,11 @@
             transform: translateY(-3px) scale(1.02);
             box-shadow: 0 8px 25px rgba(220, 39, 67, 0.6);
         }
-        .download-btn:active {
-            transform: translateY(1px) scale(0.98);
-        }
+        .download-btn:active { transform: translateY(1px) scale(0.98); }
 
-        .downloads-section {
-            margin-top: 20px;
-        }
+        .downloads-section { margin-top: 20px; }
 
-        /* Season Accordion */
-        .season-accordion {
-            margin-bottom: 8px;
-        }
+        .season-accordion { margin-bottom: 8px; }
         .season-accordion-header {
             display: flex;
             justify-content: space-between;
@@ -289,7 +270,6 @@
             font-weight: bold;
         }
 
-        /* Trailer Modal */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -343,7 +323,6 @@
             height: 100%;
         }
 
-        /* Error */
         #error-message {
             text-align: center;
             padding: 50px 20px;
@@ -358,39 +337,26 @@
             color: var(--text);
             margin-bottom: 10px;
         }
-        #error-message p {
-            color: var(--text-secondary);
-        }
+        #error-message p { color: var(--text-secondary); }
 
         @media (min-width: 600px) {
-            .movie-header {
-                flex-direction: row;
-                align-items: flex-start;
-            }
-            .movie-poster-large {
-                max-width: 250px;
-                flex-shrink: 0;
-            }
+            .movie-header { flex-direction: row; align-items: flex-start; }
+            .movie-poster-large { max-width: 250px; flex-shrink: 0; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Back Header -->
     <div class="back-header">
-        <button class="back-btn" id="back-btn" aria-label="Go back">
-            <i class="fas fa-arrow-left"></i>
-        </button>
-        <span class="logo-text">Baflix</span>
+        <button class="back-btn" id="back-btn"><i class="fas fa-arrow-left"></i></button>
+        <span class="logo-text" id="details-logo">Baflix</span>
     </div>
 
-    <!-- Loading -->
     <div id="loading-indicator">
         <div class="spinner"></div>
         <p style="color: var(--text-secondary);">Loading movie details...</p>
     </div>
 
-    <!-- Error -->
     <div id="error-message">
         <i class="fas fa-exclamation-circle"></i>
         <h2>Movie Not Found</h2>
@@ -400,7 +366,6 @@
         </button>
     </div>
 
-    <!-- Details Container -->
     <div class="details-container" id="details-container">
         <div class="movie-header" id="movie-header">
             <div class="movie-poster-large">
@@ -424,7 +389,6 @@
         <div class="downloads-section" id="detail-downloads"></div>
     </div>
 
-    <!-- Trailer Modal -->
     <div id="trailer-modal" class="modal-overlay">
         <div class="modal-content">
             <button class="modal-close-btn" id="trailer-close-btn">&times;</button>
@@ -436,7 +400,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, updateDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA3okSnZJrF9ooUp12KihKISR2VRZq5Ju8",
@@ -455,12 +419,12 @@
         const detailsContainer = document.getElementById('details-container');
         const errorMessage = document.getElementById('error-message');
         const backBtn = document.getElementById('back-btn');
+        const detailsLogo = document.getElementById('details-logo');
 
         const modalOverlay = document.getElementById('trailer-modal');
         const trailerIframe = document.getElementById('youtube-trailer-iframe');
         const trailerCloseBtn = document.getElementById('trailer-close-btn');
 
-        // Helper functions
         const parseEpisodeNumber = (epNumStr) => {
             const str = String(epNumStr).trim();
             if (str.includes('-')) {
@@ -473,9 +437,7 @@
                 }
             }
             const singleNum = parseInt(str, 10);
-            if (!isNaN(singleNum)) {
-                return { count: 1, highest: singleNum };
-            }
+            if (!isNaN(singleNum)) return { count: 1, highest: singleNum };
             return { count: 1, highest: 0 };
         };
 
@@ -498,29 +460,16 @@
             const tgApp = window.Telegram?.WebApp;
             if (tgApp && tgApp.initData) {
                 if (url.includes('t.me/')) {
-                    try {
-                        tgApp.openTelegramLink(url);
-                    } catch (e) {
-                        tgApp.openLink(url);
-                    }
-                } else {
-                    tgApp.openLink(url);
-                }
-            } else {
-                window.open(url, '_blank');
-            }
+                    try { tgApp.openTelegramLink(url); } catch (e) { tgApp.openLink(url); }
+                } else { tgApp.openLink(url); }
+            } else { window.open(url, '_blank'); }
         };
 
         const incrementDownloadCount = async (movieId) => {
             if (!movieId) return;
-            const movieRef = doc(db, 'movies', movieId);
             try {
-                await updateDoc(movieRef, {
-                    downloadCount: increment(1)
-                });
-            } catch (error) {
-                console.error("Error incrementing download count:", error);
-            }
+                await updateDoc(doc(db, 'movies', movieId), { downloadCount: increment(1) });
+            } catch (error) { console.error("Error incrementing download count:", error); }
         };
 
         const copyToClipboard = (text, button) => {
@@ -530,12 +479,8 @@
                 setTimeout(() => { button.innerHTML = originalText; }, 2000);
             };
             if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text).then(showSuccess).catch(() => {
-                    fallbackCopy(text, button, originalText);
-                });
-            } else {
-                fallbackCopy(text, button, originalText);
-            }
+                navigator.clipboard.writeText(text).then(showSuccess).catch(() => fallbackCopy(text, button, originalText));
+            } else { fallbackCopy(text, button, originalText); }
         };
 
         const fallbackCopy = (text, button, originalText) => {
@@ -561,16 +506,15 @@
             if (tgApp && tgApp.initData) {
                 tgApp.close();
             } else {
-                window.location.href = 'index.html';
+                window.location.href = window.location.pathname.replace('details.html', 'index.html');
             }
         };
 
         window.goHome = goHome;
 
-        // Back button
         backBtn.addEventListener('click', goHome);
+        detailsLogo.addEventListener('click', goHome);
 
-        // Trailer modal
         trailerCloseBtn.addEventListener('click', () => {
             modalOverlay.classList.remove('visible');
             trailerIframe.src = '';
@@ -583,13 +527,11 @@
             }
         });
 
-        // Extract movie ID from URL
         const getMovieIdFromUrl = () => {
             const params = new URLSearchParams(window.location.search);
             return params.get('id');
         };
 
-        // Load movie details
         const loadMovieDetails = async (movieId) => {
             if (!movieId) {
                 loadingIndicator.style.display = 'none';
@@ -598,8 +540,7 @@
             }
 
             try {
-                const movieRef = doc(db, 'movies', movieId);
-                const docSnap = await getDoc(movieRef);
+                const docSnap = await getDoc(doc(db, 'movies', movieId));
 
                 if (!docSnap.exists()) {
                     loadingIndicator.style.display = 'none';
@@ -627,7 +568,6 @@
         };
 
         const renderMovieDetails = (movie) => {
-            // Basic info
             document.getElementById('detail-poster').src = movie.posterUrl || 'https://via.placeholder.com/300x450/222/fff?text=No+Image';
             document.getElementById('detail-title').textContent = movie.title || 'Untitled';
             document.getElementById('detail-genres').textContent = movie.genres || 'N/A';
@@ -636,7 +576,6 @@
             document.getElementById('detail-language').textContent = `Language: ${movie.language || 'N/A'}`;
             document.getElementById('detail-description').textContent = movie.description || 'No description available.';
 
-            // Series info
             const seriesInfoEl = document.getElementById('detail-series-info');
             const isSeries = movie.type !== 'movie';
 
@@ -644,11 +583,9 @@
                 const seasonCount = movie.seasons.length;
                 const episodeCount = movie.seasons.reduce((totalAcc, season) => {
                     if (!season.episodes || season.episodes.length === 0) return totalAcc;
-                    const seasonEpisodeCount = season.episodes.reduce((seasonAcc, episode) => {
-                        const episodeInfo = parseEpisodeNumber(episode.episode_number);
-                        return seasonAcc + episodeInfo.count;
+                    return totalAcc + season.episodes.reduce((seasonAcc, episode) => {
+                        return seasonAcc + parseEpisodeNumber(episode.episode_number).count;
                     }, 0);
-                    return totalAcc + seasonEpisodeCount;
                 }, 0);
                 seriesInfoEl.textContent = `Total Seasons: ${seasonCount} | Total Episodes: ${episodeCount}`;
                 seriesInfoEl.style.display = 'block';
@@ -656,7 +593,6 @@
                 seriesInfoEl.style.display = 'none';
             }
 
-            // Trailer
             const trailerContainer = document.getElementById('detail-trailer-container');
             trailerContainer.innerHTML = '';
             if (movie.trailerUrl) {
@@ -675,7 +611,6 @@
                 trailerContainer.appendChild(trailerBtn);
             }
 
-            // Actions
             const actionsContainer = document.getElementById('detail-actions');
             actionsContainer.innerHTML = '';
 
@@ -699,7 +634,6 @@
             copyBtn.onclick = (e) => copyToClipboard(fullTextToCopy, e.currentTarget);
             actionsContainer.appendChild(copyBtn);
 
-            // Downloads
             const downloadsContainer = document.getElementById('detail-downloads');
             downloadsContainer.innerHTML = '';
 
@@ -714,7 +648,6 @@
                     if (link.ads && typeof link.ads === 'string' && link.ads.trim() !== '') {
                         currentBtnAdLinks = link.ads.split(',').map(u => u.trim()).filter(u => u);
                     }
-
                     let clickCount = 0;
 
                     button.addEventListener('click', (e) => {
@@ -726,9 +659,7 @@
                             clickCount++;
                         } else {
                             incrementDownloadCount(movie.id);
-                            if (link.url) {
-                                openSafeLink(link.url);
-                            }
+                            if (link.url) openSafeLink(link.url);
                         }
                     });
                     button.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -771,7 +702,6 @@
                                     if (link.ads && typeof link.ads === 'string' && link.ads.trim() !== '') {
                                         currentBtnAdLinks = link.ads.split(',').map(u => u.trim()).filter(u => u);
                                     }
-
                                     let clickCount = 0;
 
                                     button.addEventListener('click', (e) => {
@@ -783,9 +713,7 @@
                                             clickCount++;
                                         } else {
                                             incrementDownloadCount(movie.id);
-                                            if (link.url) {
-                                                openSafeLink(link.url);
-                                            }
+                                            if (link.url) openSafeLink(link.url);
                                         }
                                     });
                                     button.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -805,7 +733,6 @@
                     downloadsContainer.appendChild(seasonAccordion);
                 });
 
-                // Accordion toggle
                 downloadsContainer.addEventListener('click', function(e) {
                     const header = e.target.closest('.season-accordion-header');
                     if (header) {
@@ -815,7 +742,6 @@
                 });
             }
 
-            // Telegram BackButton
             const tgApp = window.Telegram?.WebApp;
             if (tgApp && tgApp.BackButton) {
                 tgApp.BackButton.onClick(goHome);
@@ -823,14 +749,12 @@
             }
         };
 
-        // Handle Telegram back button
         const tgApp = window.Telegram?.WebApp;
         if (tgApp && tgApp.BackButton) {
             tgApp.BackButton.onClick(goHome);
             tgApp.BackButton.show();
         }
 
-        // Initial load
         const movieId = getMovieIdFromUrl();
         loadMovieDetails(movieId);
     </script>
