@@ -6,10 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Baflix - Premium Streaming</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=default,es6,fetch"></script>
+    <!-- polyfill.io সরানো হয়েছে - সমস্যা সৃষ্টি করছে -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* আপনার পূর্ববর্তী সকল CSS এখানে থাকবে - অপরিবর্তিত */
         :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --dark-green: #218838; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; -webkit-tap-highlight-color: transparent; }
         body {
@@ -423,10 +422,28 @@
         }
         .welcome-popup-click-hint i { color: var(--primary); }
 
+        /* Cache status indicator - small badge */
+        .cache-status {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: var(--text-secondary);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.6rem;
+            z-index: 999;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
         @media (min-width: 600px) { .modal-content { width: 80%; } }
     </style>
 </head>
 <body>
+    <!-- Cache Status Indicator -->
+    <div class="cache-status" id="cache-status">⚡ Cache: Off</div>
+
     <!-- Welcome Popup -->
     <div id="welcome-popup" class="welcome-popup-overlay">
         <div class="welcome-popup-content" id="welcome-popup-content">
@@ -559,6 +576,7 @@
             const searchForm = document.getElementById('search-form');
             const sortBySelect = document.getElementById('sort-by');
             const homeLogo = document.getElementById('home-logo');
+            const cacheStatus = document.getElementById('cache-status');
 
             const userInfoSection = document.getElementById('user-info-section');
             const welcomeUserName = document.getElementById('welcome-user-name');
@@ -586,22 +604,37 @@
             let hasShownPopup = false;
             
             // ===== CACHE MANAGEMENT =====
-            const CACHE_KEY = 'baflix_movies_cache';
+            const CACHE_KEY = 'baflix_movies_cache_data';
             const CACHE_TIMESTAMP_KEY = 'baflix_cache_timestamp';
-            const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
+            const CACHE_FILTER_KEY = 'baflix_cache_filter';
+            const CACHE_SORT_KEY = 'baflix_cache_sort';
+            const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes cache
 
             // Check if this is a back/forward navigation
             const isBackForwardNavigation = () => {
-                if (window.performance && window.performance.navigation) {
-                    return window.performance.navigation.type === 2;
-                }
-                if (window.performance && window.performance.getEntriesByType) {
-                    const navEntries = window.performance.getEntriesByType('navigation');
-                    if (navEntries.length > 0) {
-                        return navEntries[0].type === 'back_forward';
+                try {
+                    if (window.performance && window.performance.navigation) {
+                        return window.performance.navigation.type === 2;
                     }
-                }
+                    if (window.performance && window.performance.getEntriesByType) {
+                        const navEntries = window.performance.getEntriesByType('navigation');
+                        if (navEntries.length > 0) {
+                            return navEntries[0].type === 'back_forward';
+                        }
+                    }
+                } catch (e) {}
                 return false;
+            };
+
+            // Check if page is loaded from bfcache (back/forward cache)
+            const isFromBFCache = () => {
+                try {
+                    return window.performance && 
+                           window.performance.navigation && 
+                           window.performance.navigation.type === 2;
+                } catch (e) {
+                    return false;
+                }
             };
 
             // Load cached movies if available and not expired
@@ -609,17 +642,21 @@
                 try {
                     const cached = sessionStorage.getItem(CACHE_KEY);
                     const timestamp = sessionStorage.getItem(CACHE_TIMESTAMP_KEY);
+                    const cachedFilter = sessionStorage.getItem(CACHE_FILTER_KEY);
+                    const cachedSort = sessionStorage.getItem(CACHE_SORT_KEY);
                     
-                    if (cached && timestamp) {
+                    // Check if cache matches current filter/sort
+                    if (cached && timestamp && cachedFilter === currentFilter && cachedSort === currentSort) {
                         const cacheTime = parseInt(timestamp);
                         if (Date.now() - cacheTime < CACHE_DURATION) {
                             const data = JSON.parse(cached);
-                            console.log('Loaded movies from cache:', data.length);
+                            console.log('✅ Loaded movies from cache:', data.length, 'movies');
+                            cacheStatus.textContent = `⚡ Cache: ${data.length} movies`;
+                            cacheStatus.style.opacity = '1';
+                            setTimeout(() => { cacheStatus.style.opacity = '0.5'; }, 3000);
                             return data;
                         } else {
-                            console.log('Cache expired');
-                            sessionStorage.removeItem(CACHE_KEY);
-                            sessionStorage.removeItem(CACHE_TIMESTAMP_KEY);
+                            console.log('⏰ Cache expired');
                         }
                     }
                 } catch (e) {
@@ -633,10 +670,25 @@
                 try {
                     sessionStorage.setItem(CACHE_KEY, JSON.stringify(movies));
                     sessionStorage.setItem(CACHE_TIMESTAMP_KEY, String(Date.now()));
-                    console.log('Movies saved to cache:', movies.length);
+                    sessionStorage.setItem(CACHE_FILTER_KEY, currentFilter);
+                    sessionStorage.setItem(CACHE_SORT_KEY, currentSort);
+                    console.log('💾 Movies saved to cache:', movies.length, 'movies');
+                    cacheStatus.textContent = `⚡ Cache: ${movies.length} movies`;
+                    cacheStatus.style.opacity = '1';
+                    setTimeout(() => { cacheStatus.style.opacity = '0.5'; }, 3000);
                 } catch (e) {
                     console.error('Error saving cache:', e);
                 }
+            };
+
+            // Clear cache
+            const clearCache = () => {
+                sessionStorage.removeItem(CACHE_KEY);
+                sessionStorage.removeItem(CACHE_TIMESTAMP_KEY);
+                sessionStorage.removeItem(CACHE_FILTER_KEY);
+                sessionStorage.removeItem(CACHE_SORT_KEY);
+                console.log('🗑️ Cache cleared');
+                cacheStatus.textContent = '⚡ Cache: Off';
             };
 
             document.body.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -668,11 +720,14 @@
 
             // ========== মুভি ডিটেইলস ওপেন করার ফাংশন ==========
             const openMovieDetails = (movieId) => {
+                // বর্তমান URL থেকে পাথ বের করা
                 const currentPath = window.location.pathname;
                 const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+                
+                // ডিটেইলস পেজের URL তৈরি করা (movieId সহ)
                 const detailsUrl = `${basePath}details.html?id=${movieId}`;
                 
-                console.log('Opening details URL:', detailsUrl);
+                console.log('📺 Opening details URL:', detailsUrl);
                 
                 const tgApp = window.Telegram?.WebApp;
                 if (tgApp && tgApp.initData) {
@@ -682,6 +737,7 @@
                         window.open(detailsUrl, '_blank');
                     }
                 } else {
+                    // ব্রাউজারে - সরাসরি নেভিগেট
                     window.location.href = detailsUrl;
                 }
             };
@@ -704,7 +760,7 @@
                 if (isInitial && useCache) {
                     const cachedMovies = loadCachedMovies();
                     if (cachedMovies && cachedMovies.length > 0) {
-                        console.log('Using cached movies for initial load');
+                        console.log('📦 Using cached movies for initial load');
                         skeletonLoader.style.display = 'none';
                         movieGrid.style.display = 'grid';
                         currentlyLoadedMovies = cachedMovies;
@@ -1069,12 +1125,13 @@
                 } catch (error) { console.error("Failed to log visit:", error); }
             };
 
+            // ===== MAIN INITIALIZATION =====
             const initializeApp = async (tgInstance) => {
-                console.log("Initializing app...");
+                console.log("🚀 Initializing app...");
                 
                 // ===== CHECK IF BACK/FORWARD NAVIGATION =====
-                const isBackForward = isBackForwardNavigation();
-                console.log('Navigation type - isBackForward:', isBackForward);
+                const isBackForward = isBackForwardNavigation() || isFromBFCache();
+                console.log('🔄 Navigation type - isBackForward:', isBackForward);
                 
                 if (tgInstance) {
                     tg = tgInstance;
@@ -1095,22 +1152,24 @@
                 if (isBackForward) {
                     const cachedMovies = loadCachedMovies();
                     if (cachedMovies && cachedMovies.length > 0) {
-                        console.log('Back/Forward: Loading from cache');
+                        console.log('📦 Back/Forward: Loading from cache');
                         skeletonLoader.style.display = 'none';
                         movieGrid.style.display = 'grid';
                         currentlyLoadedMovies = cachedMovies;
                         renderMovies(cachedMovies);
                         // Still load welcome popup if needed
                         await loadWelcomePopupSettings();
-                        console.log("App initialization complete (from cache)");
+                        console.log("✅ App initialization complete (from cache)");
                         return;
+                    } else {
+                        console.log('⚠️ No cache found for back/forward, loading fresh');
                     }
                 }
                 
                 // Normal load
                 await loadWelcomePopupSettings();
                 await fetchAndRenderMovies(true, true);
-                console.log("App initialization complete");
+                console.log("✅ App initialization complete");
             };
 
             // Event Listeners
@@ -1145,8 +1204,7 @@
                     document.querySelector('.filter.active').classList.remove('active');
                     e.target.classList.add('active');
                     // Clear cache when filter changes
-                    sessionStorage.removeItem(CACHE_KEY);
-                    sessionStorage.removeItem(CACHE_TIMESTAMP_KEY);
+                    clearCache();
                     fetchAndRenderMovies(true, false);
                 }
             });
@@ -1154,8 +1212,7 @@
             sortBySelect.addEventListener('change', (e) => {
                 currentSort = e.target.value;
                 // Clear cache when sort changes
-                sessionStorage.removeItem(CACHE_KEY);
-                sessionStorage.removeItem(CACHE_TIMESTAMP_KEY);
+                clearCache();
                 fetchAndRenderMovies(true, false);
             });
 
@@ -1163,13 +1220,14 @@
             movieGrid.addEventListener('click', (e) => {
                 const card = e.target.closest('.movie-card');
                 if (card && card.dataset.movieId) {
-                    console.log('Movie card clicked, ID:', card.dataset.movieId);
+                    console.log('🎬 Movie card clicked, ID:', card.dataset.movieId);
                     openMovieDetails(card.dataset.movieId);
                 }
             });
 
             homeLogo.addEventListener('click', () => {
-                // Instead of reload, go to home with cache
+                // Clear cache and go home
+                clearCache();
                 const currentPath = window.location.pathname;
                 const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
                 const homeUrl = `${basePath}index.html`;
