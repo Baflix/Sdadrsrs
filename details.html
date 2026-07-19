@@ -6,10 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Baflix - Movie Details</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=default,es6,fetch"></script>
+    <!-- polyfill.io সরানো হয়েছে -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* আপনার পূর্ববর্তী সকল CSS এখানে থাকবে - অপরিবর্তিত */
         :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; -webkit-tap-highlight-color: transparent; }
         body {
@@ -508,7 +507,7 @@
             const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
             const homeUrl = `${basePath}index.html`;
             
-            console.log('Going home to:', homeUrl);
+            console.log('🏠 Going home to:', homeUrl);
             
             const tgApp = window.Telegram?.WebApp;
             if (tgApp && tgApp.initData) {
@@ -518,9 +517,9 @@
                     window.location.href = homeUrl;
                 }
             } else {
-                // ===== ব্রাউজারের ব্যাক বাটন ব্যবহার করলে পেজ রিলোড হবে না =====
-                // history.back() ব্যবহার করলে ব্রাউজারের ক্যাশ ব্যবহার করে
-                if (document.referrer && document.referrer.includes('index.html')) {
+                // ব্রাউজারে history.back() ব্যবহার করলে ক্যাশ ব্যবহার হয়
+                if (window.history.length > 1 && document.referrer && document.referrer.includes('index.html')) {
+                    console.log('⬅️ Using history.back() to go home with cache');
                     history.back();
                 } else {
                     window.location.href = homeUrl;
@@ -532,8 +531,8 @@
 
         // ===== BACK BUTTON - history.back() ব্যবহার =====
         backBtn.addEventListener('click', () => {
-            // Try to go back in history first (uses cache)
             if (window.history.length > 1) {
+                console.log('⬅️ Back button: history.back()');
                 history.back();
             } else {
                 goHome();
@@ -558,16 +557,16 @@
         const getMovieIdFromUrl = () => {
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
-            console.log('Movie ID from URL:', id);
+            console.log('🎬 Movie ID from URL:', id);
             return id;
         };
 
         // ========== মুভি ডিটেইলস লোড করা ==========
         const loadMovieDetails = async (movieId) => {
-            console.log('Loading movie details for ID:', movieId);
+            console.log('📥 Loading movie details for ID:', movieId);
             
             if (!movieId) {
-                console.error('No movie ID provided');
+                console.error('❌ No movie ID provided');
                 loadingIndicator.style.display = 'none';
                 errorMessage.style.display = 'block';
                 return;
@@ -575,7 +574,7 @@
 
             try {
                 const docSnap = await getDoc(doc(db, 'movies', movieId));
-                console.log('Movie doc exists:', docSnap.exists());
+                console.log('📄 Movie doc exists:', docSnap.exists());
 
                 if (!docSnap.exists()) {
                     loadingIndicator.style.display = 'none';
@@ -584,7 +583,7 @@
                 }
 
                 const movie = { id: docSnap.id, ...docSnap.data() };
-                console.log('Movie data loaded:', movie.title);
+                console.log('🎥 Movie data loaded:', movie.title);
 
                 if (movie.status !== 'active') {
                     loadingIndicator.style.display = 'none';
@@ -597,7 +596,7 @@
                 detailsContainer.style.display = 'block';
 
             } catch (error) {
-                console.error("Error loading movie:", error);
+                console.error("❌ Error loading movie:", error);
                 loadingIndicator.style.display = 'none';
                 errorMessage.style.display = 'block';
             }
@@ -776,11 +775,12 @@
                 });
             }
 
-            // Telegram BackButton - use history.back() instead of goHome
+            // Telegram BackButton - use history.back()
             const tgApp = window.Telegram?.WebApp;
             if (tgApp && tgApp.BackButton) {
                 tgApp.BackButton.onClick(() => {
                     if (window.history.length > 1) {
+                        console.log('⬅️ Telegram BackButton: history.back()');
                         history.back();
                     } else {
                         goHome();
@@ -795,6 +795,7 @@
         if (tgApp && tgApp.BackButton) {
             tgApp.BackButton.onClick(() => {
                 if (window.history.length > 1) {
+                    console.log('⬅️ Telegram BackButton: history.back()');
                     history.back();
                 } else {
                     goHome();
@@ -804,13 +805,13 @@
         }
 
         // ========== অ্যাপ্লিকেশন শুরু করা ==========
-        console.log('Details page loaded. URL:', window.location.href);
+        console.log('📄 Details page loaded. URL:', window.location.href);
         const movieId = getMovieIdFromUrl();
         
         if (movieId) {
             loadMovieDetails(movieId);
         } else {
-            console.warn('No movie ID found in URL, redirecting to home');
+            console.warn('⚠️ No movie ID found in URL, redirecting to home');
             goHome();
         }
     </script>
