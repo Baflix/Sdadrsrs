@@ -6,8 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Baflix - Movie Details</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default,es6,fetch"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* আপনার পূর্ববর্তী সকল CSS এখানে থাকবে - অপরিবর্তিত */
         :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; -webkit-tap-highlight-color: transparent; }
         body {
@@ -500,6 +502,7 @@
             document.body.removeChild(textArea);
         };
 
+        // ========== হোম পেজে ফিরে যাওয়ার ফাংশন ==========
         const goHome = () => {
             const currentPath = window.location.pathname;
             const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
@@ -515,13 +518,28 @@
                     window.location.href = homeUrl;
                 }
             } else {
-                window.location.href = homeUrl;
+                // ===== ব্রাউজারের ব্যাক বাটন ব্যবহার করলে পেজ রিলোড হবে না =====
+                // history.back() ব্যবহার করলে ব্রাউজারের ক্যাশ ব্যবহার করে
+                if (document.referrer && document.referrer.includes('index.html')) {
+                    history.back();
+                } else {
+                    window.location.href = homeUrl;
+                }
             }
         };
 
         window.goHome = goHome;
 
-        backBtn.addEventListener('click', goHome);
+        // ===== BACK BUTTON - history.back() ব্যবহার =====
+        backBtn.addEventListener('click', () => {
+            // Try to go back in history first (uses cache)
+            if (window.history.length > 1) {
+                history.back();
+            } else {
+                goHome();
+            }
+        });
+        
         detailsLogo.addEventListener('click', goHome);
 
         trailerCloseBtn.addEventListener('click', () => {
@@ -536,6 +554,7 @@
             }
         });
 
+        // ========== URL থেকে মুভি আইডি বের করা ==========
         const getMovieIdFromUrl = () => {
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
@@ -543,6 +562,7 @@
             return id;
         };
 
+        // ========== মুভি ডিটেইলস লোড করা ==========
         const loadMovieDetails = async (movieId) => {
             console.log('Loading movie details for ID:', movieId);
             
@@ -592,7 +612,7 @@
             document.getElementById('detail-language').textContent = `Language: ${movie.language || 'N/A'}`;
             document.getElementById('detail-description').textContent = movie.description || 'No description available.';
 
-            const seriesInfoEl = document.getElementById('detail-series-info');
+            const seriesInfoEl = document.getElementById('details-series-info');
             const isSeries = movie.type !== 'movie';
 
             if (isSeries && movie.seasons && movie.seasons.length > 0) {
@@ -756,19 +776,34 @@
                 });
             }
 
+            // Telegram BackButton - use history.back() instead of goHome
             const tgApp = window.Telegram?.WebApp;
             if (tgApp && tgApp.BackButton) {
-                tgApp.BackButton.onClick(goHome);
+                tgApp.BackButton.onClick(() => {
+                    if (window.history.length > 1) {
+                        history.back();
+                    } else {
+                        goHome();
+                    }
+                });
                 tgApp.BackButton.show();
             }
         };
 
+        // Handle Telegram back button
         const tgApp = window.Telegram?.WebApp;
         if (tgApp && tgApp.BackButton) {
-            tgApp.BackButton.onClick(goHome);
+            tgApp.BackButton.onClick(() => {
+                if (window.history.length > 1) {
+                    history.back();
+                } else {
+                    goHome();
+                }
+            });
             tgApp.BackButton.show();
         }
 
+        // ========== অ্যাপ্লিকেশন শুরু করা ==========
         console.log('Details page loaded. URL:', window.location.href);
         const movieId = getMovieIdFromUrl();
         
