@@ -9,7 +9,7 @@
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default,es6,fetch"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --dark-green: #218838; }
+        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --dark-green: #218838; --blue: #007bff; --danger: #dc3545; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; -webkit-tap-highlight-color: transparent; }
         body {
             background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
@@ -193,6 +193,202 @@
             transition: all 0.3s ease;
         }
         .close-user-info:hover { background: var(--secondary); transform: translateY(-2px); }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .status-badge.active { background: var(--green); color: #fff; }
+        .status-badge.blocked { background: var(--danger); color: #fff; }
+        .status-badge.inactive { background: #ffc107; color: #000; }
+
+        /* Request Button */
+        .request-btn-container {
+            text-align: center;
+            margin: 0 20px 20px;
+        }
+        .request-btn {
+            background: var(--blue);
+            color: #fff;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .request-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(0, 123, 255, 0.4);
+        }
+        .request-btn:active { transform: translateY(0); }
+
+        /* Request Modal */
+        .request-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            padding: 20px;
+        }
+        .request-modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .request-modal {
+            background: linear-gradient(145deg, #1a1a1a, #222);
+            border-radius: 20px;
+            max-width: 450px;
+            width: 100%;
+            padding: 30px 25px;
+            border: 1px solid rgba(0, 123, 255, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+        .request-modal-overlay.visible .request-modal {
+            transform: scale(1) translateY(0);
+        }
+        .request-modal-close {
+            position: absolute;
+            top: 12px;
+            right: 15px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: var(--text);
+            font-size: 1.8rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .request-modal-close:hover {
+            background: var(--primary);
+            transform: rotate(90deg);
+        }
+        .request-modal h2 {
+            color: var(--blue);
+            margin-bottom: 8px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .request-modal .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        .request-modal .form-group {
+            margin-bottom: 16px;
+        }
+        .request-modal .form-group label {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .request-modal .form-group .char-count {
+            float: right;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+        .request-modal .form-group .char-count.limit-reached {
+            color: var(--danger);
+        }
+        .request-modal input, 
+        .request-modal textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 1px solid #444;
+            background: var(--dark);
+            color: var(--text);
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        .request-modal input:focus,
+        .request-modal textarea:focus {
+            outline: none;
+            border-color: var(--blue);
+        }
+        .request-modal textarea {
+            min-height: 80px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        .request-modal textarea:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .request-modal .btn-submit-request {
+            background: var(--blue);
+            color: #fff;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .request-modal .btn-submit-request:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        .request-modal .btn-submit-request:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .request-modal .request-success-msg {
+            color: var(--green);
+            text-align: center;
+            padding: 10px;
+            display: none;
+            font-weight: bold;
+        }
+        .request-modal .request-success-msg.show {
+            display: block;
+        }
+        .request-modal .error-msg {
+            color: var(--danger);
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+        }
+        .request-modal .error-msg.show {
+            display: block;
+        }
 
         .movie-grid {
             display: grid;
@@ -422,68 +618,19 @@
         }
         .welcome-popup-click-hint i { color: var(--primary); }
 
-        /* --- Dynamic Details View UI CSS (Single Page View Mode) --- */
-        #details-view-container { display: none; }
-        .back-header { padding: 15px 20px; display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .back-btn { background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; padding: 8px 12px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s; }
-        .back-btn:hover { background: rgba(255,255,255,0.1); }
-        .back-header .logo-text { font-size: 1.5rem; font-weight: 700; background: linear-gradient(to right, #e50914, #f5f5f1); -webkit-background-clip: text; background-clip: text; color: transparent; cursor: pointer; }
-        #details-loading-indicator { display: flex; justify-content: center; align-items: center; min-height: 60vh; flex-direction: column; gap: 20px; }
-        .details-spinner { width: 50px; height: 50px; border: 4px solid #333; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
-        .details-main-container { max-width: 800px; margin: 0 auto; padding: 20px; display: none; }
-        .movie-header-details { display: flex; flex-direction: column; gap: 20px; margin-bottom: 25px; }
-        .movie-poster-large { width: 100%; max-width: 300px; margin: 0 auto; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .movie-poster-large img { width: 100%; display: block; }
-        .movie-info-details { flex: 1; }
-        .movie-title-large { font-size: 2.2rem; margin-bottom: 10px; line-height: 1.2; }
-        .movie-meta { color: var(--text-secondary); margin-bottom: 6px; font-size: 1rem; }
-        #details-series-info { font-weight: bold; color: var(--green); }
-        .trailer-btn { background: var(--primary); color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 8px; transition: background 0.3s; font-size: 1rem; font-weight: bold; display: inline-flex; align-items: center; gap: 10px; border: none; cursor: pointer; margin-top: 15px; }
-        .trailer-btn:hover { background: var(--secondary); }
-        .movie-description-full { padding: 20px 0; font-size: 1rem; line-height: 1.8; border-top: 1px solid #333; border-bottom: 1px solid #333; margin-bottom: 25px; }
-        .actions-section { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 25px; }
-        .action-btn { background: #007bff; color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 8px; transition: background 0.3s; font-size: 0.95rem; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: none; }
-        .action-btn.copy { background: #6c757d; }
-        .action-btn:hover { opacity: 0.8; }
-        .download-btn { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); background-size: 300% 300%; color: #fff; text-decoration: none; padding: 15px 20px; border-radius: 12px; font-size: 1.05rem; font-weight: bold; cursor: pointer; display: block; width: 100%; margin: 10px 0; border: none; box-shadow: 0 5px 15px rgba(220, 39, 67, 0.4); text-align: center; position: relative; overflow: hidden; animation: instaGradient 5s ease infinite; transition: transform 0.3s ease, box-shadow 0.3s ease; }
-        .download-btn::before { content: '\f019'; font-family: 'Font Awesome 6 Free'; font-weight: 900; margin-right: 10px; }
-        @keyframes instaGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        .download-btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 25px rgba(220, 39, 67, 0.6); }
-        .download-btn:active { transform: translateY(1px) scale(0.98); }
-        .downloads-section { margin-top: 20px; }
-        .season-accordion { margin-bottom: 8px; }
-        .season-accordion-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; cursor: pointer; width: 100%; border-radius: 8px; background: linear-gradient(145deg, #2c3e50, #34495e); border: 1px solid #4a627a; transition: all 0.3s ease; }
-        .season-accordion-header:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.3); background: linear-gradient(145deg, #34495e, #4a627a); }
-        .season-accordion-header h4 { font-size: 1.1rem; color: var(--text); font-weight: bold; margin: 0; }
-        .season-accordion-header .fas { transition: transform 0.3s ease; color: var(--text-secondary); font-size: 1rem; }
-        .season-accordion.active .season-accordion-header { background: linear-gradient(145deg, #3a506b, #4a627a); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-        .season-accordion.active .season-accordion-header .fas { transform: rotate(180deg); color: var(--text); }
-        .season-accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), padding 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); background-color: rgba(0,0,0,0.2); border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; padding: 0 15px; }
-        .season-accordion.active .season-accordion-content { max-height: 3000px; padding: 20px 15px 10px; }
-        .episode-container { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #383838; }
-        .episode-container:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        .episode-title { color: var(--text-secondary); margin-bottom: 10px; font-weight: bold; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
-        .modal-overlay.visible { opacity: 1; visibility: visible; }
-        .modal-content-video { background: #000; width: 95%; max-width: 900px; position: relative; border-radius: 8px; overflow: hidden; }
-        .modal-close-btn { position: absolute; top: 10px; right: 15px; background: none; border: none; color: #fff; font-size: 2.5rem; cursor: pointer; z-index: 2; line-height: 1; }
-        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
-        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        #details-error-message { text-align: center; padding: 50px 20px; display: none; }
-        #details-error-message i { font-size: 4rem; color: var(--primary); margin-bottom: 20px; }
-        #details-error-message h2 { color: var(--text); margin-bottom: 10px; }
-        #details-error-message p { color: var(--text-secondary); }
+        #spa-details-view {
+            display: none;
+        }
 
-        @media (min-width: 600px) {
-            .movie-header-details { flex-direction: row; align-items: flex-start; }
-            .movie-poster-large { max-width: 250px; flex-shrink: 0; }
-            .modal-content-video { width: 80%; }
+        @media (min-width: 600px) { .modal-content { width: 80%; } }
+        @media (max-width: 500px) {
+            .request-modal { padding: 20px; }
+            .request-modal h2 { font-size: 1.2rem; }
         }
     </style>
 </head>
 <body>
-    <!-- Main App Container (Home Section) -->
-    <div id="home-view-container">
+    <div id="spa-main-view">
         <!-- Welcome Popup -->
         <div id="welcome-popup" class="welcome-popup-overlay">
             <div class="welcome-popup-content" id="welcome-popup-content">
@@ -515,6 +662,7 @@
                 <div class="user-welcome-text">
                     <h3 id="welcome-user-name"></h3>
                     <p>Welcome to Baflix!</p>
+                    <span id="user-status-badge" class="status-badge active">✅ Active</span>
                 </div>
             </div>
             <div class="user-details">
@@ -524,7 +672,7 @@
                         <div class="detail-label">Telegram Name</div>
                         <div class="detail-value" id="user-telegram-name"></div>
                     </div>
-                    <button class="copy-btn" id="copy-tg-name-btn">
+                    <button class="copy-btn" onclick="window.copyToClipboard('user-telegram-name')">
                         <i class="far fa-copy"></i>
                     </button>
                 </div>
@@ -534,7 +682,7 @@
                         <div class="detail-label">Chat ID</div>
                         <div class="detail-value" id="user-chat-id"></div>
                     </div>
-                    <button class="copy-btn" id="copy-chat-id-btn">
+                    <button class="copy-btn" onclick="window.copyToClipboard('user-chat-id')">
                         <i class="far fa-copy"></i>
                     </button>
                 </div>
@@ -545,11 +693,69 @@
                         <div class="detail-value small" id="user-username"></div>
                     </div>
                 </div>
+                <div class="user-detail-item">
+                    <div class="detail-icon"><i class="fas fa-calendar-plus"></i></div>
+                    <div class="detail-content">
+                        <div class="detail-label">First Visit</div>
+                        <div class="detail-value small" id="user-first-visit"></div>
+                    </div>
+                </div>
+                <div class="user-detail-item">
+                    <div class="detail-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="detail-content">
+                        <div class="detail-label">Member Since</div>
+                        <div class="detail-value small" id="user-created-at"></div>
+                    </div>
+                </div>
             </div>
             <div class="user-info-close">
-                <button class="close-user-info" id="close-user-info-btn">
+                <button class="close-user-info" onclick="window.closeUserInfo()">
                     <i class="fas fa-check"></i> Got it!
                 </button>
+            </div>
+        </div>
+
+        <!-- Request Button (NEW) -->
+        <div class="request-btn-container">
+            <button class="request-btn" id="open-request-modal-btn">
+                <i class="fas fa-plus-circle"></i> Movie Request
+            </button>
+        </div>
+
+        <!-- Request Modal (NEW) -->
+        <div class="request-modal-overlay" id="request-modal-overlay">
+            <div class="request-modal">
+                <button class="request-modal-close" id="request-modal-close">&times;</button>
+                <h2><i class="fas fa-film"></i> Movie Request</h2>
+                <p class="subtitle">Request a movie or series you want to watch.</p>
+                
+                <form id="request-form-modal">
+                    <div class="form-group">
+                        <label for="request-movie-name-modal">Movie / Series Name <span style="color:var(--danger);">*</span></label>
+                        <input type="text" id="request-movie-name-modal" placeholder="e.g., Spider-Man: No Way Home" maxlength="100" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="request-trailer-url-modal">Trailer URL (optional)</label>
+                        <input type="url" id="request-trailer-url-modal" placeholder="https://youtube.com/watch?v=..." maxlength="200">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="request-description-modal">
+                            Additional Details
+                            <span class="char-count" id="char-count">0/150</span>
+                        </label>
+                        <textarea id="request-description-modal" placeholder="Any extra info... (max 150 characters)" maxlength="150"></textarea>
+                        <div class="error-msg" id="char-error-msg">Maximum 150 characters allowed!</div>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit-request" id="submit-request-btn">
+                        <i class="fas fa-paper-plane"></i> Submit Request
+                    </button>
+                    <div class="request-success-msg" id="request-success-modal">
+                        ✅ Your request has been submitted successfully!
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -590,56 +796,9 @@
         </div>
     </div>
 
-    <!-- Dynamic Details View Container (Zero-loading Back Mode) -->
-    <div id="details-view-container">
-        <div class="back-header">
-            <button class="back-btn" id="details-back-btn"><i class="fas fa-arrow-left"></i></button>
-            <span class="logo-text" id="details-logo-text">Baflix</span>
-        </div>
-
-        <div id="details-loading-indicator">
-            <div class="details-spinner"></div>
-            <p style="color: var(--text-secondary);">Loading movie details...</p>
-        </div>
-
-        <div id="details-error-message">
-            <i class="fas fa-exclamation-circle"></i>
-            <h2>Movie Not Found</h2>
-            <p>The movie you're looking for doesn't exist or has been removed.</p>
-            <button class="action-btn" style="margin-top: 20px;" id="error-go-home-btn">
-                <i class="fas fa-home"></i> Go Home
-            </button>
-        </div>
-
-        <div class="details-main-container" id="details-main-container">
-            <div class="movie-header-details">
-                <div class="movie-poster-large">
-                    <img id="detail-poster" src="" alt="Poster" onerror="this.src='https://via.placeholder.com/300x450/222/fff?text=No+Image'">
-                </div>
-                <div class="movie-info-details">
-                    <h1 class="movie-title-large" id="detail-title"></h1>
-                    <p class="movie-meta" id="detail-genres"></p>
-                    <p class="movie-meta" id="detail-rating"></p>
-                    <p class="movie-meta" id="detail-year"></p>
-                    <p class="movie-meta" id="detail-language"></p>
-                    <p class="movie-meta" id="detail-series-info"></p>
-                    <div id="detail-trailer-container"></div>
-                </div>
-            </div>
-
-            <div class="movie-description-full" id="detail-description"></div>
-            <div class="actions-section" id="detail-actions"></div>
-            <div class="downloads-section" id="detail-downloads"></div>
-        </div>
-
-        <div id="trailer-modal" class="modal-overlay">
-            <div class="modal-content-video">
-                <button class="modal-close-btn" id="trailer-close-btn">&times;</button>
-                <div class="video-container">
-                    <iframe id="youtube-trailer-iframe" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                </div>
-            </div>
-        </div>
+    <!-- ডিটেইলস পেজ আইফ্রেম -->
+    <div id="spa-details-view">
+        <iframe id="details-iframe" src="" style="width:100%; height:100vh; border:none; overflow:hidden;"></iframe>
     </div>
 
     <script type="module">
@@ -660,9 +819,6 @@
         const db = getFirestore(app);
         
         document.addEventListener('DOMContentLoaded', () => {
-            const homeView = document.getElementById('home-view-container');
-            const detailsView = document.getElementById('details-view-container');
-            
             const movieGrid = document.querySelector('.movie-grid');
             const skeletonLoader = document.getElementById('skeleton-loader');
             const noMoviesMessage = document.getElementById('no-movies-message');
@@ -678,6 +834,9 @@
             const userTelegramName = document.getElementById('user-telegram-name');
             const userChatId = document.getElementById('user-chat-id');
             const userUsername = document.getElementById('user-username');
+            const userFirstVisit = document.getElementById('user-first-visit');
+            const userCreatedAt = document.getElementById('user-created-at');
+            const userStatusBadge = document.getElementById('user-status-badge');
 
             const welcomePopup = document.getElementById('welcome-popup');
             const welcomePopupClose = document.getElementById('welcome-popup-close');
@@ -687,16 +846,22 @@
             const welcomePopupDescription = document.getElementById('welcome-popup-description');
             const welcomePopupContent = document.getElementById('welcome-popup-content');
 
-            // Details Elements
-            const detailsLoading = document.getElementById('details-loading-indicator');
-            const detailsMainContent = document.getElementById('details-main-container');
-            const detailsError = document.getElementById('details-error-message');
-            const detailsBackBtn = document.getElementById('details-back-btn');
-            const detailsLogoText = document.getElementById('details-logo-text');
-            const errorGoHomeBtn = document.getElementById('error-go-home-btn');
-            const modalOverlay = document.getElementById('trailer-modal');
-            const trailerIframe = document.getElementById('youtube-trailer-iframe');
-            const trailerCloseBtn = document.getElementById('trailer-close-btn');
+            const spaMainView = document.getElementById('spa-main-view');
+            const spaDetailsView = document.getElementById('spa-details-view');
+            const detailsIframe = document.getElementById('details-iframe');
+
+            // ===== REQUEST MODAL ELEMENTS =====
+            const requestModalOverlay = document.getElementById('request-modal-overlay');
+            const requestModalClose = document.getElementById('request-modal-close');
+            const openRequestBtn = document.getElementById('open-request-modal-btn');
+            const requestFormModal = document.getElementById('request-form-modal');
+            const requestName = document.getElementById('request-movie-name-modal');
+            const requestTrailer = document.getElementById('request-trailer-url-modal');
+            const requestDesc = document.getElementById('request-description-modal');
+            const charCount = document.getElementById('char-count');
+            const charErrorMsg = document.getElementById('char-error-msg');
+            const submitBtn = document.getElementById('submit-request-btn');
+            const successMsg = document.getElementById('request-success-modal');
 
             let currentlyLoadedMovies = [];
             let isFetchingMore = false;
@@ -709,6 +874,7 @@
             let popupLinkUrl = '';
             let hasShownPopup = false;
             let savedScrollPosition = 0;
+            let currentUser = null;
 
             document.body.addEventListener('contextmenu', (e) => e.preventDefault());
             
@@ -728,21 +894,6 @@
                 return { count: 1, highest: 0 };
             };
 
-            const getYoutubeVideoId = (url) => {
-                if(!url) return null;
-                let videoId = null;
-                try {
-                    const urlObj = new URL(url);
-                    if (urlObj.hostname === 'youtu.be') videoId = urlObj.pathname.slice(1);
-                    else if (urlObj.hostname.includes('youtube.com')) videoId = urlObj.searchParams.get('v');
-                } catch (e) {
-                    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-                    const match = url.match(regex);
-                    if (match) videoId = match[1];
-                }
-                return videoId;
-            };
-
             const openSafeLink = (url) => {
                 const tgApp = window.Telegram?.WebApp;
                 if (tgApp && tgApp.initData) {
@@ -752,17 +903,136 @@
                 } else { window.open(url, '_blank'); }
             };
 
-            const incrementDownloadCount = async (movieId) => {
-                if (!movieId) return;
-                try {
-                    await updateDoc(doc(db, 'movies', movieId), { downloadCount: increment(1) });
-                } catch (error) { console.error("Error incrementing download count:", error); }
+            // ===== REQUEST MODAL FUNCTIONS =====
+            const openRequestModal = () => {
+                requestModalOverlay.classList.add('visible');
+                document.body.style.overflow = 'hidden';
+                requestName.focus();
             };
 
-            // Router Engine to handle zero-loading transitions
-            const showHomeView = () => {
-                detailsView.style.display = 'none';
-                homeView.style.display = 'block';
+            const closeRequestModal = () => {
+                requestModalOverlay.classList.remove('visible');
+                document.body.style.overflow = '';
+                requestFormModal.reset();
+                successMsg.classList.remove('show');
+                charCount.textContent = '0/150';
+                charErrorMsg.classList.remove('show');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
+            };
+
+            openRequestBtn.addEventListener('click', openRequestModal);
+            requestModalClose.addEventListener('click', closeRequestModal);
+            requestModalOverlay.addEventListener('click', (e) => {
+                if (e.target === requestModalOverlay) closeRequestModal();
+            });
+
+            // Character counter with limit
+            requestDesc.addEventListener('input', () => {
+                const len = requestDesc.value.length;
+                const max = 150;
+                charCount.textContent = `${len}/${max}`;
+                
+                if (len >= max) {
+                    charCount.classList.add('limit-reached');
+                    charErrorMsg.classList.add('show');
+                    requestDesc.value = requestDesc.value.substring(0, max);
+                } else {
+                    charCount.classList.remove('limit-reached');
+                    charErrorMsg.classList.remove('show');
+                }
+            });
+
+            // Request form submission
+            requestFormModal.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const name = requestName.value.trim();
+                const trailer = requestTrailer.value.trim();
+                const description = requestDesc.value.trim().substring(0, 150);
+
+                if (!name) {
+                    requestName.focus();
+                    requestName.style.borderColor = 'var(--danger)';
+                    setTimeout(() => requestName.style.borderColor = '', 2000);
+                    return;
+                }
+
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+
+                try {
+                    const user = currentUser || { id: 'anonymous', first_name: 'Guest' };
+                    await addDoc(collection(db, "movieRequests"), {
+                        userName: (user.first_name || 'Guest') + (user.last_name ? ' ' + user.last_name : ''),
+                        userId: String(user.id || 'anonymous'),
+                        movieName: name,
+                        trailerUrl: trailer || '',
+                        description: description || '',
+                        status: 'pending',
+                        createdAt: serverTimestamp()
+                    });
+                    
+                    successMsg.classList.add('show');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-check"></i> Submitted!';
+                    
+                    requestName.value = '';
+                    requestTrailer.value = '';
+                    requestDesc.value = '';
+                    charCount.textContent = '0/150';
+                    
+                    setTimeout(() => {
+                        closeRequestModal();
+                        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
+                    }, 2000);
+                    
+                } catch (error) {
+                    console.error("Error submitting request:", error);
+                    alert('Failed to submit request. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
+                }
+            });
+
+            // SPA ডিটেইলস ওপেন
+            const openMovieDetails = async (movieId) => {
+                savedScrollPosition = window.scrollY;
+                
+                const currentPath = window.location.pathname;
+                const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+                const detailsUrl = `${basePath}details.html?id=${movieId}`;
+                
+                const targetMovieData = currentlyLoadedMovies.find(m => m.id === movieId);
+                if(targetMovieData) {
+                    window.preloadedMovieData = targetMovieData;
+                }
+
+                history.pushState({view: 'details', movieId: movieId}, '', window.location.pathname + `?id=${movieId}`);
+                
+                spaMainView.style.display = 'none';
+                spaDetailsView.style.display = 'block';
+                detailsIframe.src = detailsUrl;
+
+                try {
+                    const docRef = doc(db, 'movies', movieId);
+                    await updateDoc(docRef, { views: increment(1) });
+                } catch(e) {
+                    console.error("Error updating view count:", e);
+                }
+
+                const tgApp = window.Telegram?.WebApp;
+                if (tgApp && tgApp.BackButton) {
+                    tgApp.BackButton.show();
+                }
+            };
+
+            window.handleSpaBack = () => {
+                spaDetailsView.style.display = 'none';
+                spaMainView.style.display = 'block';
+                detailsIframe.src = '';
+                
+                history.replaceState({view: 'home'}, '', window.location.pathname);
                 window.scrollTo(0, savedScrollPosition);
                 
                 const tgApp = window.Telegram?.WebApp;
@@ -771,235 +1041,11 @@
                 }
             };
 
-            const showDetailsView = async (movieId) => {
-                savedScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
-                homeView.style.display = 'none';
-                detailsView.style.display = 'block';
-                window.scrollTo(0, 0);
-
-                detailsMainContent.style.display = 'none';
-                detailsError.style.display = 'none';
-                detailsLoading.style.display = 'flex';
-
-                const tgApp = window.Telegram?.WebApp;
-                if (tgApp && tgApp.BackButton) {
-                    tgApp.BackButton.show();
-                }
-
-                try {
-                    let movieData = currentlyLoadedMovies.find(m => m.id === movieId);
-                    if (!movieData) {
-                        const docSnap = await getDoc(doc(db, 'movies', movieId));
-                        if (docSnap.exists()) {
-                            movieData = { id: docSnap.id, ...docSnap.data() };
-                        }
-                    }
-
-                    if (!movieData || movieData.status !== 'active') {
-                        detailsLoading.style.display = 'none';
-                        detailsError.style.display = 'block';
-                        return;
-                    }
-
-                    renderMovieDetails(movieData);
-                    detailsLoading.style.display = 'none';
-                    detailsMainContent.style.display = 'block';
-                } catch (error) {
-                    console.error("Error loading movie details:", error);
-                    detailsLoading.style.display = 'none';
-                    detailsError.style.display = 'block';
-                }
-            };
-
-            const navigateToDetails = (movieId) => {
-                history.pushState({ view: 'details', id: movieId }, '', `?id=${movieId}`);
-                showDetailsView(movieId);
-            };
-
-            const navigateToHome = () => {
-                if (history.state && history.state.view === 'details') {
-                    history.back();
-                } else {
-                    history.pushState({ view: 'home' }, '', window.location.pathname);
-                    showHomeView();
-                }
-            };
-
             window.addEventListener('popstate', (e) => {
-                if (e.state && e.state.view === 'details') {
-                    showDetailsView(e.state.id);
-                } else {
-                    showHomeView();
+                if (spaDetailsView.style.display === 'block') {
+                    window.handleSpaBack();
                 }
             });
-
-            const renderMovieDetails = (movie) => {
-                document.getElementById('detail-poster').src = movie.posterUrl || 'https://via.placeholder.com/300x450/222/fff?text=No+Image';
-                document.getElementById('detail-title').textContent = movie.title || 'Untitled';
-                document.getElementById('detail-genres').textContent = movie.genres || 'N/A';
-                document.getElementById('detail-rating').innerHTML = `<i class="fas fa-star" style="color:gold;"></i> ${movie.rating || 'N/A'}/10`;
-                document.getElementById('detail-year').textContent = `Year: ${movie.year || 'N/A'}`;
-                document.getElementById('detail-language').textContent = `Language: ${movie.language || 'N/A'}`;
-                document.getElementById('detail-description').textContent = movie.description || 'No description available.';
-
-                const seriesInfoEl = document.getElementById('detail-series-info');
-                const isSeries = movie.type !== 'movie';
-
-                if (isSeries && movie.seasons && movie.seasons.length > 0) {
-                    const seasonCount = movie.seasons.length;
-                    const episodeCount = movie.seasons.reduce((totalAcc, season) => {
-                        if (!season.episodes || season.episodes.length === 0) return totalAcc;
-                        return totalAcc + season.episodes.reduce((seasonAcc, episode) => {
-                            return seasonAcc + parseEpisodeNumber(episode.episode_number).count;
-                        }, 0);
-                    }, 0);
-                    seriesInfoEl.textContent = `Total Seasons: ${seasonCount} | Total Episodes: ${episodeCount}`;
-                    seriesInfoEl.style.display = 'block';
-                } else {
-                    seriesInfoEl.style.display = 'none';
-                }
-
-                const trailerContainer = document.getElementById('detail-trailer-container');
-                trailerContainer.innerHTML = '';
-                if (movie.trailerUrl) {
-                    const trailerBtn = document.createElement('button');
-                    trailerBtn.className = 'trailer-btn';
-                    trailerBtn.innerHTML = `<i class="fas fa-play"></i> Watch Trailer`;
-                    trailerBtn.onclick = () => {
-                        const videoId = getYoutubeVideoId(movie.trailerUrl);
-                        if (videoId) {
-                            trailerIframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&fs=0&rel=0`;
-                            modalOverlay.classList.add('visible');
-                        } else {
-                            alert("Invalid trailer link provided.");
-                        }
-                    };
-                    trailerContainer.appendChild(trailerBtn);
-                }
-
-                const actionsContainer = document.getElementById('detail-actions');
-                actionsContainer.innerHTML = '';
-
-                // Generate a reliable share link pointing back via router
-                const basePathUrl = window.location.origin + window.location.pathname;
-                const shareUrl = `${basePathUrl}?id=${movie.id}`;
-                const shareMessage = `🎬 "${movie.title}" Watch now on Baflix!\n\n${shareUrl}`;
-
-                const shareBtn = document.createElement('button');
-                shareBtn.className = 'action-btn';
-                shareBtn.innerHTML = `<i class="fas fa-share-alt"></i> Share`;
-                shareBtn.onclick = () => {
-                    const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareMessage)}`;
-                    openSafeLink(telegramShareUrl);
-                };
-                actionsContainer.appendChild(shareBtn);
-
-                const copyBtn = document.createElement('button');
-                copyBtn.className = 'action-btn copy';
-                copyBtn.innerHTML = `<i class="fas fa-copy"></i> Copy Link`;
-                copyBtn.onclick = (e) => copyToClipboard(shareUrl, e.currentTarget);
-                actionsContainer.appendChild(copyBtn);
-
-                const downloadsContainer = document.getElementById('detail-downloads');
-                downloadsContainer.innerHTML = '';
-
-                if (movie.type === 'movie' && movie.downloadLinks && movie.downloadLinks.length > 0) {
-                    const linksWrapper = document.createElement('div');
-                    movie.downloadLinks.forEach(link => {
-                        const button = document.createElement('button');
-                        button.textContent = link.name;
-                        button.className = 'download-btn';
-
-                        let currentBtnAdLinks = [];
-                        if (link.ads && typeof link.ads === 'string' && link.ads.trim() !== '') {
-                            currentBtnAdLinks = link.ads.split(',').map(u => u.trim()).filter(u => u);
-                        }
-                        let clickCount = 0;
-
-                        button.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-
-                            if (currentBtnAdLinks.length > 0 && clickCount < currentBtnAdLinks.length) {
-                                openSafeLink(currentBtnAdLinks[clickCount]);
-                                clickCount++;
-                            } else {
-                                incrementDownloadCount(movie.id);
-                                if (link.url) openSafeLink(link.url);
-                            }
-                        });
-                        button.addEventListener('contextmenu', (e) => e.preventDefault());
-                        linksWrapper.appendChild(button);
-                    });
-                    downloadsContainer.appendChild(linksWrapper);
-                } else if (movie.seasons && movie.seasons.length > 0) {
-                    movie.seasons.sort((a, b) => a.season_number - b.season_number).forEach(season => {
-                        const seasonAccordion = document.createElement('div');
-                        seasonAccordion.className = 'season-accordion';
-
-                        const seasonHeader = document.createElement('div');
-                        seasonHeader.className = 'season-accordion-header';
-                        seasonHeader.innerHTML = `<h4>Season ${season.season_number}</h4><i class="fas fa-chevron-down"></i>`;
-
-                        const seasonContent = document.createElement('div');
-                        seasonContent.className = 'season-accordion-content';
-
-                        if (season.episodes && season.episodes.length > 0) {
-                            season.episodes.sort((a, b) => {
-                                const highestA = parseEpisodeNumber(a.episode_number).highest;
-                                const highestB = parseEpisodeNumber(b.episode_number).highest;
-                                return highestA - highestB;
-                            }).forEach(episode => {
-                                const episodeContainer = document.createElement('div');
-                                episodeContainer.className = 'episode-container';
-
-                                const episodeTitle = document.createElement('p');
-                                episodeTitle.className = 'episode-title';
-                                episodeTitle.textContent = `Episode ${episode.episode_number}` + (episode.title ? `: ${episode.title}` : '');
-                                episodeContainer.appendChild(episodeTitle);
-
-                                if (episode.downloadLinks && episode.downloadLinks.length > 0) {
-                                    episode.downloadLinks.forEach(link => {
-                                        const button = document.createElement('button');
-                                        button.textContent = link.name;
-                                        button.className = 'download-btn';
-
-                                        let currentBtnAdLinks = [];
-                                        if (link.ads && typeof link.ads === 'string' && link.ads.trim() !== '') {
-                                            currentBtnAdLinks = link.ads.split(',').map(u => u.trim()).filter(u => u);
-                                        }
-                                        let clickCount = 0;
-
-                                        button.addEventListener('click', (e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-
-                                            if (currentBtnAdLinks.length > 0 && clickCount < currentBtnAdLinks.length) {
-                                                openSafeLink(currentBtnAdLinks[clickCount]);
-                                                clickCount++;
-                                            } else {
-                                                incrementDownloadCount(movie.id);
-                                                if (link.url) openSafeLink(link.url);
-                                            }
-                                        });
-                                        button.addEventListener('contextmenu', (e) => e.preventDefault());
-                                        episodeContainer.appendChild(button);
-                                    });
-                                } else {
-                                    const noLinksText = document.createElement('p');
-                                    noLinksText.textContent = 'No links for this episode.';
-                                    noLinksText.style.cssText = "font-size: 0.8rem; color: #777;";
-                                    episodeContainer.appendChild(noLinksText);
-                                }
-                                seasonContent.appendChild(episodeContainer);
-                            });
-                        }
-                        seasonAccordion.appendChild(seasonHeader);
-                        seasonAccordion.appendChild(seasonContent);
-                        downloadsContainer.appendChild(seasonAccordion);
-                    });
-                }
-            };
 
             const fetchAndRenderMovies = async (isInitial = false) => {
                 if (isFetchingMore) return;
@@ -1268,39 +1314,41 @@
                 closeWelcomePopup();
             });
 
-            const copyToClipboard = (text, button) => {
-                const originalText = button.innerHTML;
-                const showSuccess = () => {
-                    button.innerHTML = `<i class="fas fa-check"></i> Copied!`;
-                    setTimeout(() => { button.innerHTML = originalText; }, 2000);
-                };
-                if (navigator.clipboard && window.isSecureContext) {
-                    navigator.clipboard.writeText(text).then(showSuccess).catch(() => fallbackCopy(text, button, originalText));
-                } else {
-                    fallbackCopy(text, button, originalText);
+            const copyToClipboard = (elementId) => {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    const text = element.textContent;
+                    const tempInput = document.createElement('input');
+                    tempInput.value = text;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    const copyBtn = document.querySelector(`[onclick*="${elementId}"]`);
+                    if (copyBtn) {
+                        const originalHTML = copyBtn.innerHTML;
+                        copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                        setTimeout(() => { copyBtn.innerHTML = originalHTML; }, 2000);
+                    }
                 }
             };
-            const fallbackCopy = (text, button, originalText) => {
-                const textArea = document.createElement('textarea');
-                textArea.value = text;
-                textArea.style.position = 'fixed';
-                textArea.style.top = '-9999px';
-                document.body.appendChild(textArea);
-                textArea.focus();
-                textArea.select();
-                try {
-                    const successful = document.execCommand('copy');
-                    if (successful) {
-                        button.innerHTML = `<i class="fas fa-check"></i> Copied!`;
-                        setTimeout(() => { button.innerHTML = originalText; }, 2000);
-                    }
-                } catch (err) { console.error("Error during fallback copy:", err); }
-                document.body.removeChild(textArea);
-            };
+            window.copyToClipboard = copyToClipboard;
 
             let tg = null;
+            
+            const updateUserStatusBadge = (status) => {
+                if (status === 'blocked') {
+                    userStatusBadge.className = 'status-badge blocked';
+                    userStatusBadge.textContent = '🚫 Blocked';
+                } else {
+                    userStatusBadge.className = 'status-badge active';
+                    userStatusBadge.textContent = '✅ Active';
+                }
+            };
+
             const saveOrUpdateTelegramUser = async (user) => {
                 if (!user || !user.id) return;
+                currentUser = user;
                 const userDocRef = doc(db, "telegramUsers", String(user.id));
                 try {
                     const docSnap = await getDoc(userDocRef);
@@ -1315,11 +1363,28 @@
                         lastVisit: now.toISOString(),
                         visitCount: increment(1)
                     };
+                    
+                    let userStatus = 'active';
                     if (docSnap.exists()) {
+                        const existingData = docSnap.data();
+                        userStatus = existingData.status || 'active';
+                        
+                        if (userStatus === 'blocked' && existingData.unblockAt) {
+                            const unblockDate = existingData.unblockAt.toDate ? existingData.unblockAt.toDate() : new Date(existingData.unblockAt);
+                            if (new Date() > unblockDate) {
+                                userStatus = 'active';
+                                userData.status = 'active';
+                                userData.unblockAt = null;
+                            }
+                        }
+                        
                         await updateDoc(userDocRef, userData);
-                        const currentVisits = (docSnap.data().visitCount || 0) + 1;
+                        const currentVisits = (existingData.visitCount || 0) + 1;
                         if (currentVisits % 5 === 0 && !localStorage.getItem('userInfoShown')) {
-                            setTimeout(() => userInfoSection.classList.add('visible'), 1000);
+                            setTimeout(() => {
+                                userInfoSection.classList.add('visible');
+                                updateUserStatusBadge(userStatus);
+                            }, 1000);
                         }
                     } else {
                         userData.createdAt = serverTimestamp();
@@ -1330,14 +1395,34 @@
                         setTimeout(() => {
                             if (!localStorage.getItem('userInfoShown')) {
                                 userInfoSection.classList.add('visible');
+                                updateUserStatusBadge('active');
                             }
                         }, 1000);
                     }
+                    
                     const fullName = user.first_name + (user.last_name ? ' ' + user.last_name : '');
                     if (welcomeUserName) welcomeUserName.textContent = `Welcome, ${fullName}!`;
                     if (userTelegramName) userTelegramName.textContent = fullName;
                     if (userChatId) userChatId.textContent = user.id;
                     if (userUsername) userUsername.textContent = user.username ? '@' + user.username : 'No username';
+                    
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        if (data.firstVisit) {
+                            const date = new Date(data.firstVisit);
+                            userFirstVisit.textContent = date.toLocaleString('bn-BD');
+                        }
+                        if (data.createdAt) {
+                            const date = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+                            userCreatedAt.textContent = date.toLocaleString('bn-BD');
+                        }
+                        updateUserStatusBadge(data.status || 'active');
+                    } else {
+                        userFirstVisit.textContent = now.toLocaleString('bn-BD');
+                        userCreatedAt.textContent = now.toLocaleString('bn-BD');
+                        updateUserStatusBadge('active');
+                    }
+                    
                 } catch (error) { console.error("Error saving or updating user data:", error); }
             };
             
@@ -1364,28 +1449,12 @@
                     } else {
                         await logVisit(null);
                     }
-                    
-                    if (tg.BackButton) {
-                        tg.BackButton.onClick(navigateToHome);
-                    }
                 } else {
                     await logVisit(null);
                 }
                 await Promise.all([renderSocialLinks(), setupFilters()]);
                 await loadWelcomePopupSettings();
-                
-                // Deep link support checking router query parameter
-                const urlParams = new URLSearchParams(window.location.search);
-                const queryId = urlParams.get('id');
-                
                 await fetchAndRenderMovies(true);
-
-                if (queryId) {
-                    history.replaceState({ view: 'details', id: queryId }, '', `?id=${queryId}`);
-                    showDetailsView(queryId);
-                } else {
-                    history.replaceState({ view: 'home' }, '', window.location.pathname);
-                }
                 console.log("App initialization complete");
             };
 
@@ -1423,67 +1492,25 @@
             movieGrid.addEventListener('click', (e) => {
                 const card = e.target.closest('.movie-card');
                 if (card && card.dataset.movieId) {
-                    navigateToDetails(card.dataset.movieId);
+                    console.log('Movie card clicked, ID:', card.dataset.movieId);
+                    openMovieDetails(card.dataset.movieId);
                 }
             });
 
-            homeLogo.addEventListener('click', () => {
-                searchBar.value = '';
-                currentFilter = 'All';
-                currentSort = 'updatedAt_desc';
-                sortBySelect.value = 'updatedAt_desc';
-                const activeFilter = filterContainer.querySelector('.filter.active');
-                if (activeFilter) activeFilter.classList.remove('active');
-                const defaultFilter = filterContainer.querySelector('[data-filter="All"]');
-                if (defaultFilter) defaultFilter.classList.add('active');
-                fetchAndRenderMovies(true);
-            });
+            homeLogo.addEventListener('click', () => window.location.reload());
 
             window.addEventListener('scroll', () => {
-                if (homeView.style.display === 'none' || movieGrid.classList.contains('list-view') || isFetchingMore || !lastVisible) return;
+                if (movieGrid.classList.contains('list-view') || isFetchingMore || !lastVisible) return;
                 const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
                 if (clientHeight + scrollTop >= scrollHeight - 300) {
                     fetchAndRenderMovies(false);
                 }
             });
 
-            document.getElementById('close-user-info-btn').addEventListener('click', () => {
+            window.closeUserInfo = () => {
                 userInfoSection.classList.remove('visible');
                 localStorage.setItem('userInfoShown', 'true');
-            });
-
-            document.getElementById('copy-tg-name-btn').addEventListener('click', (e) => {
-                copyToClipboard(userTelegramName.textContent, e.currentTarget);
-            });
-
-            document.getElementById('copy-chat-id-btn').addEventListener('click', (e) => {
-                copyToClipboard(userChatId.textContent, e.currentTarget);
-            });
-
-            // Details View Button Bindings
-            detailsBackBtn.addEventListener('click', navigateToHome);
-            detailsLogoText.addEventListener('click', navigateToHome);
-            errorGoHomeBtn.addEventListener('click', navigateToHome);
-
-            trailerCloseBtn.addEventListener('click', () => {
-                modalOverlay.classList.remove('visible');
-                trailerIframe.src = '';
-            });
-
-            modalOverlay.addEventListener('click', (e) => {
-                if (e.target === modalOverlay) {
-                    modalOverlay.classList.remove('visible');
-                    trailerIframe.src = '';
-                }
-            });
-
-            document.getElementById('details-downloads').addEventListener('click', function(e) {
-                const header = e.target.closest('.season-accordion-header');
-                if (header) {
-                    const accordion = header.parentElement;
-                    accordion.classList.toggle('active');
-                }
-            });
+            };
 
             const handleConnectionChange = () => {
                 if (!navigator.onLine) {
@@ -1493,11 +1520,7 @@
                 }
             };
             
-            window.addEventListener('online', () => {
-                if(homeView.style.display !== 'none') {
-                    fetchAndRenderMovies(true);
-                }
-            });
+            window.addEventListener('online', () => window.location.reload());
             window.addEventListener('offline', handleConnectionChange);
             
             try {
