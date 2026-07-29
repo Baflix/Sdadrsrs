@@ -9,7 +9,7 @@
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default,es6,fetch"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; }
+        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --blue: #007bff; --danger: #dc3545; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; -webkit-tap-highlight-color: transparent; }
         body {
             background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
@@ -143,15 +143,14 @@
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
         .action-btn {
-            background: #007bff;
             color: #fff;
             text-decoration: none;
             padding: 12px 20px;
             border-radius: 8px;
-            transition: background 0.3s;
+            transition: all 0.3s;
             font-size: 0.95rem;
             font-weight: bold;
             cursor: pointer;
@@ -159,9 +158,13 @@
             align-items: center;
             gap: 8px;
             border: none;
+            flex: 1;
+            justify-content: center;
+            min-width: 120px;
         }
+        .action-btn.share { background: var(--blue); }
         .action-btn.copy { background: #6c757d; }
-        .action-btn:hover { opacity: 0.8; }
+        .action-btn:hover { opacity: 0.85; transform: translateY(-2px); }
 
         .download-btn {
             background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
@@ -342,7 +345,12 @@
         @media (min-width: 600px) {
             .movie-header { flex-direction: row; align-items: flex-start; }
             .movie-poster-large { max-width: 250px; flex-shrink: 0; }
-            .modal-content { width: 80%; }
+            .action-btn { flex: 0 1 auto; }
+        }
+        @media (max-width: 480px) {
+            .actions-section { flex-direction: column; }
+            .action-btn { width: 100%; }
+            .movie-title-large { font-size: 1.6rem; }
         }
     </style>
 </head>
@@ -379,12 +387,17 @@
                 <p class="movie-meta" id="detail-year"></p>
                 <p class="movie-meta" id="detail-language"></p>
                 <p class="movie-meta" id="detail-series-info"></p>
+                
                 <div id="detail-trailer-container"></div>
             </div>
         </div>
 
         <div class="movie-description-full" id="detail-description"></div>
+
+        <!-- Actions: Share & Copy (উপরে) -->
         <div class="actions-section" id="detail-actions"></div>
+
+        <!-- Downloads (নিচে) -->
         <div class="downloads-section" id="detail-downloads"></div>
     </div>
 
@@ -461,7 +474,9 @@
                 if (url.includes('t.me/')) {
                     try { tgApp.openTelegramLink(url); } catch (e) { tgApp.openLink(url); }
                 } else { tgApp.openLink(url); }
-            } else { window.open(url, '_blank'); }
+            } else { 
+                window.open(url, '_blank'); 
+            }
         };
 
         const incrementDownloadCount = async (movieId) => {
@@ -500,15 +515,18 @@
             document.body.removeChild(textArea);
         };
 
-        // Redirects smoothly back to index.html route preserving state
         const goHome = () => {
-            const params = new URLSearchParams(window.location.search);
-            const id = params.get('id');
-            const homeUrl = 'index.html' + (id ? `?id=${id}` : '');
-            window.location.href = homeUrl;
+            if (window.parent && typeof window.parent.handleSpaBack === 'function') {
+                window.parent.handleSpaBack();
+            } else {
+                const currentPath = window.location.pathname;
+                const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+                window.location.href = `${basePath}index.html`;
+            }
         };
 
         window.goHome = goHome;
+
         backBtn.addEventListener('click', goHome);
         detailsLogo.addEventListener('click', goHome);
 
@@ -529,10 +547,36 @@
             return params.get('id');
         };
 
+        // ========== ডিপ লিংক তৈরি করার ফাংশন (Telegram Mini App এর জন্য) ==========
+        const generateDeepLink = (movieId, movieTitle) => {
+            const tgApp = window.Telegram?.WebApp;
+            
+            // যদি Telegram WebApp এর মধ্যে থাকে (Mini App)
+            if (tgApp && tgApp.initData) {
+                // Telegram Mini App এর ডিপ লিংক
+                // বটের ইউজারনেম ডাইনামিক বা সেট করা
+                const botUsername = 'Baflix_Movie_Bot';
+                return `https://t.me/${botUsername}?startapp=movie_${movieId}`;
+            }
+            
+            // ব্রাউজারে খোলার জন্য (Web)
+            const currentPath = window.location.pathname;
+            const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+            return `${basePath}index.html?id=${movieId}`;
+        };
+
         const loadMovieDetails = async (movieId) => {
             if (!movieId) {
                 loadingIndicator.style.display = 'none';
                 errorMessage.style.display = 'block';
+                return;
+            }
+
+            if (window.parent && window.parent.preloadedMovieData && window.parent.preloadedMovieData.id === movieId) {
+                console.log('Using preloaded movie data from parent memory');
+                renderMovieDetails(window.parent.preloadedMovieData);
+                loadingIndicator.style.display = 'none';
+                detailsContainer.style.display = 'block';
                 return;
             }
 
@@ -554,6 +598,7 @@
                 renderMovieDetails(movie);
                 loadingIndicator.style.display = 'none';
                 detailsContainer.style.display = 'block';
+
             } catch (error) {
                 console.error("Error loading movie:", error);
                 loadingIndicator.style.display = 'none';
@@ -605,27 +650,66 @@
                 trailerContainer.appendChild(trailerBtn);
             }
 
+            // ========== ডিপ লিংক তৈরি করা (শুধু Telegram Mini App এর জন্য) ==========
+            const tgApp = window.Telegram?.WebApp;
+            let deepLinkUrl;
+            
+            if (tgApp && tgApp.initData) {
+                // Telegram Mini App - ডিপ লিংক
+                const botUsername = 'Baflix_Movie_Bot';
+                deepLinkUrl = `https://t.me/${botUsername}?startapp=movie_${movie.id}`;
+            } else {
+                // Web Browser - সাধারণ URL
+                const currentPath = window.location.pathname;
+                const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+                deepLinkUrl = `${basePath}index.html?id=${movie.id}`;
+            }
+            
+            // Actions: Share & Copy
             const actionsContainer = document.getElementById('detail-actions');
             actionsContainer.innerHTML = '';
 
-            const shareUrl = window.location.href;
-            const shareMessage = `🎬 "${movie.title}" Watch now on Baflix!\n\n${shareUrl}`;
+            const shareMessage = `🎬 "${movie.title}" Watch now on Baflix!\n\n${deepLinkUrl}`;
 
+            // Share Button
             const shareBtn = document.createElement('button');
-            shareBtn.className = 'action-btn';
+            shareBtn.className = 'action-btn share';
             shareBtn.innerHTML = `<i class="fas fa-share-alt"></i> Share`;
             shareBtn.onclick = () => {
-                const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareMessage)}`;
-                openSafeLink(telegramShareUrl);
+                // Telegram Mini App এর ভিতরে শেয়ার
+                if (tgApp && tgApp.initData) {
+                    const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(deepLinkUrl)}&text=${encodeURIComponent(shareMessage)}`;
+                    openSafeLink(telegramShareUrl);
+                } else {
+                    // Web Share API
+                    if (navigator.share) {
+                        navigator.share({
+                            title: movie.title,
+                            text: shareMessage,
+                            url: deepLinkUrl
+                        }).catch(() => {});
+                    } else {
+                        copyToClipboard(deepLinkUrl, shareBtn);
+                        shareBtn.innerHTML = `<i class="fas fa-check"></i> Link Copied!`;
+                        setTimeout(() => {
+                            shareBtn.innerHTML = `<i class="fas fa-share-alt"></i> Share`;
+                        }, 2000);
+                    }
+                }
             };
             actionsContainer.appendChild(shareBtn);
 
+            // Copy Button (ডিপ লিংক কপি করবে)
             const copyBtn = document.createElement('button');
             copyBtn.className = 'action-btn copy';
             copyBtn.innerHTML = `<i class="fas fa-copy"></i> Copy Link`;
-            copyBtn.onclick = (e) => copyToClipboard(shareUrl, e.currentTarget);
+            copyBtn.onclick = (e) => {
+                // Telegram Mini App এ থাকলে ডিপ লিংক কপি হবে
+                copyToClipboard(deepLinkUrl, e.currentTarget);
+            };
             actionsContainer.appendChild(copyBtn);
 
+            // Downloads Section
             const downloadsContainer = document.getElementById('detail-downloads');
             downloadsContainer.innerHTML = '';
 
@@ -734,7 +818,7 @@
                 });
             }
 
-            const tgApp = window.Telegram?.WebApp;
+            // Telegram BackButton
             if (tgApp && tgApp.BackButton) {
                 tgApp.BackButton.onClick(goHome);
                 tgApp.BackButton.show();
