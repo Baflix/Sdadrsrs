@@ -1164,7 +1164,10 @@
                     if (url.includes('t.me/')) {
                         try { tgApp.openTelegramLink(url); } catch (e) { tgApp.openLink(url); }
                     } else { tgApp.openLink(url); }
-                } else { window.open(url, '_blank'); }
+                } else { 
+                    // Browser - open in new tab
+                    window.open(url, '_blank'); 
+                }
             };
 
             // ============================================
@@ -1173,9 +1176,9 @@
             const generateShortLink = async (targetUrl) => {
                 try {
                     const encodedUrl = encodeURIComponent(targetUrl);
-                    const alias = 'Baflix_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
                     
-                    const apiUrl = `https://api.gplinks.com/api?api=${GPLINKS_API_KEY}&url=${encodedUrl}&alias=${alias}`;
+                    // প্রথমে সরাসরি API কল করি
+                    const apiUrl = `https://api.gplinks.com/api?api=${GPLINKS_API_KEY}&url=${encodedUrl}`;
                     
                     console.log('📤 Generating short link...');
                     console.log('📤 API URL:', apiUrl);
@@ -1194,16 +1197,15 @@
                     if (data.status === 'success' && data.shortenedUrl) {
                         console.log('✅ Short link:', data.shortenedUrl);
                         return data.shortenedUrl;
-                    } else if (data.status === 'error') {
-                        console.error('❌ API Error:', data.message);
-                        return targetUrl;
                     } else {
-                        console.error('❌ Unknown response:', data);
+                        console.error('❌ API Error:', data);
+                        // Fallback: original URL
                         return targetUrl;
                     }
                     
                 } catch (error) {
                     console.error('❌ GPLinks API error:', error);
+                    // Fallback: original URL
                     return targetUrl;
                 }
             };
@@ -1211,18 +1213,29 @@
             // ===== HANDLE PREMIUM CLAIM =====
             const handlePremiumClaim = async () => {
                 const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('premium_claim') === 'true') {
+                const claimParam = urlParams.get('premium_claim');
+                
+                console.log('🔍 Checking premium claim:', claimParam);
+                
+                if (claimParam === 'true') {
                     const uid = urlParams.get('uid');
                     const platform = urlParams.get('platform') || 'browser';
+                    
+                    console.log('👤 User ID:', uid);
+                    console.log('📱 Platform:', platform);
                     
                     if (uid) {
                         try {
                             const userRef = doc(db, 'telegramUsers', uid);
                             const userDoc = await getDoc(userRef);
                             
+                            console.log('📄 User doc exists:', userDoc.exists());
+                            
                             if (userDoc.exists()) {
                                 const now = new Date();
                                 const premiumUntilDate = new Date(now.getTime() + (PREMIUM_DURATION_HOURS * 60 * 60 * 1000));
+                                
+                                console.log('⏰ Premium until:', premiumUntilDate);
                                 
                                 await updateDoc(userRef, {
                                     premiumUntil: premiumUntilDate.toISOString(),
@@ -1236,6 +1249,7 @@
                                     durationHours: PREMIUM_DURATION_HOURS
                                 });
                                 
+                                // Clean URL
                                 const newUrl = window.location.pathname + window.location.hash;
                                 window.history.replaceState({}, '', newUrl);
                                 
@@ -1243,11 +1257,16 @@
                                 
                                 await loadUserData(uid);
                                 return true;
+                            } else {
+                                console.error('❌ User not found in database');
+                                showToast('❌ User not found. Please try again.', 'error');
                             }
                         } catch (error) {
-                            console.error('Error handling premium claim:', error);
+                            console.error('❌ Error handling premium claim:', error);
                             showToast('❌ Failed to unlock premium. Please try again.', 'error');
                         }
+                    } else {
+                        console.error('❌ No UID found in URL');
                     }
                 }
                 return false;
@@ -1261,6 +1280,7 @@
                     
                     if (userDoc.exists()) {
                         const data = userDoc.data();
+                        console.log('📄 User data loaded:', data);
                         
                         if (data.premiumUntil) {
                             const premiumDate = new Date(data.premiumUntil);
@@ -1277,10 +1297,12 @@
                                     userPremiumStatus.textContent = 'Active until ' + premiumDate.toLocaleString();
                                 }
                                 startPremiumTimer();
+                                console.log('✅ Premium is ACTIVE');
                                 return true;
                             }
                         }
                         
+                        // Not premium or expired
                         isPremiumActive = false;
                         window.isPremiumActive = false;
                         premiumStatusLabel.textContent = '🔓 Free';
@@ -1295,6 +1317,7 @@
                             premiumTimerInterval = null;
                         }
                         premiumTimeDisplay.textContent = '--:--:--';
+                        console.log('❌ Premium is NOT active');
                         return false;
                     }
                 } catch (error) {
@@ -1412,6 +1435,7 @@
                     
                     console.log('🔗 Short URL:', shortUrl);
                     
+                    // Open the short link
                     openSafeLink(shortUrl);
                     
                     premiumUnlockBtn.innerHTML = '<i class="fas fa-external-link-alt"></i> Link Generated!';
@@ -2002,9 +2026,11 @@
             };
 
             const initializeApp = async (tgInstance) => {
-                console.log("Initializing app...");
+                console.log("🚀 Initializing app...");
                 
-                await handlePremiumClaim();
+                // প্রথমে premium claim চেক করুন
+                const claimed = await handlePremiumClaim();
+                console.log('📌 Premium claim handled:', claimed);
                 
                 if (tgInstance) {
                     tg = tgInstance;
@@ -2036,7 +2062,7 @@
                 await Promise.all([renderSocialLinks(), setupFilters()]);
                 await loadWelcomePopupSettings();
                 await fetchAndRenderMovies(true);
-                console.log("App initialization complete");
+                console.log("✅ App initialization complete");
             };
 
             // ===== EVENT LISTENERS =====
