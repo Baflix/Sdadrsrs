@@ -9,7 +9,7 @@
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default,es6,fetch"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --dark-green: #218838; --blue: #007bff; --danger: #dc3545; }
+        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --dark-green: #218838; --blue: #007bff; --danger: #dc3545; --gold: #ffd700; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; -webkit-tap-highlight-color: transparent; }
         body {
             background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
@@ -101,6 +101,137 @@
         .filter-container { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
         .filter { padding: 8px 15px; border-radius: 20px; background: var(--light-dark); color: var(--text); cursor: pointer; transition: background 0.3s, transform 0.2s; }
         .filter.active { background: var(--primary); font-weight: bold; }
+
+        /* ===== PREMIUM MODAL ===== */
+        .premium-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            padding: 20px;
+        }
+        .premium-modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .premium-modal {
+            background: linear-gradient(145deg, #1a1a1a, #2a1a1a);
+            border-radius: 24px;
+            max-width: 420px;
+            width: 100%;
+            padding: 35px 30px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(255, 215, 0, 0.15);
+            transform: scale(0.9) translateY(30px);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            text-align: center;
+        }
+        .premium-modal-overlay.visible .premium-modal {
+            transform: scale(1) translateY(0);
+        }
+        .premium-modal-close {
+            position: absolute;
+            top: 12px;
+            right: 15px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.8rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .premium-modal-close:hover {
+            background: var(--primary);
+            color: #fff;
+            transform: rotate(90deg);
+        }
+        .premium-modal .icon {
+            font-size: 4rem;
+            color: var(--gold);
+            margin-bottom: 15px;
+            display: block;
+        }
+        .premium-modal h2 {
+            color: var(--gold);
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        .premium-modal .subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .premium-modal .timer-display {
+            background: rgba(0,0,0,0.4);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            margin-bottom: 20px;
+        }
+        .premium-modal .timer-display .label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        .premium-modal .timer-display .time {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--gold);
+            font-variant-numeric: tabular-nums;
+        }
+        .premium-modal .premium-btn {
+            background: linear-gradient(45deg, #ffd700, #f5a623);
+            color: #000;
+            border: none;
+            padding: 16px 30px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            justify-content: center;
+        }
+        .premium-modal .premium-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 30px rgba(255, 215, 0, 0.5);
+        }
+        .premium-modal .premium-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .premium-modal .premium-btn i { font-size: 1.2rem; }
+        .premium-modal .status-text {
+            margin-top: 15px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        .premium-modal .status-text .highlight {
+            color: var(--gold);
+            font-weight: bold;
+        }
 
         .user-info-section {
             background: linear-gradient(145deg, #1a1a1a, #222);
@@ -204,8 +335,8 @@
         .status-badge.active { background: var(--green); color: #fff; }
         .status-badge.blocked { background: var(--danger); color: #fff; }
         .status-badge.inactive { background: #ffc107; color: #000; }
+        .status-badge.premium { background: var(--gold); color: #000; }
 
-        /* Request Button */
         .request-btn-container {
             text-align: center;
             margin: 0 20px 20px;
@@ -231,7 +362,6 @@
         }
         .request-btn:active { transform: translateY(0); }
 
-        /* Request Modal */
         .request-modal-overlay {
             position: fixed;
             top: 0;
@@ -622,10 +752,43 @@
             display: none;
         }
 
+        .toast-notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            color: #fff;
+            padding: 15px 25px;
+            border-radius: 12px;
+            z-index: 9999;
+            display: none;
+            animation: toastIn 0.4s ease;
+            border: 1px solid rgba(255,215,0,0.2);
+            text-align: center;
+            max-width: 90%;
+        }
+        .toast-notification.show {
+            display: block;
+        }
+        .toast-notification .toast-icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+        .toast-notification .toast-icon.success { color: var(--green); }
+        .toast-notification .toast-icon.error { color: var(--danger); }
+        .toast-notification .toast-icon.info { color: var(--blue); }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(30px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
         @media (min-width: 600px) { .modal-content { width: 80%; } }
         @media (max-width: 500px) {
             .request-modal { padding: 20px; }
             .request-modal h2 { font-size: 1.2rem; }
+            .premium-modal { padding: 25px 20px; }
+            .premium-modal .timer-display .time { font-size: 2rem; }
         }
     </style>
 </head>
@@ -707,6 +870,13 @@
                         <div class="detail-value small" id="user-created-at"></div>
                     </div>
                 </div>
+                <div class="user-detail-item" id="premium-detail-item" style="display:none;">
+                    <div class="detail-icon" style="background:var(--gold);"><i class="fas fa-crown"></i></div>
+                    <div class="detail-content">
+                        <div class="detail-label">Premium Status</div>
+                        <div class="detail-value small" id="user-premium-status">Active</div>
+                    </div>
+                </div>
             </div>
             <div class="user-info-close">
                 <button class="close-user-info" onclick="window.closeUserInfo()">
@@ -715,14 +885,43 @@
             </div>
         </div>
 
-        <!-- Request Button (NEW) -->
+        <!-- ===== PREMIUM MODAL ===== -->
+        <div class="premium-modal-overlay" id="premium-modal-overlay">
+            <div class="premium-modal">
+                <button class="premium-modal-close" id="premium-modal-close">&times;</button>
+                <span class="icon">👑</span>
+                <h2>✨ Unlock Premium</h2>
+                <p class="subtitle">Get <strong>12 hours</strong> of premium access to download movies & series without any restrictions!</p>
+                
+                <div class="timer-display" id="premium-timer-display">
+                    <div class="label">⏳ Premium Time Remaining</div>
+                    <div class="time" id="premium-time-display">--:--:--</div>
+                </div>
+                
+                <button class="premium-btn" id="premium-unlock-btn">
+                    <i class="fas fa-unlock"></i> Unlock Premium (12 Hours)
+                </button>
+                
+                <div class="status-text" id="premium-status-text">
+                    Current Status: <span class="highlight" id="premium-status-label">🔓 Free</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div class="toast-notification" id="toast-notification">
+            <span class="toast-icon" id="toast-icon">✅</span>
+            <span id="toast-message">Premium unlocked!</span>
+        </div>
+
+        <!-- Request Button -->
         <div class="request-btn-container">
             <button class="request-btn" id="open-request-modal-btn">
                 <i class="fas fa-plus-circle"></i> Movie Request
             </button>
         </div>
 
-        <!-- Request Modal (NEW) -->
+        <!-- Request Modal -->
         <div class="request-modal-overlay" id="request-modal-overlay">
             <div class="request-modal">
                 <button class="request-modal-close" id="request-modal-close">&times;</button>
@@ -837,6 +1036,8 @@
             const userFirstVisit = document.getElementById('user-first-visit');
             const userCreatedAt = document.getElementById('user-created-at');
             const userStatusBadge = document.getElementById('user-status-badge');
+            const premiumDetailItem = document.getElementById('premium-detail-item');
+            const userPremiumStatus = document.getElementById('user-premium-status');
 
             const welcomePopup = document.getElementById('welcome-popup');
             const welcomePopupClose = document.getElementById('welcome-popup-close');
@@ -849,6 +1050,16 @@
             const spaMainView = document.getElementById('spa-main-view');
             const spaDetailsView = document.getElementById('spa-details-view');
             const detailsIframe = document.getElementById('details-iframe');
+
+            // ===== PREMIUM MODAL ELEMENTS =====
+            const premiumModalOverlay = document.getElementById('premium-modal-overlay');
+            const premiumModalClose = document.getElementById('premium-modal-close');
+            const premiumUnlockBtn = document.getElementById('premium-unlock-btn');
+            const premiumTimeDisplay = document.getElementById('premium-time-display');
+            const premiumStatusLabel = document.getElementById('premium-status-label');
+            const toastNotification = document.getElementById('toast-notification');
+            const toastMessage = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
 
             // ===== REQUEST MODAL ELEMENTS =====
             const requestModalOverlay = document.getElementById('request-modal-overlay');
@@ -875,9 +1086,62 @@
             let hasShownPopup = false;
             let savedScrollPosition = 0;
             let currentUser = null;
+            let currentUserId = null;
+            let currentPlatform = 'browser';
+
+            // ===== PREMIUM VARIABLES =====
+            const PREMIUM_DURATION_HOURS = 12;
+            const GPLINKS_API_KEY = 'a8be7fa2b1522d12494d647c37361177fadf6975';
+            let premiumTimerInterval = null;
+            let premiumUntil = null;
+            let isPremiumActive = false;
+            let pendingDownloadAction = null;
 
             document.body.addEventListener('contextmenu', (e) => e.preventDefault());
-            
+
+            // ===== TOAST FUNCTION =====
+            const showToast = (message, type = 'success') => {
+                const iconMap = {
+                    success: '✅',
+                    error: '❌',
+                    info: 'ℹ️',
+                    warning: '⚠️'
+                };
+                toastIcon.textContent = iconMap[type] || '✅';
+                toastIcon.className = 'toast-icon ' + type;
+                toastMessage.textContent = message;
+                toastNotification.classList.add('show');
+                clearTimeout(toastNotification._timeout);
+                toastNotification._timeout = setTimeout(() => {
+                    toastNotification.classList.remove('show');
+                }, 4000);
+            };
+
+            // ===== BROWSER ID MANAGEMENT =====
+            const getBrowserId = () => {
+                let id = localStorage.getItem('baflix_browser_id');
+                if (!id) {
+                    id = 'browser_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
+                    localStorage.setItem('baflix_browser_id', id);
+                }
+                return id;
+            };
+
+            // ===== GET USER IDENTIFIER =====
+            const getUserIdentifier = () => {
+                const tgApp = window.Telegram?.WebApp;
+                if (tgApp && tgApp.initData && tgApp.initDataUnsafe?.user?.id) {
+                    return {
+                        id: String(tgApp.initDataUnsafe.user.id),
+                        platform: 'tg'
+                    };
+                }
+                return {
+                    id: getBrowserId(),
+                    platform: 'browser'
+                };
+            };
+
             const parseEpisodeNumber = (epNumStr) => {
                 const str = String(epNumStr).trim();
                 if (str.includes('-')) {
@@ -903,6 +1167,272 @@
                 } else { window.open(url, '_blank'); }
             };
 
+            // ============================================
+            // ===== GENERATE SHORT LINK (GPLinks) =====
+            // ============================================
+            const generateShortLink = async (targetUrl) => {
+                try {
+                    const encodedUrl = encodeURIComponent(targetUrl);
+                    const alias = 'Baflix_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+                    
+                    const apiUrl = `https://api.gplinks.com/api?api=${GPLINKS_API_KEY}&url=${encodedUrl}&alias=${alias}`;
+                    
+                    console.log('📤 Generating short link...');
+                    console.log('📤 API URL:', apiUrl);
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    console.log('📥 Response:', data);
+                    
+                    if (data.status === 'success' && data.shortenedUrl) {
+                        console.log('✅ Short link:', data.shortenedUrl);
+                        return data.shortenedUrl;
+                    } else if (data.status === 'error') {
+                        console.error('❌ API Error:', data.message);
+                        return targetUrl;
+                    } else {
+                        console.error('❌ Unknown response:', data);
+                        return targetUrl;
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ GPLinks API error:', error);
+                    return targetUrl;
+                }
+            };
+
+            // ===== HANDLE PREMIUM CLAIM =====
+            const handlePremiumClaim = async () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('premium_claim') === 'true') {
+                    const uid = urlParams.get('uid');
+                    const platform = urlParams.get('platform') || 'browser';
+                    
+                    if (uid) {
+                        try {
+                            const userRef = doc(db, 'telegramUsers', uid);
+                            const userDoc = await getDoc(userRef);
+                            
+                            if (userDoc.exists()) {
+                                const now = new Date();
+                                const premiumUntilDate = new Date(now.getTime() + (PREMIUM_DURATION_HOURS * 60 * 60 * 1000));
+                                
+                                await updateDoc(userRef, {
+                                    premiumUntil: premiumUntilDate.toISOString(),
+                                    totalUnlocks: increment(1)
+                                });
+                                
+                                await addDoc(collection(db, 'premium_logs'), {
+                                    userId: uid,
+                                    platform: platform,
+                                    unlockedAt: serverTimestamp(),
+                                    durationHours: PREMIUM_DURATION_HOURS
+                                });
+                                
+                                const newUrl = window.location.pathname + window.location.hash;
+                                window.history.replaceState({}, '', newUrl);
+                                
+                                showToast('🎉 Premium unlocked! 12 hours added.', 'success');
+                                
+                                await loadUserData(uid);
+                                return true;
+                            }
+                        } catch (error) {
+                            console.error('Error handling premium claim:', error);
+                            showToast('❌ Failed to unlock premium. Please try again.', 'error');
+                        }
+                    }
+                }
+                return false;
+            };
+
+            // ===== LOAD USER DATA =====
+            const loadUserData = async (uid) => {
+                try {
+                    const userRef = doc(db, 'telegramUsers', uid);
+                    const userDoc = await getDoc(userRef);
+                    
+                    if (userDoc.exists()) {
+                        const data = userDoc.data();
+                        
+                        if (data.premiumUntil) {
+                            const premiumDate = new Date(data.premiumUntil);
+                            if (premiumDate > new Date()) {
+                                premiumUntil = premiumDate;
+                                isPremiumActive = true;
+                                window.isPremiumActive = true;
+                                premiumStatusLabel.textContent = '👑 Premium';
+                                premiumStatusLabel.style.color = 'var(--gold)';
+                                userStatusBadge.className = 'status-badge premium';
+                                userStatusBadge.textContent = '👑 Premium';
+                                if (premiumDetailItem) {
+                                    premiumDetailItem.style.display = 'flex';
+                                    userPremiumStatus.textContent = 'Active until ' + premiumDate.toLocaleString();
+                                }
+                                startPremiumTimer();
+                                return true;
+                            }
+                        }
+                        
+                        isPremiumActive = false;
+                        window.isPremiumActive = false;
+                        premiumStatusLabel.textContent = '🔓 Free';
+                        premiumStatusLabel.style.color = '';
+                        userStatusBadge.className = 'status-badge active';
+                        userStatusBadge.textContent = '✅ Active';
+                        if (premiumDetailItem) {
+                            premiumDetailItem.style.display = 'none';
+                        }
+                        if (premiumTimerInterval) {
+                            clearInterval(premiumTimerInterval);
+                            premiumTimerInterval = null;
+                        }
+                        premiumTimeDisplay.textContent = '--:--:--';
+                        return false;
+                    }
+                } catch (error) {
+                    console.error('Error loading user data:', error);
+                }
+                return false;
+            };
+
+            // ===== START PREMIUM TIMER =====
+            const startPremiumTimer = () => {
+                if (premiumTimerInterval) {
+                    clearInterval(premiumTimerInterval);
+                }
+                
+                premiumTimerInterval = setInterval(() => {
+                    if (!premiumUntil) {
+                        clearInterval(premiumTimerInterval);
+                        return;
+                    }
+                    
+                    const now = new Date();
+                    const diff = premiumUntil - now;
+                    
+                    if (diff <= 0) {
+                        clearInterval(premiumTimerInterval);
+                        premiumTimerInterval = null;
+                        isPremiumActive = false;
+                        window.isPremiumActive = false;
+                        premiumStatusLabel.textContent = '🔓 Free';
+                        premiumStatusLabel.style.color = '';
+                        userStatusBadge.className = 'status-badge active';
+                        userStatusBadge.textContent = '✅ Active';
+                        if (premiumDetailItem) {
+                            premiumDetailItem.style.display = 'none';
+                        }
+                        premiumTimeDisplay.textContent = 'Expired';
+                        showToast('⏰ Premium access has expired.', 'warning');
+                        return;
+                    }
+                    
+                    const hours = Math.floor(diff / (1000 * 60 * 60));
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                    
+                    premiumTimeDisplay.textContent = 
+                        String(hours).padStart(2, '0') + ':' +
+                        String(minutes).padStart(2, '0') + ':' +
+                        String(seconds).padStart(2, '0');
+                }, 1000);
+            };
+
+            // ===== CHECK PREMIUM BEFORE DOWNLOAD =====
+            const checkPremiumBeforeDownload = (downloadAction) => {
+                if (isPremiumActive) {
+                    if (typeof downloadAction === 'function') {
+                        downloadAction();
+                    }
+                } else {
+                    pendingDownloadAction = downloadAction;
+                    openPremiumModal();
+                }
+            };
+
+            // ===== OPEN PREMIUM MODAL =====
+            const openPremiumModal = () => {
+                premiumModalOverlay.classList.add('visible');
+                document.body.style.overflow = 'hidden';
+                if (isPremiumActive && premiumUntil) {
+                    const now = new Date();
+                    const diff = premiumUntil - now;
+                    if (diff > 0) {
+                        const hours = Math.floor(diff / (1000 * 60 * 60));
+                        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                        premiumTimeDisplay.textContent = 
+                            String(hours).padStart(2, '0') + ':' +
+                            String(minutes).padStart(2, '0') + ':' +
+                            String(seconds).padStart(2, '0');
+                        premiumStatusLabel.textContent = '👑 Premium';
+                        premiumStatusLabel.style.color = 'var(--gold)';
+                    }
+                } else {
+                    premiumTimeDisplay.textContent = '--:--:--';
+                    premiumStatusLabel.textContent = '🔓 Free';
+                    premiumStatusLabel.style.color = '';
+                }
+            };
+
+            const closePremiumModal = () => {
+                premiumModalOverlay.classList.remove('visible');
+                document.body.style.overflow = '';
+            };
+
+            premiumModalClose.addEventListener('click', closePremiumModal);
+            premiumModalOverlay.addEventListener('click', (e) => {
+                if (e.target === premiumModalOverlay) closePremiumModal();
+            });
+
+            // ===== PREMIUM UNLOCK BUTTON =====
+            premiumUnlockBtn.addEventListener('click', async () => {
+                try {
+                    premiumUnlockBtn.disabled = true;
+                    premiumUnlockBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating link...';
+                    
+                    const userInfo = getUserIdentifier();
+                    currentUserId = userInfo.id;
+                    currentPlatform = userInfo.platform;
+                    
+                    const baseUrl = window.location.origin + window.location.pathname;
+                    const targetUrl = `${baseUrl}?premium_claim=true&uid=${currentUserId}&platform=${currentPlatform}`;
+                    
+                    console.log('🎯 Target URL:', targetUrl);
+                    
+                    const shortUrl = await generateShortLink(targetUrl);
+                    
+                    console.log('🔗 Short URL:', shortUrl);
+                    
+                    openSafeLink(shortUrl);
+                    
+                    premiumUnlockBtn.innerHTML = '<i class="fas fa-external-link-alt"></i> Link Generated!';
+                    
+                    setTimeout(() => {
+                        premiumUnlockBtn.disabled = false;
+                        premiumUnlockBtn.innerHTML = '<i class="fas fa-unlock"></i> Unlock Premium (12 Hours)';
+                    }, 3000);
+                    
+                    setTimeout(() => {
+                        closePremiumModal();
+                    }, 1500);
+                    
+                } catch (error) {
+                    console.error('❌ Error generating premium link:', error);
+                    premiumUnlockBtn.disabled = false;
+                    premiumUnlockBtn.innerHTML = '<i class="fas fa-unlock"></i> Unlock Premium (12 Hours)';
+                    showToast('❌ Failed to generate premium link. Please try again.', 'error');
+                }
+            });
+
             // ===== REQUEST MODAL FUNCTIONS =====
             const openRequestModal = () => {
                 requestModalOverlay.classList.add('visible');
@@ -927,7 +1457,6 @@
                 if (e.target === requestModalOverlay) closeRequestModal();
             });
 
-            // Character counter with limit
             requestDesc.addEventListener('input', () => {
                 const len = requestDesc.value.length;
                 const max = 150;
@@ -943,7 +1472,6 @@
                 }
             });
 
-            // Request form submission
             requestFormModal.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
@@ -989,13 +1517,13 @@
                     
                 } catch (error) {
                     console.error("Error submitting request:", error);
-                    alert('Failed to submit request. Please try again.');
+                    showToast('❌ Failed to submit request. Please try again.', 'error');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
                 }
             });
 
-            // SPA ডিটেইলস ওপেন
+            // ===== SPA DETAILS OPEN =====
             const openMovieDetails = async (movieId) => {
                 savedScrollPosition = window.scrollY;
                 
@@ -1047,6 +1575,7 @@
                 }
             });
 
+            // ===== FETCH MOVIES =====
             const fetchAndRenderMovies = async (isInitial = false) => {
                 if (isFetchingMore) return;
                 isFetchingMore = true;
@@ -1340,6 +1869,9 @@
                 if (status === 'blocked') {
                     userStatusBadge.className = 'status-badge blocked';
                     userStatusBadge.textContent = '🚫 Blocked';
+                } else if (status === 'premium') {
+                    userStatusBadge.className = 'status-badge premium';
+                    userStatusBadge.textContent = '👑 Premium';
                 } else {
                     userStatusBadge.className = 'status-badge active';
                     userStatusBadge.textContent = '✅ Active';
@@ -1349,6 +1881,9 @@
             const saveOrUpdateTelegramUser = async (user) => {
                 if (!user || !user.id) return;
                 currentUser = user;
+                currentUserId = String(user.id);
+                currentPlatform = 'tg';
+                
                 const userDocRef = doc(db, "telegramUsers", String(user.id));
                 try {
                     const docSnap = await getDoc(userDocRef);
@@ -1368,6 +1903,13 @@
                     if (docSnap.exists()) {
                         const existingData = docSnap.data();
                         userStatus = existingData.status || 'active';
+                        
+                        if (existingData.premiumUntil) {
+                            const premiumDate = new Date(existingData.premiumUntil);
+                            if (premiumDate > now) {
+                                userStatus = 'premium';
+                            }
+                        }
                         
                         if (userStatus === 'blocked' && existingData.unblockAt) {
                             const unblockDate = existingData.unblockAt.toDate ? existingData.unblockAt.toDate() : new Date(existingData.unblockAt);
@@ -1416,12 +1958,33 @@
                             const date = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
                             userCreatedAt.textContent = date.toLocaleString('bn-BD');
                         }
-                        updateUserStatusBadge(data.status || 'active');
+                        if (data.premiumUntil) {
+                            const premiumDate = new Date(data.premiumUntil);
+                            if (premiumDate > new Date()) {
+                                updateUserStatusBadge('premium');
+                                if (premiumDetailItem) {
+                                    premiumDetailItem.style.display = 'flex';
+                                    userPremiumStatus.textContent = 'Active until ' + premiumDate.toLocaleString();
+                                }
+                            } else {
+                                updateUserStatusBadge(data.status || 'active');
+                                if (premiumDetailItem) {
+                                    premiumDetailItem.style.display = 'none';
+                                }
+                            }
+                        } else {
+                            updateUserStatusBadge(data.status || 'active');
+                            if (premiumDetailItem) {
+                                premiumDetailItem.style.display = 'none';
+                            }
+                        }
                     } else {
                         userFirstVisit.textContent = now.toLocaleString('bn-BD');
                         userCreatedAt.textContent = now.toLocaleString('bn-BD');
                         updateUserStatusBadge('active');
                     }
+                    
+                    await loadUserData(String(user.id));
                     
                 } catch (error) { console.error("Error saving or updating user data:", error); }
             };
@@ -1440,6 +2003,9 @@
 
             const initializeApp = async (tgInstance) => {
                 console.log("Initializing app...");
+                
+                await handlePremiumClaim();
+                
                 if (tgInstance) {
                     tg = tgInstance;
                     tg.expand();
@@ -1450,15 +2016,30 @@
                         await logVisit(null);
                     }
                 } else {
+                    const browserId = getBrowserId();
+                    currentUserId = browserId;
+                    currentPlatform = 'browser';
+                    
+                    try {
+                        const userRef = doc(db, 'telegramUsers', browserId);
+                        const userDoc = await getDoc(userRef);
+                        if (userDoc.exists()) {
+                            await loadUserData(browserId);
+                        }
+                    } catch (error) {
+                        console.error('Error loading browser user data:', error);
+                    }
+                    
                     await logVisit(null);
                 }
+                
                 await Promise.all([renderSocialLinks(), setupFilters()]);
                 await loadWelcomePopupSettings();
                 await fetchAndRenderMovies(true);
                 console.log("App initialization complete");
             };
 
-            // Event Listeners
+            // ===== EVENT LISTENERS =====
             searchForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 performSearch();
@@ -1492,8 +2073,10 @@
             movieGrid.addEventListener('click', (e) => {
                 const card = e.target.closest('.movie-card');
                 if (card && card.dataset.movieId) {
-                    console.log('Movie card clicked, ID:', card.dataset.movieId);
-                    openMovieDetails(card.dataset.movieId);
+                    const movieId = card.dataset.movieId;
+                    checkPremiumBeforeDownload(() => {
+                        openMovieDetails(movieId);
+                    });
                 }
             });
 
