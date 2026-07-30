@@ -415,7 +415,6 @@
             .movie-title-large { font-size: 1.6rem; }
         }
 
-        /* AD POPUP STYLES */
         .ad-popup-overlay {
             position: fixed;
             top:0; left:0; width:100%; height:100%;
@@ -594,7 +593,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // ===== VSHORT API CONFIGURATION =====
         const VSHORT_API = "c7d18a4a9d26ad6407fbd39fb85470d3c46f42d3";
         const VSHORT_URL = "https://vshort.xyz/api";
         const PREMIUM_HOURS = 12;
@@ -613,10 +611,6 @@
         let currentUserId = null;
         let currentMovieId = null;
         let hasPremium = false;
-
-        // ==========================================
-        // PREMIUM SYSTEM FUNCTIONS
-        // ==========================================
 
         async function checkPremiumStatus(userId) {
             if (!userId) return { hasPremium: false, data: null };
@@ -687,10 +681,6 @@
                 setTimeout(() => toast.remove(), 500);
             }, 5000);
         }
-
-        // ==========================================
-        // PREMIUM POPUP IN IFRAME
-        // ==========================================
 
         function showAdPopupInIframe(shortLink, onComplete) {
             const existing = document.querySelector('.ad-popup-overlay');
@@ -898,10 +888,6 @@
             });
         }
 
-        // ==========================================
-        // URL Verification Check
-        // ==========================================
-
         async function checkUrlForVerification() {
             const params = new URLSearchParams(window.location.search);
             const verify = params.get('verify');
@@ -948,10 +934,6 @@
             }
             return false;
         }
-
-        // ==========================================
-        // Original Functions
-        // ==========================================
 
         const parseEpisodeNumber = (epNumStr) => {
             const str = String(epNumStr).trim();
@@ -1079,7 +1061,7 @@
         };
 
         // ==========================================
-        // Load Movie Details (FIXED)
+        // Load Movie Details (SUPER FAST)
         // ==========================================
 
         const loadMovieDetails = async (movieId) => {
@@ -1095,43 +1077,41 @@
             // ✅ Try multiple sources for preloaded data
             let preloadedData = null;
             
-            // Method 1: Check parent window (when inside iframe)
+            // Method 1: Parent window
             try {
                 if (window.parent && window.parent.preloadedMovieData) {
                     preloadedData = window.parent.preloadedMovieData;
-                    console.log("✅ Got preloaded data from parent window:", preloadedData.title);
+                    console.log("✅ Got preloaded data from parent window");
                 }
-            } catch (e) {
-                console.log("⚠️ Cannot access parent window");
-            }
+            } catch (e) {}
             
-            // Method 2: Check current window
+            // Method 2: Current window
             if (!preloadedData && window.preloadedMovieData) {
                 preloadedData = window.preloadedMovieData;
-                console.log("✅ Got preloaded data from current window:", preloadedData.title);
+                console.log("✅ Got preloaded data from current window");
             }
             
-            // Method 3: Check localStorage
+            // Method 3: localStorage
             if (!preloadedData) {
                 try {
                     const stored = localStorage.getItem('preloadedMovieData_' + movieId);
                     if (stored) {
                         preloadedData = JSON.parse(stored);
-                        console.log("✅ Got preloaded data from localStorage:", preloadedData.title);
+                        console.log("✅ Got preloaded data from localStorage");
                     }
                 } catch (e) {}
             }
 
-            // If preloaded data found
+            // ✅ If preloaded data found → show instantly (NO LOADING)
             if (preloadedData && preloadedData.id === movieId) {
-                console.log("🎯 Using preloaded movie data");
-                renderMovieDetails(preloadedData);
+                console.log("🎯 Using preloaded movie data - FAST LOAD");
                 loadingIndicator.style.display = 'none';
+                renderMovieDetails(preloadedData);
                 detailsContainer.style.display = 'block';
                 return;
             }
 
-            // Fetch from Firebase
+            // ❌ If not found → fetch from Firebase
             console.log("⏳ Fetching movie from Firebase...");
             try {
                 const docSnap = await getDoc(doc(db, 'movies', movieId));
@@ -1148,13 +1128,12 @@
                     return;
                 }
 
-                // Save to localStorage for future
                 try {
                     localStorage.setItem('preloadedMovieData_' + movieId, JSON.stringify(movie));
                 } catch (e) {}
 
-                renderMovieDetails(movie);
                 loadingIndicator.style.display = 'none';
+                renderMovieDetails(movie);
                 detailsContainer.style.display = 'block';
 
             } catch (error) {
@@ -1438,7 +1417,7 @@
         };
 
         // ==========================================
-        // Initialize
+        // Initialize (SUPER FAST)
         // ==========================================
 
         const initializeDetails = async () => {
@@ -1447,7 +1426,7 @@
             const verified = await checkUrlForVerification();
             if (verified) {
                 console.log("✅ Verification complete, reloading...");
-                setTimeout(() => window.location.reload(), 1500);
+                setTimeout(() => window.location.reload(), 1000);
                 return;
             }
 
@@ -1467,10 +1446,10 @@
             console.log("🎬 Movie ID from URL:", movieId);
             
             if (movieId) {
-                // Small delay for smooth loading
+                // ✅ SUPER FAST - only 50ms delay
                 setTimeout(() => {
                     loadMovieDetails(movieId);
-                }, 300);
+                }, 50);
             } else {
                 console.log("❌ No movie ID found, going home");
                 goHome();
