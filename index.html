@@ -1091,6 +1091,7 @@
             // ===== PREMIUM VARIABLES =====
             const PREMIUM_DURATION_HOURS = 12;
             const VSHORT_API_KEY = 'c7d18a4a9d26ad6407fbd39fb85470d3c46f42d3';
+            const BOT_USERNAME = 'BaflixStreamBot';
             let premiumTimerInterval = null;
             let premiumUntil = null;
             let isPremiumActive = false;
@@ -1117,6 +1118,12 @@
                 }, 4000);
             };
 
+            // ===== CHECK IF IN TELEGRAM MINI APP =====
+            const isTelegramMiniApp = () => {
+                const webApp = window.Telegram?.WebApp;
+                return webApp && webApp.initData && webApp.initDataUnsafe?.user?.id;
+            };
+
             // ===== GET TELEGRAM USER ID =====
             const getTelegramUserId = () => {
                 const webApp = window.Telegram?.WebApp;
@@ -1124,6 +1131,12 @@
                     return String(webApp.initDataUnsafe.user.id);
                 }
                 return null;
+            };
+
+            // ===== REDIRECT TO MINI APP =====
+            const redirectToMiniApp = () => {
+                const miniAppUrl = `https://t.me/${BOT_USERNAME}?startapp=home`;
+                window.location.href = miniAppUrl;
             };
 
             const parseEpisodeNumber = (epNumStr) => {
@@ -1160,7 +1173,6 @@
                 try {
                     const encodedUrl = encodeURIComponent(targetUrl);
                     const alias = 'Baflix_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
-                    
                     const apiUrl = `https://vshort.xyz/api?api=${VSHORT_API_KEY}&url=${encodedUrl}&alias=${alias}`;
                     
                     console.log('📤 Generating short link...');
@@ -1184,7 +1196,6 @@
                         console.error('❌ API Error:', data);
                         return targetUrl;
                     }
-                    
                 } catch (error) {
                     console.error('❌ VShort API error:', error);
                     return targetUrl;
@@ -1200,6 +1211,7 @@
                 const uid = urlParams.get('uid');
                 
                 console.log('🔍 Checking premium claim...');
+                console.log('📌 Full URL:', window.location.href);
                 console.log('📌 premium_claim:', claimParam);
                 console.log('📌 uid:', uid);
                 
@@ -1213,6 +1225,10 @@
                         if (!userDoc.exists()) {
                             console.error('❌ User not found!');
                             showToast('❌ User not found. Please try again.', 'error');
+                            setTimeout(() => {
+                                const cleanUrl = window.location.origin + window.location.pathname;
+                                window.location.href = cleanUrl;
+                            }, 2000);
                             return false;
                         }
                         
@@ -1240,8 +1256,13 @@
                         showToast('🎉 Premium unlocked! 12 hours added.', 'success');
                         
                         await loadUserData(uid);
-                        return true;
                         
+                        // রিলোড করে মিনি অ্যাপ দেখান
+                        setTimeout(() => {
+                            window.location.href = cleanUrl;
+                        }, 1500);
+                        
+                        return true;
                     } catch (error) {
                         console.error('❌ Error:', error);
                         showToast('❌ Failed to unlock premium.', 'error');
@@ -1367,7 +1388,7 @@
             };
 
             // ============================================
-            // ===== CHECK PREMIUM =====
+            // ===== CHECK PREMIUM BEFORE DOWNLOAD =====
             // ============================================
             const checkPremiumBeforeDownload = (downloadAction) => {
                 if (isPremiumActive) {
@@ -1428,6 +1449,8 @@
                     const userId = getTelegramUserId();
                     if (!userId) {
                         showToast('❌ Please open this app from Telegram!', 'error');
+                        // মিনি অ্যাপে রিডিরেক্ট
+                        setTimeout(() => redirectToMiniApp(), 1500);
                         return;
                     }
                     
@@ -1446,7 +1469,12 @@
                     
                     console.log('🔗 Short URL:', shortUrl);
                     
-                    openSafeLink(shortUrl);
+                    // শর্ট লিংক ওপেন করুন
+                    if (shortUrl && shortUrl !== targetUrl) {
+                        window.open(shortUrl, '_blank');
+                    } else {
+                        window.open(targetUrl, '_blank');
+                    }
                     
                     premiumUnlockBtn.innerHTML = '<i class="fas fa-external-link-alt"></i> Link Generated!';
                     
@@ -2047,8 +2075,9 @@
                 // Check if user is in Telegram
                 const userId = getTelegramUserId();
                 if (!userId) {
-                    console.log('❌ Not in Telegram, redirecting...');
-                    showToast('❌ Please open this app from Telegram!', 'error');
+                    console.log('❌ Not in Telegram Mini App, redirecting...');
+                    showToast('❌ Please open from Telegram!', 'error');
+                    setTimeout(() => redirectToMiniApp(), 1500);
                     return;
                 }
                 
@@ -2149,10 +2178,12 @@
                     initializeApp(webApp);
                 } else {
                     showToast('❌ Please open this app from Telegram!', 'error');
+                    setTimeout(() => redirectToMiniApp(), 1500);
                 }
             } catch (error) {
                 console.error('An error occurred during initialization:', error);
                 showToast('❌ Please open this app from Telegram!', 'error');
+                setTimeout(() => redirectToMiniApp(), 1500);
             }
         });
     </script>
