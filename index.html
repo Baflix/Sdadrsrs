@@ -1512,19 +1512,47 @@
                 });
             }
 
-            // SPA Details Open
+            // ==========================================
+            // SPA Details Open (Preload Data)
+            // ==========================================
+
             const openMovieDetails = async (movieId) => {
                 savedScrollPosition = window.scrollY;
+                
+                // ✅ আগে থেকে লোড করা ডেটা খোঁজা
+                const targetMovieData = currentlyLoadedMovies.find(m => m.id === movieId);
+                
+                if (targetMovieData) {
+                    // ✅ পুরো ডেটা window-এ সেভ করা
+                    window.preloadedMovieData = targetMovieData;
+                    console.log("✅ Preloaded movie data:", targetMovieData.title);
+                    
+                    // ✅ localStorage-এ ব্যাকআপ রাখা (details.html-এর জন্য)
+                    try {
+                        localStorage.setItem('preloadedMovieData_' + movieId, JSON.stringify(targetMovieData));
+                    } catch (e) {}
+                } else {
+                    console.warn("⚠️ Movie not found in currentlyLoadedMovies:", movieId);
+                    // ব্যাকআপ: Firebase থেকে ডেটা আনা
+                    try {
+                        const docSnap = await getDoc(doc(db, 'movies', movieId));
+                        if (docSnap.exists()) {
+                            const movieData = { id: docSnap.id, ...docSnap.data() };
+                            window.preloadedMovieData = movieData;
+                            try {
+                                localStorage.setItem('preloadedMovieData_' + movieId, JSON.stringify(movieData));
+                            } catch (e) {}
+                            console.log("✅ Fetched movie data from Firebase:", movieData.title);
+                        }
+                    } catch (e) {
+                        console.error("Error fetching movie data:", e);
+                    }
+                }
                 
                 const currentPath = window.location.pathname;
                 const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
                 const detailsUrl = `${basePath}details.html?id=${movieId}`;
                 
-                const targetMovieData = currentlyLoadedMovies.find(m => m.id === movieId);
-                if(targetMovieData) {
-                    window.preloadedMovieData = targetMovieData;
-                }
-
                 history.pushState({view: 'details', movieId: movieId}, '', window.location.pathname + `?id=${movieId}`);
                 
                 spaMainView.style.display = 'none';
@@ -1966,7 +1994,7 @@
             };
 
             // ==========================================
-            // Movie Card Click Handler (with Premium Check)
+            // Movie Card Click Handler
             // ==========================================
 
             const handleMovieCardClick = async (movieId) => {
@@ -1988,7 +2016,7 @@
             // ==========================================
 
             const initializeApp = async (tgInstance) => {
-                console.log("Initializing app...");
+                console.log("🚀 Initializing app...");
                 
                 const verified = await checkUrlForVerification();
                 if (verified) {
@@ -2016,7 +2044,7 @@
                 premiumCheckInterval = setInterval(updatePremiumTimer, 1000);
                 await updatePremiumTimer();
                 
-                console.log("App initialization complete");
+                console.log("✅ App initialization complete");
             };
 
             // ==========================================
@@ -2065,7 +2093,7 @@
                 movieGrid.addEventListener('click', (e) => {
                     const card = e.target.closest('.movie-card');
                     if (card && card.dataset.movieId) {
-                        console.log('Movie card clicked, ID:', card.dataset.movieId);
+                        console.log('🎬 Movie card clicked, ID:', card.dataset.movieId);
                         handleMovieCardClick(card.dataset.movieId);
                     }
                 });
@@ -2111,7 +2139,7 @@
                     initializeApp(null);
                 }
             } catch (error) {
-                console.error('An error occurred during initialization:', error);
+                console.error('❌ An error occurred during initialization:', error);
                 initializeApp(null);
             }
         });
