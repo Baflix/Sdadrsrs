@@ -1079,7 +1079,7 @@
         };
 
         // ==========================================
-        // Load Movie Details (FIXED - Better preload handling)
+        // Load Movie Details (FIXED)
         // ==========================================
 
         const loadMovieDetails = async (movieId) => {
@@ -1092,7 +1092,7 @@
             currentMovieId = movieId;
             console.log("📽️ Loading movie details for ID:", movieId);
 
-            // ✅ Try to get preloaded data from multiple sources
+            // ✅ Try multiple sources for preloaded data
             let preloadedData = null;
             
             // Method 1: Check parent window (when inside iframe)
@@ -1102,16 +1102,16 @@
                     console.log("✅ Got preloaded data from parent window:", preloadedData.title);
                 }
             } catch (e) {
-                console.log("⚠️ Cannot access parent window (cross-origin or not in iframe)");
+                console.log("⚠️ Cannot access parent window");
             }
             
-            // Method 2: Check current window (when loaded directly)
+            // Method 2: Check current window
             if (!preloadedData && window.preloadedMovieData) {
                 preloadedData = window.preloadedMovieData;
                 console.log("✅ Got preloaded data from current window:", preloadedData.title);
             }
             
-            // Method 3: Check localStorage (backup)
+            // Method 3: Check localStorage
             if (!preloadedData) {
                 try {
                     const stored = localStorage.getItem('preloadedMovieData_' + movieId);
@@ -1119,12 +1119,10 @@
                         preloadedData = JSON.parse(stored);
                         console.log("✅ Got preloaded data from localStorage:", preloadedData.title);
                     }
-                } catch (e) {
-                    console.log("⚠️ No data in localStorage");
-                }
+                } catch (e) {}
             }
 
-            // If preloaded data found and matches the ID
+            // If preloaded data found
             if (preloadedData && preloadedData.id === movieId) {
                 console.log("🎯 Using preloaded movie data");
                 renderMovieDetails(preloadedData);
@@ -1133,7 +1131,7 @@
                 return;
             }
 
-            // If not found, fetch from Firebase
+            // Fetch from Firebase
             console.log("⏳ Fetching movie from Firebase...");
             try {
                 const docSnap = await getDoc(doc(db, 'movies', movieId));
@@ -1150,7 +1148,7 @@
                     return;
                 }
 
-                // Save to localStorage for future use
+                // Save to localStorage for future
                 try {
                     localStorage.setItem('preloadedMovieData_' + movieId, JSON.stringify(movie));
                 } catch (e) {}
@@ -1167,7 +1165,7 @@
         };
 
         // ==========================================
-        // Render Movie Details with Premium Check
+        // Render Movie Details
         // ==========================================
 
         const renderMovieDetails = (movie) => {
@@ -1469,7 +1467,7 @@
             console.log("🎬 Movie ID from URL:", movieId);
             
             if (movieId) {
-                // Small delay to ensure everything is loaded
+                // Small delay for smooth loading
                 setTimeout(() => {
                     loadMovieDetails(movieId);
                 }, 300);
@@ -1479,7 +1477,6 @@
             }
         };
 
-        // Start the app
         initializeDetails();
     </script>
 </body>
