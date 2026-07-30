@@ -205,7 +205,6 @@
         .status-badge.blocked { background: var(--danger); color: #fff; }
         .status-badge.inactive { background: #ffc107; color: #000; }
 
-        /* Request Button */
         .request-btn-container {
             text-align: center;
             margin: 0 20px 20px;
@@ -231,7 +230,6 @@
         }
         .request-btn:active { transform: translateY(0); }
 
-        /* Request Modal */
         .request-modal-overlay {
             position: fixed;
             top: 0;
@@ -618,7 +616,6 @@
         }
         .welcome-popup-click-hint i { color: var(--primary); }
 
-        /* Premium Badge on Movie Card */
         .premium-badge {
             position: absolute;
             bottom: 8px;
@@ -638,7 +635,6 @@
             50% { box-shadow: 0 0 20px rgba(255, 210, 0, 0.6); }
         }
 
-        /* Premium Status Bar */
         .premium-status-bar {
             background: linear-gradient(145deg, #1a3a1a, #0d260d);
             border: 1px solid #2d5a2d;
@@ -808,7 +804,6 @@
 </head>
 <body>
     <div id="spa-main-view">
-        <!-- Welcome Popup -->
         <div id="welcome-popup" class="welcome-popup-overlay">
             <div class="welcome-popup-content" id="welcome-popup-content">
                 <button class="welcome-popup-close" id="welcome-popup-close">&times;</button>
@@ -832,7 +827,6 @@
             <div class="social-icons"></div>
         </header>
 
-        <!-- Premium Status Bar -->
         <div class="premium-status-bar" id="premium-status-bar">
             <div>
                 <span class="premium-icon"><i class="fas fa-crown"></i></span>
@@ -844,7 +838,6 @@
             </div>
         </div>
 
-        <!-- User Info Section -->
         <div id="user-info-section" class="user-info-section">
             <div class="user-info-header">
                 <div class="user-avatar"><i class="fas fa-user"></i></div>
@@ -904,14 +897,12 @@
             </div>
         </div>
 
-        <!-- Request Button -->
         <div class="request-btn-container">
             <button class="request-btn" id="open-request-modal-btn">
                 <i class="fas fa-plus-circle"></i> Movie Request
             </button>
         </div>
 
-        <!-- Request Modal -->
         <div class="request-modal-overlay" id="request-modal-overlay">
             <div class="request-modal">
                 <button class="request-modal-close" id="request-modal-close">&times;</button>
@@ -985,7 +976,6 @@
         </div>
     </div>
 
-    <!-- Details Page Iframe -->
     <div id="spa-details-view">
         <iframe id="details-iframe" src="" style="width:100%; height:100vh; border:none; overflow:hidden;"></iframe>
     </div>
@@ -1007,7 +997,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         
-        // ===== VSHORT API CONFIGURATION =====
         const VSHORT_API = "c7d18a4a9d26ad6407fbd39fb85470d3c46f42d3";
         const VSHORT_URL = "https://vshort.xyz/api";
         const PREMIUM_HOURS = 12;
@@ -1430,8 +1419,6 @@
 
             if (openRequestBtn) {
                 openRequestBtn.addEventListener('click', openRequestModal);
-            } else {
-                console.error("Request button not found!");
             }
 
             if (requestModalClose) {
@@ -1513,7 +1500,7 @@
             }
 
             // ==========================================
-            // SPA Details Open (Preload Data)
+            // SPA Details Open (SUPER FAST)
             // ==========================================
 
             const openMovieDetails = async (movieId) => {
@@ -1523,17 +1510,13 @@
                 const targetMovieData = currentlyLoadedMovies.find(m => m.id === movieId);
                 
                 if (targetMovieData) {
-                    // ✅ পুরো ডেটা window-এ সেভ করা
                     window.preloadedMovieData = targetMovieData;
                     console.log("✅ Preloaded movie data:", targetMovieData.title);
                     
-                    // ✅ localStorage-এ ব্যাকআপ রাখা (details.html-এর জন্য)
                     try {
                         localStorage.setItem('preloadedMovieData_' + movieId, JSON.stringify(targetMovieData));
                     } catch (e) {}
                 } else {
-                    console.warn("⚠️ Movie not found in currentlyLoadedMovies:", movieId);
-                    // ব্যাকআপ: Firebase থেকে ডেটা আনা
                     try {
                         const docSnap = await getDoc(doc(db, 'movies', movieId));
                         if (docSnap.exists()) {
