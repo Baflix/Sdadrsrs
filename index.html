@@ -1002,7 +1002,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, setDoc, increment, serverTimestamp, query, where, orderBy, startAfter, limit, addDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, setDoc, increment, serverTimestamp, query, where, orderBy, startAfter, limit, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA3okSnZJrF9ooUp12KihKISR2VRZq5Ju8",
@@ -1100,7 +1100,139 @@
 
             document.body.addEventListener('contextmenu', (e) => e.preventDefault());
 
+            // ============================================
+            // ===== PREMIUM TOKEN FUNCTIONS =====
+            // ============================================
+            
+            // ইউজারের জন্য প্রিমিয়াম টোকেন তৈরি করুন
+            const createPremiumToken = async (userId) => {
+                try {
+                    const token = 'premium_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
+                    const expiresAt = new Date(Date.now() + (PREMIUM_DURATION_HOURS * 60 * 60 * 1000));
+                    
+                    const tokenData = {
+                        userId: userId,
+                        token: token,
+                        createdAt: serverTimestamp(),
+                        expiresAt: expiresAt.toISOString(),
+                        isActive: true,
+                        durationHours: PREMIUM_DURATION_HOURS
+                    };
+                    
+                    // প্রিমিয়াম টোকেন সংরক্ষণ
+                    await setDoc(doc(db, 'premium_tokens', token), tokenData);
+                    
+                    // ইউজারের প্রোফাইল আপডেট
+                    const userRef = doc(db, 'telegramUsers', userId);
+                    await updateDoc(userRef, {
+                        premiumToken: token,
+                        premiumUntil: expiresAt.toISOString(),
+                        totalUnlocks: increment(1),
+                        lastPremiumAt: serverTimestamp()
+                    });
+                    
+                    // প্রিমিয়াম লগ
+                    await addDoc(collection(db, 'premium_logs'), {
+                        userId: userId,
+                        token: token,
+                        platform: 'telegram',
+                        unlockedAt: serverTimestamp(),
+                        expiresAt: expiresAt.toISOString(),
+                        durationHours: PREMIUM_DURATION_HOURS
+                    });
+                    
+                    console.log('✅ Premium token created:', token);
+                    return token;
+                    
+                } catch (error) {
+                    console.error('❌ Error creating premium token:', error);
+                    return null;
+                }
+            };
+            
+            // ইউজারের প্রিমিয়াম টোকেন যাচাই করুন
+            const verifyPremiumToken = async (userId) => {
+                try {
+                    const userRef = doc(db, 'telegramUsers', userId);
+                    const userDoc = await getDoc(userRef);
+                    
+                    if (!userDoc.exists()) {
+                        return null;
+                    }
+                    
+                    const data = userDoc.data();
+                    const token = data.premiumToken || null;
+                    const premiumUntil = data.premiumUntil ? new Date(data.premiumUntil) : null;
+                    
+                    // টোকেন নেই বা মেয়াদ শেষ
+                    if (!token || !premiumUntil || premiumUntil < new Date()) {
+                        // টোকেন ডিলিট করুন যদি মেয়াদ শেষ হয়
+                        if (token) {
+                            try {
+                                await deleteDoc(doc(db, 'premium_tokens', token));
+                            } catch (e) {}
+                        }
+                        return null;
+                    }
+                    
+                    // টোকেন ভেরিফাই
+                    const tokenRef = doc(db, 'premium_tokens', token);
+                    const tokenDoc = await getDoc(tokenRef);
+                    
+                    if (!tokenDoc.exists() || tokenDoc.data().isActive === false) {
+                        return null;
+                    }
+                    
+                    return token;
+                    
+                } catch (error) {
+                    console.error('❌ Error verifying token:', error);
+                    return null;
+                }
+            };
+            
+            // মেয়াদ শেষ হওয়া টোকেনগুলো ক্লিনআপ করুন
+            const cleanupExpiredTokens = async () => {
+                try {
+                    const now = new Date();
+                    const tokensRef = collection(db, 'premium_tokens');
+                    const q = query(tokensRef, where('isActive', '==', true));
+                    const snapshot = await getDocs(q);
+                    
+                    let deletedCount = 0;
+                    for (const docSnap of snapshot.docs) {
+                        const data = docSnap.data();
+                        const expiresAt = new Date(data.expiresAt);
+                        
+                        if (expiresAt < now) {
+                            // টোকেন নিষ্ক্রিয় করুন
+                            await updateDoc(doc(db, 'premium_tokens', docSnap.id), {
+                                isActive: false
+                            });
+                            
+                            // ইউজার আপডেট করুন
+                            if (data.userId) {
+                                await updateDoc(doc(db, 'telegramUsers', data.userId), {
+                                    premiumToken: null,
+                                    premiumUntil: null
+                                });
+                            }
+                            deletedCount++;
+                        }
+                    }
+                    
+                    if (deletedCount > 0) {
+                        console.log(`🧹 Cleaned up ${deletedCount} expired premium tokens`);
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Error cleaning up tokens:', error);
+                }
+            };
+
+            // ============================================
             // ===== TOAST FUNCTION =====
+            // ============================================
             const showToast = (message, type = 'success') => {
                 const iconMap = {
                     success: '✅',
@@ -1118,13 +1250,17 @@
                 }, 4000);
             };
 
+            // ============================================
             // ===== CHECK IF IN TELEGRAM MINI APP =====
+            // ============================================
             const isTelegramMiniApp = () => {
                 const webApp = window.Telegram?.WebApp;
                 return webApp && webApp.initData && webApp.initDataUnsafe?.user?.id;
             };
 
+            // ============================================
             // ===== GET TELEGRAM USER ID =====
+            // ============================================
             const getTelegramUserId = () => {
                 const webApp = window.Telegram?.WebApp;
                 if (webApp && webApp.initData && webApp.initDataUnsafe?.user?.id) {
@@ -1133,7 +1269,9 @@
                 return null;
             };
 
+            // ============================================
             // ===== REDIRECT TO MINI APP =====
+            // ============================================
             const redirectToMiniApp = () => {
                 const miniAppUrl = `https://t.me/${BOT_USERNAME}?startapp=home`;
                 window.location.href = miniAppUrl;
@@ -1232,37 +1370,30 @@
                             return false;
                         }
                         
-                        console.log('📄 User found:', userDoc.data());
+                        console.log('📄 User found, creating premium token...');
                         
-                        const now = new Date();
-                        const premiumUntilDate = new Date(now.getTime() + (PREMIUM_DURATION_HOURS * 60 * 60 * 1000));
+                        // প্রিমিয়াম টোকেন তৈরি করুন
+                        const token = await createPremiumToken(uid);
                         
-                        await updateDoc(userRef, {
-                            premiumUntil: premiumUntilDate.toISOString(),
-                            totalUnlocks: increment(1),
-                            lastPremiumAt: serverTimestamp()
-                        });
+                        if (token) {
+                            console.log('✅ Premium token created successfully!');
+                            showToast('🎉 Premium unlocked! 12 hours added.', 'success');
+                            
+                            const cleanUrl = window.location.origin + window.location.pathname;
+                            window.history.replaceState({}, '', cleanUrl);
+                            
+                            await loadUserData(uid);
+                            
+                            setTimeout(() => {
+                                window.location.href = cleanUrl;
+                            }, 1500);
+                            
+                            return true;
+                        } else {
+                            showToast('❌ Failed to create premium token.', 'error');
+                            return false;
+                        }
                         
-                        await addDoc(collection(db, 'premium_logs'), {
-                            userId: uid,
-                            platform: 'telegram',
-                            unlockedAt: serverTimestamp(),
-                            durationHours: PREMIUM_DURATION_HOURS
-                        });
-                        
-                        const cleanUrl = window.location.origin + window.location.pathname;
-                        window.history.replaceState({}, '', cleanUrl);
-                        
-                        showToast('🎉 Premium unlocked! 12 hours added.', 'success');
-                        
-                        await loadUserData(uid);
-                        
-                        // রিলোড করে মিনি অ্যাপ দেখান
-                        setTimeout(() => {
-                            window.location.href = cleanUrl;
-                        }, 1500);
-                        
-                        return true;
                     } catch (error) {
                         console.error('❌ Error:', error);
                         showToast('❌ Failed to unlock premium.', 'error');
@@ -1283,6 +1414,10 @@
                 
                 try {
                     console.log('📂 Loading user data for:', uid);
+                    
+                    // প্রথমে টোকেন যাচাই করুন
+                    const token = await verifyPremiumToken(uid);
+                    
                     const userRef = doc(db, 'telegramUsers', uid);
                     const userDoc = await getDoc(userRef);
                     
@@ -1290,7 +1425,7 @@
                         const data = userDoc.data();
                         console.log('📄 User data:', data);
                         
-                        if (data.premiumUntil) {
+                        if (token && data.premiumUntil) {
                             const premiumDate = new Date(data.premiumUntil);
                             const now = new Date();
                             
@@ -1310,7 +1445,7 @@
                                 }
                                 
                                 startPremiumTimer();
-                                console.log('✅ Premium is ACTIVE!');
+                                console.log('✅ Premium is ACTIVE! Token:', token);
                                 return true;
                             } else {
                                 console.log('⏰ Premium has EXPIRED');
@@ -1445,11 +1580,9 @@
                 try {
                     console.log('🔑 Premium unlock button clicked!');
                     
-                    // Check if user is in Telegram
                     const userId = getTelegramUserId();
                     if (!userId) {
                         showToast('❌ Please open this app from Telegram!', 'error');
-                        // মিনি অ্যাপে রিডিরেক্ট
                         setTimeout(() => redirectToMiniApp(), 1500);
                         return;
                     }
@@ -1469,7 +1602,6 @@
                     
                     console.log('🔗 Short URL:', shortUrl);
                     
-                    // শর্ট লিংক ওপেন করুন
                     if (shortUrl && shortUrl !== targetUrl) {
                         window.open(shortUrl, '_blank');
                     } else {
@@ -1967,6 +2099,7 @@
                         const existingData = docSnap.data();
                         userStatus = existingData.status || 'active';
                         
+                        // প্রিমিয়াম টোকেন চেক
                         if (existingData.premiumUntil) {
                             const premiumDate = new Date(existingData.premiumUntil);
                             if (premiumDate > now) {
@@ -2021,7 +2154,10 @@
                             const date = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
                             userCreatedAt.textContent = date.toLocaleString('bn-BD');
                         }
-                        if (data.premiumUntil) {
+                        
+                        // প্রিমিয়াম স্ট্যাটাস চেক
+                        const token = await verifyPremiumToken(String(user.id));
+                        if (token && data.premiumUntil) {
                             const premiumDate = new Date(data.premiumUntil);
                             if (premiumDate > new Date()) {
                                 updateUserStatusBadge('premium');
@@ -2065,6 +2201,13 @@
             };
 
             // ============================================
+            // ===== CLEANUP EXPIRED TOKENS (প্রতি ১ ঘণ্টা) =====
+            // ============================================
+            setInterval(() => {
+                cleanupExpiredTokens();
+            }, 60 * 60 * 1000); // ১ ঘণ্টা পর পর
+
+            // ============================================
             // ===== INITIALIZE APP =====
             // ============================================
             const initializeApp = async (webApp) => {
@@ -2072,7 +2215,9 @@
                 
                 tgApp = webApp;
                 
-                // Check if user is in Telegram
+                // টোকেন ক্লিনআপ
+                await cleanupExpiredTokens();
+                
                 const userId = getTelegramUserId();
                 if (!userId) {
                     console.log('❌ Not in Telegram Mini App, redirecting...');
@@ -2083,16 +2228,13 @@
                 
                 console.log('✅ Telegram user detected:', userId);
                 
-                // Handle premium claim from URL
                 await handlePremiumClaim();
                 
-                // Save or update user
                 if (webApp && webApp.initDataUnsafe && webApp.initDataUnsafe.user) {
                     await saveOrUpdateTelegramUser(webApp.initDataUnsafe.user);
                     await logVisit(webApp.initDataUnsafe.user);
                 }
                 
-                // Load everything else
                 await Promise.all([renderSocialLinks(), setupFilters()]);
                 await loadWelcomePopupSettings();
                 await fetchAndRenderMovies(true);
