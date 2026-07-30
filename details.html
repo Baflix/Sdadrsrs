@@ -609,7 +609,7 @@
         }
 
         // ==========================================
-        // PREMIUM POPUP IN IFRAME (Communicate with parent)
+        // PREMIUM POPUP IN IFRAME
         // ==========================================
 
         function showAdPopupInIframe(shortLink, onComplete) {
@@ -643,7 +643,6 @@
             `;
             document.body.appendChild(overlay);
 
-            // Add styles if not already present
             if (!document.getElementById('ad-popup-styles')) {
                 const style = document.createElement('style');
                 style.id = 'ad-popup-styles';
@@ -752,13 +751,11 @@
                 document.head.appendChild(style);
             }
 
-            // Handle Skip
             document.getElementById('ad-skip-btn').addEventListener('click', () => {
                 overlay.remove();
                 if (onComplete) onComplete(false);
             });
 
-            // Handle Watch - open link and wait for return
             document.getElementById('ad-watch-btn').addEventListener('click', () => {
                 const spinner = document.getElementById('ad-loading-spinner');
                 spinner.style.display = 'block';
@@ -873,7 +870,7 @@
         }
 
         // ==========================================
-        // Original Functions (Modified)
+        // Original Functions
         // ==========================================
 
         const parseEpisodeNumber = (epNumStr) => {
@@ -966,20 +963,24 @@
 
         window.goHome = goHome;
 
-        backBtn.addEventListener('click', goHome);
-        detailsLogo.addEventListener('click', goHome);
+        if (backBtn) backBtn.addEventListener('click', goHome);
+        if (detailsLogo) detailsLogo.addEventListener('click', goHome);
 
-        trailerCloseBtn.addEventListener('click', () => {
-            modalOverlay.classList.remove('visible');
-            trailerIframe.src = '';
-        });
-
-        modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay) {
+        if (trailerCloseBtn) {
+            trailerCloseBtn.addEventListener('click', () => {
                 modalOverlay.classList.remove('visible');
                 trailerIframe.src = '';
-            }
-        });
+            });
+        }
+
+        if (modalOverlay) {
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) {
+                    modalOverlay.classList.remove('visible');
+                    trailerIframe.src = '';
+                }
+            });
+        }
 
         const getMovieIdFromUrl = () => {
             const params = new URLSearchParams(window.location.search);
@@ -1074,7 +1075,6 @@
                 seriesInfoEl.style.display = 'none';
             }
 
-            // Show premium badge if movie is premium
             const posterBadge = document.getElementById('poster-premium-badge');
             if (movie.isPremium) {
                 posterBadge.style.display = 'block';
@@ -1084,7 +1084,6 @@
                 premiumBadgeHeader.classList.remove('visible');
             }
 
-            // Trailer
             const trailerContainer = document.getElementById('detail-trailer-container');
             trailerContainer.innerHTML = '';
             if (movie.trailerUrl) {
@@ -1103,7 +1102,6 @@
                 trailerContainer.appendChild(trailerBtn);
             }
 
-            // Actions: Share & Copy
             const tgApp = window.Telegram?.WebApp;
             let deepLinkUrl = generateDeepLink(movie.id, movie.title);
             
@@ -1146,23 +1144,19 @@
             actionsContainer.appendChild(copyBtn);
 
             // ==========================================
-            // DOWNLOADS SECTION (with Premium Check)
+            // DOWNLOADS SECTION
             // ==========================================
 
             const downloadsContainer = document.getElementById('detail-downloads');
             downloadsContainer.innerHTML = '';
 
-            // Function to handle download click with premium check
             const handleDownloadClick = async (linkUrl, linkName) => {
-                // Check premium status
                 if (currentUserId) {
                     const { hasPremium: premiumStatus } = await checkPremiumStatus(currentUserId);
                     hasPremium = premiumStatus;
                     if (!hasPremium) {
-                        // Show premium required popup
                         const watched = await showPremiumRequiredModalInIframe(currentUserId);
                         if (watched) {
-                            // Check again and download
                             const { hasPremium: nowHas } = await checkPremiumStatus(currentUserId);
                             hasPremium = nowHas;
                             if (nowHas && linkUrl) {
@@ -1173,7 +1167,6 @@
                         return;
                     }
                 }
-                // If premium, download directly
                 if (linkUrl) {
                     incrementDownloadCount(movie.id);
                     openSafeLink(linkUrl);
@@ -1187,10 +1180,6 @@
                     button.textContent = link.name;
                     button.className = 'download-btn';
                     
-                    // Check if premium required for this link (you can add premium flag per link)
-                    // For now, we'll check global premium
-                    
-                    // Ad links logic (preserved)
                     let currentBtnAdLinks = [];
                     if (link.ads && typeof link.ads === 'string' && link.ads.trim() !== '') {
                         currentBtnAdLinks = link.ads.split(',').map(u => u.trim()).filter(u => u);
@@ -1201,7 +1190,6 @@
                         e.preventDefault();
                         e.stopPropagation();
 
-                        // Check premium first
                         if (currentUserId) {
                             const { hasPremium: premiumStatus } = await checkPremiumStatus(currentUserId);
                             if (!premiumStatus) {
@@ -1218,7 +1206,6 @@
                             }
                         }
 
-                        // If premium, handle ad links or direct download
                         if (currentBtnAdLinks.length > 0 && clickCount < currentBtnAdLinks.length) {
                             openSafeLink(currentBtnAdLinks[clickCount]);
                             clickCount++;
@@ -1323,7 +1310,6 @@
                 });
             }
 
-            // Telegram BackButton
             if (tgApp && tgApp.BackButton) {
                 tgApp.BackButton.onClick(goHome);
                 tgApp.BackButton.show();
@@ -1335,15 +1321,12 @@
         // ==========================================
 
         const initializeDetails = async () => {
-            // Check URL verification first
             const verified = await checkUrlForVerification();
             if (verified) {
-                // Reload after verification
                 setTimeout(() => window.location.reload(), 1500);
                 return;
             }
 
-            // Get user ID from Telegram
             const tgApp = window.Telegram?.WebApp;
             if (tgApp && tgApp.initDataUnsafe && tgApp.initDataUnsafe.user) {
                 currentUserId = String(tgApp.initDataUnsafe.user.id);
@@ -1362,7 +1345,6 @@
             }
         };
 
-        // Initialize
         initializeDetails();
     </script>
 </body>
