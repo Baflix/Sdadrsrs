@@ -9,7 +9,7 @@
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default,es6,fetch"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --dark-green: #218838; --blue: #007bff; --danger: #dc3545; }
+        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --dark-green: #218838; --blue: #007bff; --danger: #dc3545; --gold: #ffd700; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; -webkit-tap-highlight-color: transparent; }
         body {
             background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
@@ -101,6 +101,137 @@
         .filter-container { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
         .filter { padding: 8px 15px; border-radius: 20px; background: var(--light-dark); color: var(--text); cursor: pointer; transition: background 0.3s, transform 0.2s; }
         .filter.active { background: var(--primary); font-weight: bold; }
+
+        /* ===== PREMIUM MODAL ===== */
+        .premium-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            padding: 20px;
+        }
+        .premium-modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .premium-modal {
+            background: linear-gradient(145deg, #1a1a1a, #2a1a1a);
+            border-radius: 24px;
+            max-width: 420px;
+            width: 100%;
+            padding: 35px 30px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(255, 215, 0, 0.15);
+            transform: scale(0.9) translateY(30px);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            text-align: center;
+        }
+        .premium-modal-overlay.visible .premium-modal {
+            transform: scale(1) translateY(0);
+        }
+        .premium-modal-close {
+            position: absolute;
+            top: 12px;
+            right: 15px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.8rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .premium-modal-close:hover {
+            background: var(--primary);
+            color: #fff;
+            transform: rotate(90deg);
+        }
+        .premium-modal .icon {
+            font-size: 4rem;
+            color: var(--gold);
+            margin-bottom: 15px;
+            display: block;
+        }
+        .premium-modal h2 {
+            color: var(--gold);
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        .premium-modal .subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .premium-modal .timer-display {
+            background: rgba(0,0,0,0.4);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            margin-bottom: 20px;
+        }
+        .premium-modal .timer-display .label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        .premium-modal .timer-display .time {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--gold);
+            font-variant-numeric: tabular-nums;
+        }
+        .premium-modal .premium-btn {
+            background: linear-gradient(45deg, #ffd700, #f5a623);
+            color: #000;
+            border: none;
+            padding: 16px 30px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            justify-content: center;
+        }
+        .premium-modal .premium-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 30px rgba(255, 215, 0, 0.5);
+        }
+        .premium-modal .premium-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .premium-modal .premium-btn i { font-size: 1.2rem; }
+        .premium-modal .status-text {
+            margin-top: 15px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        .premium-modal .status-text .highlight {
+            color: var(--gold);
+            font-weight: bold;
+        }
 
         .user-info-section {
             background: linear-gradient(145deg, #1a1a1a, #222);
@@ -204,34 +335,8 @@
         .status-badge.active { background: var(--green); color: #fff; }
         .status-badge.blocked { background: var(--danger); color: #fff; }
         .status-badge.inactive { background: #ffc107; color: #000; }
-        .status-badge.premium { background: #ffd700; color: #000; }
+        .status-badge.premium { background: var(--gold); color: #000; }
 
-        /* Premium Section Elements */
-        .premium-btn-container {
-            text-align: center;
-            margin: 0 20px 15px;
-        }
-        .premium-btn {
-            background: linear-gradient(45deg, #ff8c00, #e50914);
-            color: #fff;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 30px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .premium-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(229, 9, 20, 0.6);
-        }
-
-        /* Request Button */
         .request-btn-container {
             text-align: center;
             margin: 0 20px 20px;
@@ -257,7 +362,6 @@
         }
         .request-btn:active { transform: translateY(0); }
 
-        /* Request Modal */
         .request-modal-overlay {
             position: fixed;
             top: 0;
@@ -648,10 +752,43 @@
             display: none;
         }
 
+        .toast-notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            color: #fff;
+            padding: 15px 25px;
+            border-radius: 12px;
+            z-index: 9999;
+            display: none;
+            animation: toastIn 0.4s ease;
+            border: 1px solid rgba(255,215,0,0.2);
+            text-align: center;
+            max-width: 90%;
+        }
+        .toast-notification.show {
+            display: block;
+        }
+        .toast-notification .toast-icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+        .toast-notification .toast-icon.success { color: var(--green); }
+        .toast-notification .toast-icon.error { color: var(--danger); }
+        .toast-notification .toast-icon.info { color: var(--blue); }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(30px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
         @media (min-width: 600px) { .modal-content { width: 80%; } }
         @media (max-width: 500px) {
             .request-modal { padding: 20px; }
             .request-modal h2 { font-size: 1.2rem; }
+            .premium-modal { padding: 25px 20px; }
+            .premium-modal .timer-display .time { font-size: 2rem; }
         }
     </style>
 </head>
@@ -720,13 +857,6 @@
                     </div>
                 </div>
                 <div class="user-detail-item">
-                    <div class="detail-icon"><i class="fas fa-clock"></i></div>
-                    <div class="detail-content">
-                        <div class="detail-label">12-Hour Premium Validity</div>
-                        <div class="detail-value small" id="user-premium-status">Not Active</div>
-                    </div>
-                </div>
-                <div class="user-detail-item">
                     <div class="detail-icon"><i class="fas fa-calendar-plus"></i></div>
                     <div class="detail-content">
                         <div class="detail-label">First Visit</div>
@@ -740,6 +870,13 @@
                         <div class="detail-value small" id="user-created-at"></div>
                     </div>
                 </div>
+                <div class="user-detail-item" id="premium-detail-item" style="display:none;">
+                    <div class="detail-icon" style="background:var(--gold);"><i class="fas fa-crown"></i></div>
+                    <div class="detail-content">
+                        <div class="detail-label">Premium Status</div>
+                        <div class="detail-value small" id="user-premium-status">Active</div>
+                    </div>
+                </div>
             </div>
             <div class="user-info-close">
                 <button class="close-user-info" onclick="window.closeUserInfo()">
@@ -748,21 +885,43 @@
             </div>
         </div>
 
-        <!-- Get Premium Token Button -->
-        <div class="premium-btn-container">
-            <button class="premium-btn" id="get-premium-token-btn">
-                <i class="fas fa-crown"></i> Get 12 Hours Premium Token
-            </button>
+        <!-- ===== PREMIUM MODAL ===== -->
+        <div class="premium-modal-overlay" id="premium-modal-overlay">
+            <div class="premium-modal">
+                <button class="premium-modal-close" id="premium-modal-close">&times;</button>
+                <span class="icon">👑</span>
+                <h2>✨ Unlock Premium</h2>
+                <p class="subtitle">Get <strong>12 hours</strong> of premium access to download movies & series without any restrictions!</p>
+                
+                <div class="timer-display" id="premium-timer-display">
+                    <div class="label">⏳ Premium Time Remaining</div>
+                    <div class="time" id="premium-time-display">--:--:--</div>
+                </div>
+                
+                <button class="premium-btn" id="premium-unlock-btn">
+                    <i class="fas fa-unlock"></i> Unlock Premium (12 Hours)
+                </button>
+                
+                <div class="status-text" id="premium-status-text">
+                    Current Status: <span class="highlight" id="premium-status-label">🔓 Free</span>
+                </div>
+            </div>
         </div>
 
-        <!-- Request Button (NEW) -->
+        <!-- Toast Notification -->
+        <div class="toast-notification" id="toast-notification">
+            <span class="toast-icon" id="toast-icon">✅</span>
+            <span id="toast-message">Premium unlocked!</span>
+        </div>
+
+        <!-- Request Button -->
         <div class="request-btn-container">
             <button class="request-btn" id="open-request-modal-btn">
                 <i class="fas fa-plus-circle"></i> Movie Request
             </button>
         </div>
 
-        <!-- Request Modal (NEW) -->
+        <!-- Request Modal -->
         <div class="request-modal-overlay" id="request-modal-overlay">
             <div class="request-modal">
                 <button class="request-modal-close" id="request-modal-close">&times;</button>
@@ -877,8 +1036,8 @@
             const userFirstVisit = document.getElementById('user-first-visit');
             const userCreatedAt = document.getElementById('user-created-at');
             const userStatusBadge = document.getElementById('user-status-badge');
+            const premiumDetailItem = document.getElementById('premium-detail-item');
             const userPremiumStatus = document.getElementById('user-premium-status');
-            const getPremiumTokenBtn = document.getElementById('get-premium-token-btn');
 
             const welcomePopup = document.getElementById('welcome-popup');
             const welcomePopupClose = document.getElementById('welcome-popup-close');
@@ -891,6 +1050,16 @@
             const spaMainView = document.getElementById('spa-main-view');
             const spaDetailsView = document.getElementById('spa-details-view');
             const detailsIframe = document.getElementById('details-iframe');
+
+            // ===== PREMIUM MODAL ELEMENTS =====
+            const premiumModalOverlay = document.getElementById('premium-modal-overlay');
+            const premiumModalClose = document.getElementById('premium-modal-close');
+            const premiumUnlockBtn = document.getElementById('premium-unlock-btn');
+            const premiumTimeDisplay = document.getElementById('premium-time-display');
+            const premiumStatusLabel = document.getElementById('premium-status-label');
+            const toastNotification = document.getElementById('toast-notification');
+            const toastMessage = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
 
             // ===== REQUEST MODAL ELEMENTS =====
             const requestModalOverlay = document.getElementById('request-modal-overlay');
@@ -917,86 +1086,45 @@
             let hasShownPopup = false;
             let savedScrollPosition = 0;
             let currentUser = null;
+            let currentUserId = null;
+
+            // ===== PREMIUM VARIABLES =====
+            const PREMIUM_DURATION_HOURS = 12;
+            const VSHORT_API_KEY = 'c7d18a4a9d26ad6407fbd39fb85470d3c46f42d3';
+            let premiumTimerInterval = null;
+            let premiumUntil = null;
+            let isPremiumActive = false;
+            let pendingDownloadAction = null;
+            let tgApp = null;
 
             document.body.addEventListener('contextmenu', (e) => e.preventDefault());
-            
-            // ===== GP LINKS & PREMIUM TOKEN SYSTEM =====
-            const GP_LINKS_API_KEY = "57d63c9ce694e5d5525f633410a2cd9ef88f2e50";
 
-            const generate12HourToken = () => {
-                return 'TOKEN_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+            // ===== TOAST FUNCTION =====
+            const showToast = (message, type = 'success') => {
+                const iconMap = {
+                    success: '✅',
+                    error: '❌',
+                    info: 'ℹ️',
+                    warning: '⚠️'
+                };
+                toastIcon.textContent = iconMap[type] || '✅';
+                toastIcon.className = 'toast-icon ' + type;
+                toastMessage.textContent = message;
+                toastNotification.classList.add('show');
+                clearTimeout(toastNotification._timeout);
+                toastNotification._timeout = setTimeout(() => {
+                    toastNotification.classList.remove('show');
+                }, 4000);
             };
 
-            const generatePremiumTokenLink = async (userId) => {
-                const token = generate12HourToken();
-                const callbackUrl = window.location.origin + window.location.pathname + `?verify_token=${token}&uid=${userId}`;
-                const apiEndpoint = `https://gplinks.in/api?api=${GP_LINKS_API_KEY}&url=${encodeURIComponent(callbackUrl)}`;
-
-                try {
-                    const response = await fetch(apiEndpoint);
-                    const data = await response.json();
-                    if (data && data.shortlink) {
-                        // Store pending token in DB
-                        await updateDoc(doc(db, "telegramUsers", String(userId)), {
-                            pendingToken: token
-                        });
-                        return data.shortlink;
-                    } else {
-                        return callbackUrl; // Fallback
-                    }
-                } catch (e) {
-                    console.error("GP Links error:", e);
-                    return callbackUrl;
+            // ===== GET TELEGRAM USER ID =====
+            const getTelegramUserId = () => {
+                const webApp = window.Telegram?.WebApp;
+                if (webApp && webApp.initData && webApp.initDataUnsafe?.user?.id) {
+                    return String(webApp.initDataUnsafe.user.id);
                 }
+                return null;
             };
-
-            const verifyTokenVerification = async () => {
-                const urlParams = new URLSearchParams(window.location.search);
-                const token = urlParams.get('verify_token');
-                const uid = urlParams.get('uid');
-
-                if (token && uid) {
-                    try {
-                        const userDocRef = doc(db, "telegramUsers", String(uid));
-                        const userSnap = await getDoc(userDocRef);
-                        if (userSnap.exists()) {
-                            const data = userSnap.data();
-                            if (data.pendingToken === token) {
-                                const expiryDate = new Date();
-                                expiryDate.setHours(expiryDate.getHours() + 12);
-
-                                await updateDoc(userDocRef, {
-                                    isPremium: true,
-                                    premiumToken: token,
-                                    pendingToken: null,
-                                    premiumExpiresAt: expiryDate.toISOString()
-                                });
-
-                                alert("✅ 12 Hours Premium Activated Successfully!");
-                                window.history.replaceState({}, document.title, window.location.pathname);
-                            }
-                        }
-                    } catch (err) {
-                        console.error("Token activation error:", err);
-                    }
-                }
-            };
-
-            getPremiumTokenBtn.addEventListener('click', async () => {
-                const user = currentUser || (window.Telegram?.WebApp?.initDataUnsafe?.user);
-                if (!user || !user.id) {
-                    alert("User not recognized via Telegram!");
-                    return;
-                }
-                getPremiumTokenBtn.disabled = true;
-                getPremiumTokenBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating Link...';
-                
-                const shortUrl = await generatePremiumTokenLink(user.id);
-                getPremiumTokenBtn.disabled = false;
-                getPremiumTokenBtn.innerHTML = '<i class="fas fa-crown"></i> Get 12 Hours Premium Token';
-                
-                openSafeLink(shortUrl);
-            });
 
             const parseEpisodeNumber = (epNumStr) => {
                 const str = String(epNumStr).trim();
@@ -1015,13 +1143,329 @@
             };
 
             const openSafeLink = (url) => {
-                const tgApp = window.Telegram?.WebApp;
-                if (tgApp && tgApp.initData) {
+                const webApp = window.Telegram?.WebApp;
+                if (webApp && webApp.initData) {
                     if (url.includes('t.me/')) {
-                        try { tgApp.openTelegramLink(url); } catch (e) { tgApp.openLink(url); }
-                    } else { tgApp.openLink(url); }
-                } else { window.open(url, '_blank'); }
+                        try { webApp.openTelegramLink(url); } catch (e) { webApp.openLink(url); }
+                    } else { webApp.openLink(url); }
+                } else { 
+                    window.open(url, '_blank'); 
+                }
             };
+
+            // ============================================
+            // ===== GENERATE SHORT LINK (VSHORT) =====
+            // ============================================
+            const generateShortLink = async (targetUrl) => {
+                try {
+                    const encodedUrl = encodeURIComponent(targetUrl);
+                    const alias = 'Baflix_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+                    
+                    const apiUrl = `https://vshort.xyz/api?api=${VSHORT_API_KEY}&url=${encodedUrl}&alias=${alias}`;
+                    
+                    console.log('📤 Generating short link...');
+                    console.log('📤 API URL:', apiUrl);
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    console.log('📥 Response:', data);
+                    
+                    if (data.status === 'success' && data.shortenedUrl) {
+                        console.log('✅ Short link:', data.shortenedUrl);
+                        return data.shortenedUrl;
+                    } else {
+                        console.error('❌ API Error:', data);
+                        return targetUrl;
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ VShort API error:', error);
+                    return targetUrl;
+                }
+            };
+
+            // ============================================
+            // ===== HANDLE PREMIUM CLAIM =====
+            // ============================================
+            const handlePremiumClaim = async () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const claimParam = urlParams.get('premium_claim');
+                const uid = urlParams.get('uid');
+                
+                console.log('🔍 Checking premium claim...');
+                console.log('📌 premium_claim:', claimParam);
+                console.log('📌 uid:', uid);
+                
+                if (claimParam === 'true' && uid) {
+                    console.log('✅ Premium claim detected! Processing...');
+                    
+                    try {
+                        const userRef = doc(db, 'telegramUsers', uid);
+                        const userDoc = await getDoc(userRef);
+                        
+                        if (!userDoc.exists()) {
+                            console.error('❌ User not found!');
+                            showToast('❌ User not found. Please try again.', 'error');
+                            return false;
+                        }
+                        
+                        console.log('📄 User found:', userDoc.data());
+                        
+                        const now = new Date();
+                        const premiumUntilDate = new Date(now.getTime() + (PREMIUM_DURATION_HOURS * 60 * 60 * 1000));
+                        
+                        await updateDoc(userRef, {
+                            premiumUntil: premiumUntilDate.toISOString(),
+                            totalUnlocks: increment(1),
+                            lastPremiumAt: serverTimestamp()
+                        });
+                        
+                        await addDoc(collection(db, 'premium_logs'), {
+                            userId: uid,
+                            platform: 'telegram',
+                            unlockedAt: serverTimestamp(),
+                            durationHours: PREMIUM_DURATION_HOURS
+                        });
+                        
+                        const cleanUrl = window.location.origin + window.location.pathname;
+                        window.history.replaceState({}, '', cleanUrl);
+                        
+                        showToast('🎉 Premium unlocked! 12 hours added.', 'success');
+                        
+                        await loadUserData(uid);
+                        return true;
+                        
+                    } catch (error) {
+                        console.error('❌ Error:', error);
+                        showToast('❌ Failed to unlock premium.', 'error');
+                        return false;
+                    }
+                }
+                return false;
+            };
+
+            // ============================================
+            // ===== LOAD USER DATA =====
+            // ============================================
+            const loadUserData = async (uid) => {
+                if (!uid) {
+                    console.log('❌ No UID provided');
+                    return false;
+                }
+                
+                try {
+                    console.log('📂 Loading user data for:', uid);
+                    const userRef = doc(db, 'telegramUsers', uid);
+                    const userDoc = await getDoc(userRef);
+                    
+                    if (userDoc.exists()) {
+                        const data = userDoc.data();
+                        console.log('📄 User data:', data);
+                        
+                        if (data.premiumUntil) {
+                            const premiumDate = new Date(data.premiumUntil);
+                            const now = new Date();
+                            
+                            if (premiumDate > now) {
+                                isPremiumActive = true;
+                                window.isPremiumActive = true;
+                                premiumUntil = premiumDate;
+                                
+                                premiumStatusLabel.textContent = '👑 Premium';
+                                premiumStatusLabel.style.color = 'var(--gold)';
+                                userStatusBadge.className = 'status-badge premium';
+                                userStatusBadge.textContent = '👑 Premium';
+                                
+                                if (premiumDetailItem) {
+                                    premiumDetailItem.style.display = 'flex';
+                                    userPremiumStatus.textContent = 'Active until ' + premiumDate.toLocaleString();
+                                }
+                                
+                                startPremiumTimer();
+                                console.log('✅ Premium is ACTIVE!');
+                                return true;
+                            } else {
+                                console.log('⏰ Premium has EXPIRED');
+                            }
+                        }
+                        
+                        isPremiumActive = false;
+                        window.isPremiumActive = false;
+                        premiumStatusLabel.textContent = '🔓 Free';
+                        premiumStatusLabel.style.color = '';
+                        userStatusBadge.className = 'status-badge active';
+                        userStatusBadge.textContent = '✅ Active';
+                        
+                        if (premiumDetailItem) {
+                            premiumDetailItem.style.display = 'none';
+                        }
+                        
+                        if (premiumTimerInterval) {
+                            clearInterval(premiumTimerInterval);
+                            premiumTimerInterval = null;
+                        }
+                        premiumTimeDisplay.textContent = '--:--:--';
+                        
+                        return false;
+                    }
+                } catch (error) {
+                    console.error('❌ Error loading user data:', error);
+                }
+                return false;
+            };
+
+            // ============================================
+            // ===== START PREMIUM TIMER =====
+            // ============================================
+            const startPremiumTimer = () => {
+                if (premiumTimerInterval) {
+                    clearInterval(premiumTimerInterval);
+                }
+                
+                premiumTimerInterval = setInterval(() => {
+                    if (!premiumUntil) {
+                        clearInterval(premiumTimerInterval);
+                        return;
+                    }
+                    
+                    const now = new Date();
+                    const diff = premiumUntil - now;
+                    
+                    if (diff <= 0) {
+                        clearInterval(premiumTimerInterval);
+                        premiumTimerInterval = null;
+                        isPremiumActive = false;
+                        window.isPremiumActive = false;
+                        premiumStatusLabel.textContent = '🔓 Free';
+                        premiumStatusLabel.style.color = '';
+                        userStatusBadge.className = 'status-badge active';
+                        userStatusBadge.textContent = '✅ Active';
+                        if (premiumDetailItem) {
+                            premiumDetailItem.style.display = 'none';
+                        }
+                        premiumTimeDisplay.textContent = 'Expired';
+                        showToast('⏰ Premium access has expired.', 'warning');
+                        return;
+                    }
+                    
+                    const hours = Math.floor(diff / (1000 * 60 * 60));
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                    
+                    premiumTimeDisplay.textContent = 
+                        String(hours).padStart(2, '0') + ':' +
+                        String(minutes).padStart(2, '0') + ':' +
+                        String(seconds).padStart(2, '0');
+                }, 1000);
+            };
+
+            // ============================================
+            // ===== CHECK PREMIUM =====
+            // ============================================
+            const checkPremiumBeforeDownload = (downloadAction) => {
+                if (isPremiumActive) {
+                    if (typeof downloadAction === 'function') {
+                        downloadAction();
+                    }
+                } else {
+                    pendingDownloadAction = downloadAction;
+                    openPremiumModal();
+                }
+            };
+
+            // ============================================
+            // ===== OPEN/CLOSE PREMIUM MODAL =====
+            // ============================================
+            const openPremiumModal = () => {
+                premiumModalOverlay.classList.add('visible');
+                document.body.style.overflow = 'hidden';
+                if (isPremiumActive && premiumUntil) {
+                    const now = new Date();
+                    const diff = premiumUntil - now;
+                    if (diff > 0) {
+                        const hours = Math.floor(diff / (1000 * 60 * 60));
+                        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                        premiumTimeDisplay.textContent = 
+                            String(hours).padStart(2, '0') + ':' +
+                            String(minutes).padStart(2, '0') + ':' +
+                            String(seconds).padStart(2, '0');
+                        premiumStatusLabel.textContent = '👑 Premium';
+                        premiumStatusLabel.style.color = 'var(--gold)';
+                    }
+                } else {
+                    premiumTimeDisplay.textContent = '--:--:--';
+                    premiumStatusLabel.textContent = '🔓 Free';
+                    premiumStatusLabel.style.color = '';
+                }
+            };
+
+            const closePremiumModal = () => {
+                premiumModalOverlay.classList.remove('visible');
+                document.body.style.overflow = '';
+            };
+
+            premiumModalClose.addEventListener('click', closePremiumModal);
+            premiumModalOverlay.addEventListener('click', (e) => {
+                if (e.target === premiumModalOverlay) closePremiumModal();
+            });
+
+            // ============================================
+            // ===== PREMIUM UNLOCK BUTTON =====
+            // ============================================
+            premiumUnlockBtn.addEventListener('click', async () => {
+                try {
+                    console.log('🔑 Premium unlock button clicked!');
+                    
+                    // Check if user is in Telegram
+                    const userId = getTelegramUserId();
+                    if (!userId) {
+                        showToast('❌ Please open this app from Telegram!', 'error');
+                        return;
+                    }
+                    
+                    premiumUnlockBtn.disabled = true;
+                    premiumUnlockBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating link...';
+                    
+                    currentUserId = userId;
+                    
+                    const baseUrl = window.location.origin + window.location.pathname;
+                    const targetUrl = `${baseUrl}?premium_claim=true&uid=${userId}`;
+                    
+                    console.log('👤 User ID:', userId);
+                    console.log('🎯 Target URL:', targetUrl);
+                    
+                    const shortUrl = await generateShortLink(targetUrl);
+                    
+                    console.log('🔗 Short URL:', shortUrl);
+                    
+                    openSafeLink(shortUrl);
+                    
+                    premiumUnlockBtn.innerHTML = '<i class="fas fa-external-link-alt"></i> Link Generated!';
+                    
+                    setTimeout(() => {
+                        premiumUnlockBtn.disabled = false;
+                        premiumUnlockBtn.innerHTML = '<i class="fas fa-unlock"></i> Unlock Premium (12 Hours)';
+                    }, 3000);
+                    
+                    setTimeout(() => {
+                        closePremiumModal();
+                    }, 2000);
+                    
+                } catch (error) {
+                    console.error('❌ Error:', error);
+                    premiumUnlockBtn.disabled = false;
+                    premiumUnlockBtn.innerHTML = '<i class="fas fa-unlock"></i> Unlock Premium (12 Hours)';
+                    showToast('❌ Failed to generate link. Please try again.', 'error');
+                }
+            });
 
             // ===== REQUEST MODAL FUNCTIONS =====
             const openRequestModal = () => {
@@ -1047,7 +1491,6 @@
                 if (e.target === requestModalOverlay) closeRequestModal();
             });
 
-            // Character counter with limit
             requestDesc.addEventListener('input', () => {
                 const len = requestDesc.value.length;
                 const max = 150;
@@ -1063,7 +1506,6 @@
                 }
             });
 
-            // Request form submission
             requestFormModal.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
@@ -1109,13 +1551,13 @@
                     
                 } catch (error) {
                     console.error("Error submitting request:", error);
-                    alert('Failed to submit request. Please try again.');
+                    showToast('❌ Failed to submit request. Please try again.', 'error');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
                 }
             });
 
-            // SPA ডিটেইলস ওপেন
+            // ===== SPA DETAILS OPEN =====
             const openMovieDetails = async (movieId) => {
                 savedScrollPosition = window.scrollY;
                 
@@ -1141,7 +1583,6 @@
                     console.error("Error updating view count:", e);
                 }
 
-                const tgApp = window.Telegram?.WebApp;
                 if (tgApp && tgApp.BackButton) {
                     tgApp.BackButton.show();
                 }
@@ -1155,7 +1596,6 @@
                 history.replaceState({view: 'home'}, '', window.location.pathname);
                 window.scrollTo(0, savedScrollPosition);
                 
-                const tgApp = window.Telegram?.WebApp;
                 if (tgApp && tgApp.BackButton) {
                     tgApp.BackButton.hide();
                 }
@@ -1167,6 +1607,7 @@
                 }
             });
 
+            // ===== FETCH MOVIES =====
             const fetchAndRenderMovies = async (isInitial = false) => {
                 if (isFetchingMore) return;
                 isFetchingMore = true;
@@ -1454,34 +1895,30 @@
             };
             window.copyToClipboard = copyToClipboard;
 
-            let tg = null;
-            
-            const updateUserStatusBadge = (status, isPremium, expiresAt) => {
-                let now = new Date();
-                let isExp = expiresAt ? new Date(expiresAt) < now : true;
-
+            // ============================================
+            // ===== UPDATE USER STATUS BADGE =====
+            // ============================================
+            const updateUserStatusBadge = (status) => {
                 if (status === 'blocked') {
                     userStatusBadge.className = 'status-badge blocked';
                     userStatusBadge.textContent = '🚫 Blocked';
-                    userPremiumStatus.textContent = "N/A (Blocked)";
-                } else if (isPremium && !isExp) {
+                } else if (status === 'premium') {
                     userStatusBadge.className = 'status-badge premium';
-                    userStatusBadge.textContent = '👑 Premium Active';
-                    
-                    let diffMs = new Date(expiresAt) - now;
-                    let hrs = Math.floor(diffMs / (1000 * 60 * 60));
-                    let mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                    userPremiumStatus.textContent = `${hrs}h ${mins}m left`;
+                    userStatusBadge.textContent = '👑 Premium';
                 } else {
                     userStatusBadge.className = 'status-badge active';
-                    userStatusBadge.textContent = '✅ Free User';
-                    userPremiumStatus.textContent = "Expired / Inactive";
+                    userStatusBadge.textContent = '✅ Active';
                 }
             };
 
+            // ============================================
+            // ===== SAVE OR UPDATE TELEGRAM USER =====
+            // ============================================
             const saveOrUpdateTelegramUser = async (user) => {
                 if (!user || !user.id) return;
                 currentUser = user;
+                currentUserId = String(user.id);
+                
                 const userDocRef = doc(db, "telegramUsers", String(user.id));
                 try {
                     const docSnap = await getDoc(userDocRef);
@@ -1498,15 +1935,17 @@
                     };
                     
                     let userStatus = 'active';
-                    let isPremium = false;
-                    let expiresAt = null;
-
                     if (docSnap.exists()) {
                         const existingData = docSnap.data();
                         userStatus = existingData.status || 'active';
-                        isPremium = existingData.isPremium || false;
-                        expiresAt = existingData.premiumExpiresAt || null;
-
+                        
+                        if (existingData.premiumUntil) {
+                            const premiumDate = new Date(existingData.premiumUntil);
+                            if (premiumDate > now) {
+                                userStatus = 'premium';
+                            }
+                        }
+                        
                         if (userStatus === 'blocked' && existingData.unblockAt) {
                             const unblockDate = existingData.unblockAt.toDate ? existingData.unblockAt.toDate() : new Date(existingData.unblockAt);
                             if (new Date() > unblockDate) {
@@ -1521,20 +1960,19 @@
                         if (currentVisits % 5 === 0 && !localStorage.getItem('userInfoShown')) {
                             setTimeout(() => {
                                 userInfoSection.classList.add('visible');
-                                updateUserStatusBadge(userStatus, isPremium, expiresAt);
+                                updateUserStatusBadge(userStatus);
                             }, 1000);
                         }
                     } else {
                         userData.createdAt = serverTimestamp();
                         userData.status = 'active';
-                        userData.isPremium = false;
                         userData.visitCount = 1;
                         userData.firstVisit = now.toISOString();
                         await setDoc(userDocRef, userData);
                         setTimeout(() => {
                             if (!localStorage.getItem('userInfoShown')) {
                                 userInfoSection.classList.add('visible');
-                                updateUserStatusBadge('active', false, null);
+                                updateUserStatusBadge('active');
                             }
                         }, 1000);
                     }
@@ -1555,12 +1993,33 @@
                             const date = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
                             userCreatedAt.textContent = date.toLocaleString('bn-BD');
                         }
-                        updateUserStatusBadge(data.status || 'active', data.isPremium, data.premiumExpiresAt);
+                        if (data.premiumUntil) {
+                            const premiumDate = new Date(data.premiumUntil);
+                            if (premiumDate > new Date()) {
+                                updateUserStatusBadge('premium');
+                                if (premiumDetailItem) {
+                                    premiumDetailItem.style.display = 'flex';
+                                    userPremiumStatus.textContent = 'Active until ' + premiumDate.toLocaleString();
+                                }
+                            } else {
+                                updateUserStatusBadge(data.status || 'active');
+                                if (premiumDetailItem) {
+                                    premiumDetailItem.style.display = 'none';
+                                }
+                            }
+                        } else {
+                            updateUserStatusBadge(data.status || 'active');
+                            if (premiumDetailItem) {
+                                premiumDetailItem.style.display = 'none';
+                            }
+                        }
                     } else {
                         userFirstVisit.textContent = now.toLocaleString('bn-BD');
                         userCreatedAt.textContent = now.toLocaleString('bn-BD');
-                        updateUserStatusBadge('active', false, null);
+                        updateUserStatusBadge('active');
                     }
+                    
+                    await loadUserData(String(user.id));
                     
                 } catch (error) { console.error("Error saving or updating user data:", error); }
             };
@@ -1577,28 +2036,43 @@
                 } catch (error) { console.error("Failed to log visit:", error); }
             };
 
-            const initializeApp = async (tgInstance) => {
-                console.log("Initializing app...");
-                await verifyTokenVerification();
-                if (tgInstance) {
-                    tg = tgInstance;
-                    tg.expand();
-                    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                        await saveOrUpdateTelegramUser(tg.initDataUnsafe.user);
-                        await logVisit(tg.initDataUnsafe.user);
-                    } else {
-                        await logVisit(null);
-                    }
-                } else {
-                    await logVisit(null);
+            // ============================================
+            // ===== INITIALIZE APP =====
+            // ============================================
+            const initializeApp = async (webApp) => {
+                console.log('🚀 Initializing app...');
+                
+                tgApp = webApp;
+                
+                // Check if user is in Telegram
+                const userId = getTelegramUserId();
+                if (!userId) {
+                    console.log('❌ Not in Telegram, redirecting...');
+                    showToast('❌ Please open this app from Telegram!', 'error');
+                    return;
                 }
+                
+                console.log('✅ Telegram user detected:', userId);
+                
+                // Handle premium claim from URL
+                await handlePremiumClaim();
+                
+                // Save or update user
+                if (webApp && webApp.initDataUnsafe && webApp.initDataUnsafe.user) {
+                    await saveOrUpdateTelegramUser(webApp.initDataUnsafe.user);
+                    await logVisit(webApp.initDataUnsafe.user);
+                }
+                
+                // Load everything else
                 await Promise.all([renderSocialLinks(), setupFilters()]);
                 await loadWelcomePopupSettings();
                 await fetchAndRenderMovies(true);
-                console.log("App initialization complete");
+                
+                console.log('✅ App initialization complete');
+                console.log('📊 Premium status:', isPremiumActive ? 'ACTIVE' : 'INACTIVE');
             };
 
-            // Event Listeners
+            // ===== EVENT LISTENERS =====
             searchForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 performSearch();
@@ -1632,8 +2106,10 @@
             movieGrid.addEventListener('click', (e) => {
                 const card = e.target.closest('.movie-card');
                 if (card && card.dataset.movieId) {
-                    console.log('Movie card clicked, ID:', card.dataset.movieId);
-                    openMovieDetails(card.dataset.movieId);
+                    const movieId = card.dataset.movieId;
+                    checkPremiumBeforeDownload(() => {
+                        openMovieDetails(movieId);
+                    });
                 }
             });
 
@@ -1672,11 +2148,11 @@
                 if (webApp && webApp.initData) {
                     initializeApp(webApp);
                 } else {
-                    initializeApp(null);
+                    showToast('❌ Please open this app from Telegram!', 'error');
                 }
             } catch (error) {
                 console.error('An error occurred during initialization:', error);
-                initializeApp(null);
+                showToast('❌ Please open this app from Telegram!', 'error');
             }
         });
     </script>
