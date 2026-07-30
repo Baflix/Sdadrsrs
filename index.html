@@ -1517,13 +1517,37 @@
             }
 
             // ==========================================
-            // SPA Details Open (FIXED - with preloaded data)
+            // SPA Details Open - 🔒 PREMIUM CHECK REQUIRED
             // ==========================================
 
             const openMovieDetails = async (movieId) => {
+                // 🔒 STEP 1: প্রিমিয়াম চেক
+                if (currentUserId) {
+                    const { hasPremium } = await checkPremiumStatus(currentUserId);
+                    
+                    // 🔒 প্রিমিয়াম না থাকলে → অ্যাড পপআপ দেখান
+                    if (!hasPremium) {
+                        const watched = await showPremiumRequiredModal(currentUserId);
+                        if (!watched) {
+                            // অ্যাড না দেখলে → ব্লক করুন
+                            showToast('⚠️ Premium required to watch movies!');
+                            return;
+                        }
+                        // অ্যাড দেখার পর আবার চেক করুন
+                        const { hasPremium: nowHas } = await checkPremiumStatus(currentUserId);
+                        if (!nowHas) {
+                            showToast('❌ Failed to activate premium. Please try again.');
+                            return;
+                        }
+                    }
+                } else {
+                    showToast('⚠️ Please open from Telegram app.');
+                    return;
+                }
+
+                // ✅ প্রিমিয়াম থাকলে → ডিটেইলস পেজ খুলুন
                 savedScrollPosition = window.scrollY;
                 
-                // ✅ আগে থেকে লোড করা ডেটা খোঁজা
                 let movieData = currentlyLoadedMovies.find(m => m.id === movieId);
                 
                 if (!movieData) {
@@ -1541,7 +1565,6 @@
                 const currentPath = window.location.pathname;
                 const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
                 
-                // ✅ ডেটা URL এনকোড করে পাঠানো
                 let detailsUrl = `${basePath}details.html?id=${movieId}`;
                 if (movieData) {
                     const encodedData = encodeURIComponent(JSON.stringify(movieData));
@@ -1554,7 +1577,6 @@
                 spaDetailsView.style.display = 'block';
                 detailsIframe.src = detailsUrl;
 
-                // ✅ View count update - error ignored
                 try {
                     const docRef = doc(db, 'movies', movieId);
                     await updateDoc(docRef, { views: increment(1) });
@@ -1990,11 +2012,31 @@
             };
 
             // ==========================================
-            // Movie Card Click Handler
+            // Movie Card Click Handler - 🔒 PREMIUM CHECK
             // ==========================================
 
             const handleMovieCardClick = async (movieId) => {
-                // ✅ প্রথমে মুভি ডেটা লোড করবে, তারপর প্রিমিয়াম চেক করবে
+                // 🔒 প্রিমিয়াম চেক - details.html এ যেতে হলে প্রিমিয়াম লাগবেই
+                if (currentUserId) {
+                    const { hasPremium } = await checkPremiumStatus(currentUserId);
+                    if (!hasPremium) {
+                        const watched = await showPremiumRequiredModal(currentUserId);
+                        if (watched) {
+                            // অ্যাড দেখার পর আবার চেক
+                            const { hasPremium: nowHas } = await checkPremiumStatus(currentUserId);
+                            if (nowHas) {
+                                // প্রিমিয়াম হয়েছে → ডিটেইলস খুলুন
+                                openMovieDetails(movieId);
+                            }
+                        }
+                        return;
+                    }
+                } else {
+                    showToast('⚠️ Please open from Telegram app.');
+                    return;
+                }
+                
+                // ✅ প্রিমিয়াম থাকলে সরাসরি খুলুন
                 openMovieDetails(movieId);
             };
 
