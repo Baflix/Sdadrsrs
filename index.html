@@ -982,7 +982,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, setDoc, increment, serverTimestamp, query, where, orderBy, startAfter, limit, addDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, setDoc, increment, serverTimestamp, query, where, orderBy, startAfter, limit, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA3okSnZJrF9ooUp12KihKISR2VRZq5Ju8",
@@ -1517,40 +1517,17 @@
             }
 
             // ==========================================
-            // SPA Details Open - 🔒 PREMIUM CHECK REQUIRED
+            // SPA Details Open (FIXED - with URL data)
             // ==========================================
 
             const openMovieDetails = async (movieId) => {
-                // 🔒 STEP 1: প্রিমিয়াম চেক
-                if (currentUserId) {
-                    const { hasPremium } = await checkPremiumStatus(currentUserId);
-                    
-                    // 🔒 প্রিমিয়াম না থাকলে → অ্যাড পপআপ দেখান
-                    if (!hasPremium) {
-                        const watched = await showPremiumRequiredModal(currentUserId);
-                        if (!watched) {
-                            // অ্যাড না দেখলে → ব্লক করুন
-                            showToast('⚠️ Premium required to watch movies!');
-                            return;
-                        }
-                        // অ্যাড দেখার পর আবার চেক করুন
-                        const { hasPremium: nowHas } = await checkPremiumStatus(currentUserId);
-                        if (!nowHas) {
-                            showToast('❌ Failed to activate premium. Please try again.');
-                            return;
-                        }
-                    }
-                } else {
-                    showToast('⚠️ Please open from Telegram app.');
-                    return;
-                }
-
-                // ✅ প্রিমিয়াম থাকলে → ডিটেইলস পেজ খুলুন
                 savedScrollPosition = window.scrollY;
                 
+                // ✅ আগে থেকে লোড করা ডেটা খোঁজা
                 let movieData = currentlyLoadedMovies.find(m => m.id === movieId);
                 
                 if (!movieData) {
+                    // Firebase থেকে ডেটা আনা
                     movieData = await getMovieData(movieId);
                 }
                 
@@ -1559,12 +1536,13 @@
                     try {
                         localStorage.setItem('preloadedMovieData_' + movieId, JSON.stringify(movieData));
                     } catch (e) {}
-                    console.log("✅ Movie data preloaded:", movieData.title);
+                    console.log("✅ Movie data loaded:", movieData.title);
                 }
                 
                 const currentPath = window.location.pathname;
                 const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
                 
+                // ✅ ডেটা URL এনকোড করে পাঠানো
                 let detailsUrl = `${basePath}details.html?id=${movieId}`;
                 if (movieData) {
                     const encodedData = encodeURIComponent(JSON.stringify(movieData));
@@ -1581,11 +1559,11 @@
                     const docRef = doc(db, 'movies', movieId);
                     await updateDoc(docRef, { views: increment(1) });
                 } catch(e) {
-                    console.log("⚠️ View count update skipped (permission issue)");
+                    console.error("Error updating view count:", e);
                 }
 
                 const tgApp = window.Telegram?.WebApp;
-                if (tgApp && tgApp.BackButton && typeof tgApp.BackButton.show === 'function') {
+                if (tgApp && tgApp.BackButton) {
                     tgApp.BackButton.show();
                 }
             };
@@ -1599,7 +1577,7 @@
                 window.scrollTo(0, savedScrollPosition);
                 
                 const tgApp = window.Telegram?.WebApp;
-                if (tgApp && tgApp.BackButton && typeof tgApp.BackButton.hide === 'function') {
+                if (tgApp && tgApp.BackButton) {
                     tgApp.BackButton.hide();
                 }
             };
@@ -2012,31 +1990,20 @@
             };
 
             // ==========================================
-            // Movie Card Click Handler - 🔒 PREMIUM CHECK
+            // Movie Card Click Handler
             // ==========================================
 
             const handleMovieCardClick = async (movieId) => {
-                // 🔒 প্রিমিয়াম চেক - details.html এ যেতে হলে প্রিমিয়াম লাগবেই
                 if (currentUserId) {
                     const { hasPremium } = await checkPremiumStatus(currentUserId);
                     if (!hasPremium) {
                         const watched = await showPremiumRequiredModal(currentUserId);
                         if (watched) {
-                            // অ্যাড দেখার পর আবার চেক
-                            const { hasPremium: nowHas } = await checkPremiumStatus(currentUserId);
-                            if (nowHas) {
-                                // প্রিমিয়াম হয়েছে → ডিটেইলস খুলুন
-                                openMovieDetails(movieId);
-                            }
+                            openMovieDetails(movieId);
                         }
                         return;
                     }
-                } else {
-                    showToast('⚠️ Please open from Telegram app.');
-                    return;
                 }
-                
-                // ✅ প্রিমিয়াম থাকলে সরাসরি খুলুন
                 openMovieDetails(movieId);
             };
 
