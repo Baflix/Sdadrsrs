@@ -414,6 +414,107 @@
             .action-btn { width: 100%; }
             .movie-title-large { font-size: 1.6rem; }
         }
+
+        /* AD POPUP STYLES */
+        .ad-popup-overlay {
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.92);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .ad-popup-content {
+            background: linear-gradient(145deg, #1a1a1a, #222);
+            padding: 35px 25px;
+            border-radius: 24px;
+            max-width: 420px;
+            width: 92%;
+            text-align: center;
+            border: 1px solid rgba(229,9,20,0.3);
+            box-shadow: 0 20px 60px rgba(229,9,20,0.2);
+        }
+        .ad-popup-content .ad-icon {
+            font-size: 3rem;
+            color: #ffd700;
+            margin-bottom: 10px;
+            animation: bounce 1.5s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .ad-popup-content h2 {
+            color: #e50914;
+            margin-bottom: 8px;
+            font-size: 1.6rem;
+        }
+        .ad-popup-content .ad-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 5px;
+        }
+        .ad-popup-content .ad-highlight {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .ad-popup-content .ad-timer-info {
+            color: #888;
+            font-size: 0.8rem;
+            margin: 8px 0 15px;
+        }
+        .ad-watch-btn {
+            display: inline-block;
+            background: linear-gradient(45deg, #f7971e, #ffd200);
+            color: #000;
+            padding: 16px 35px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            margin: 10px 0 12px;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 20px rgba(255, 210, 0, 0.3);
+            border: none;
+            cursor: pointer;
+        }
+        .ad-watch-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 30px rgba(255, 210, 0, 0.5);
+        }
+        .ad-watch-btn i { margin-right: 10px; }
+        .ad-skip-btn {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 0.85rem;
+            text-decoration: underline;
+            padding: 8px 16px;
+            transition: color 0.3s;
+            display: block;
+            margin: 5px auto 0;
+        }
+        .ad-skip-btn:hover { color: #aaa; }
+        .ad-loading-spinner {
+            display: none;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #333;
+            border-top-color: #ffd700;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 15px auto;
+        }
     </style>
 </head>
 <body>
@@ -570,27 +671,6 @@
             } catch (error) {
                 console.error("Error creating short link:", error);
                 return null;
-            }
-        }
-
-        async function activatePremium(userId, token) {
-            try {
-                const docRef = doc(db, "premiumUsers", String(userId));
-                const expiryTime = new Date();
-                expiryTime.setHours(expiryTime.getHours() + PREMIUM_HOURS);
-                await setDoc(docRef, {
-                    userId: String(userId),
-                    expiry: expiryTime,
-                    status: "active",
-                    token: token,
-                    tokenExpiry: new Date(Date.now() + 30 * 60 * 1000),
-                    lastAdWatch: serverTimestamp(),
-                    updatedAt: serverTimestamp()
-                }, { merge: true });
-                return { success: true };
-            } catch (error) {
-                console.error("Error activating premium:", error);
-                return { success: false };
             }
         }
 
@@ -999,7 +1079,7 @@
         };
 
         // ==========================================
-        // Load Movie Details
+        // Load Movie Details (FIXED - Better preload handling)
         // ==========================================
 
         const loadMovieDetails = async (movieId) => {
@@ -1010,15 +1090,51 @@
             }
 
             currentMovieId = movieId;
+            console.log("📽️ Loading movie details for ID:", movieId);
 
-            if (window.parent && window.parent.preloadedMovieData && window.parent.preloadedMovieData.id === movieId) {
-                console.log('Using preloaded movie data from parent memory');
-                renderMovieDetails(window.parent.preloadedMovieData);
+            // ✅ Try to get preloaded data from multiple sources
+            let preloadedData = null;
+            
+            // Method 1: Check parent window (when inside iframe)
+            try {
+                if (window.parent && window.parent.preloadedMovieData) {
+                    preloadedData = window.parent.preloadedMovieData;
+                    console.log("✅ Got preloaded data from parent window:", preloadedData.title);
+                }
+            } catch (e) {
+                console.log("⚠️ Cannot access parent window (cross-origin or not in iframe)");
+            }
+            
+            // Method 2: Check current window (when loaded directly)
+            if (!preloadedData && window.preloadedMovieData) {
+                preloadedData = window.preloadedMovieData;
+                console.log("✅ Got preloaded data from current window:", preloadedData.title);
+            }
+            
+            // Method 3: Check localStorage (backup)
+            if (!preloadedData) {
+                try {
+                    const stored = localStorage.getItem('preloadedMovieData_' + movieId);
+                    if (stored) {
+                        preloadedData = JSON.parse(stored);
+                        console.log("✅ Got preloaded data from localStorage:", preloadedData.title);
+                    }
+                } catch (e) {
+                    console.log("⚠️ No data in localStorage");
+                }
+            }
+
+            // If preloaded data found and matches the ID
+            if (preloadedData && preloadedData.id === movieId) {
+                console.log("🎯 Using preloaded movie data");
+                renderMovieDetails(preloadedData);
                 loadingIndicator.style.display = 'none';
                 detailsContainer.style.display = 'block';
                 return;
             }
 
+            // If not found, fetch from Firebase
+            console.log("⏳ Fetching movie from Firebase...");
             try {
                 const docSnap = await getDoc(doc(db, 'movies', movieId));
                 if (!docSnap.exists()) {
@@ -1034,12 +1150,17 @@
                     return;
                 }
 
+                // Save to localStorage for future use
+                try {
+                    localStorage.setItem('preloadedMovieData_' + movieId, JSON.stringify(movie));
+                } catch (e) {}
+
                 renderMovieDetails(movie);
                 loadingIndicator.style.display = 'none';
                 detailsContainer.style.display = 'block';
 
             } catch (error) {
-                console.error("Error loading movie:", error);
+                console.error("❌ Error loading movie:", error);
                 loadingIndicator.style.display = 'none';
                 errorMessage.style.display = 'block';
             }
@@ -1050,6 +1171,8 @@
         // ==========================================
 
         const renderMovieDetails = (movie) => {
+            console.log("🎬 Rendering movie:", movie.title);
+            
             document.getElementById('detail-poster').src = movie.posterUrl || 'https://via.placeholder.com/300x450/222/fff?text=No+Image';
             document.getElementById('detail-title').textContent = movie.title || 'Untitled';
             document.getElementById('detail-genres').textContent = movie.genres || 'N/A';
@@ -1321,8 +1444,11 @@
         // ==========================================
 
         const initializeDetails = async () => {
+            console.log("🚀 Initializing details page...");
+            
             const verified = await checkUrlForVerification();
             if (verified) {
+                console.log("✅ Verification complete, reloading...");
                 setTimeout(() => window.location.reload(), 1500);
                 return;
             }
@@ -1330,21 +1456,30 @@
             const tgApp = window.Telegram?.WebApp;
             if (tgApp && tgApp.initDataUnsafe && tgApp.initDataUnsafe.user) {
                 currentUserId = String(tgApp.initDataUnsafe.user.id);
+                console.log("👤 User ID:", currentUserId);
                 const { hasPremium: premiumStatus } = await checkPremiumStatus(currentUserId);
                 hasPremium = premiumStatus;
                 if (hasPremium) {
                     premiumBadgeHeader.classList.add('visible');
+                    console.log("⭐ User has premium");
                 }
             }
 
             const movieId = getMovieIdFromUrl();
+            console.log("🎬 Movie ID from URL:", movieId);
+            
             if (movieId) {
-                loadMovieDetails(movieId);
+                // Small delay to ensure everything is loaded
+                setTimeout(() => {
+                    loadMovieDetails(movieId);
+                }, 300);
             } else {
+                console.log("❌ No movie ID found, going home");
                 goHome();
             }
         };
 
+        // Start the app
         initializeDetails();
     </script>
 </body>
