@@ -48,31 +48,16 @@
             border: 1px solid rgba(255, 215, 0, 0.2);
             display: none;
         }
-        .premium-status-bar.visible {
-            display: block;
-            animation: slideDown 0.5s ease;
-        }
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .premium-status-bar .status-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+        .premium-status-bar.visible { display: block; animation: slideDown 0.5s ease; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .premium-status-bar .status-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .premium-status-bar .status-label { color: var(--text-secondary); font-size: 0.9rem; }
         .premium-status-bar .status-value { font-weight: bold; font-size: 1.1rem; }
         .premium-status-bar .status-value.premium { color: var(--gold); }
         .premium-status-bar .status-value.free { color: var(--text-secondary); }
         .premium-status-bar .timer-text { color: var(--gold); font-size: 1.2rem; font-weight: bold; }
 
-        .premium-btn-container {
-            text-align: center;
-            margin: 0 20px 20px;
-        }
+        .premium-btn-container { text-align: center; margin: 0 20px 20px; }
         .premium-btn {
             background: linear-gradient(45deg, #ffd700, #f5a623);
             color: #000;
@@ -90,13 +75,9 @@
             width: 100%;
             justify-content: center;
         }
-        .premium-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 30px rgba(255, 215, 0, 0.5);
-        }
+        .premium-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 30px rgba(255, 215, 0, 0.5); }
         .premium-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-        /* ===== USER ID DISPLAY ===== */
         .user-id-display {
             background: rgba(0,0,0,0.3);
             padding: 8px 15px;
@@ -108,8 +89,8 @@
             word-break: break-all;
         }
         .user-id-display strong { color: var(--text); }
+        .user-id-display .copy-btn { background: none; border: none; color: var(--primary); cursor: pointer; font-size: 0.9rem; margin-left: 8px; }
 
-        /* ===== SEARCH ===== */
         .search-container-wrapper {
             position: relative;
             max-width: 600px;
@@ -165,7 +146,6 @@
         .filter { padding: 8px 15px; border-radius: 20px; background: var(--light-dark); color: var(--text); cursor: pointer; transition: background 0.3s, transform 0.2s; }
         .filter.active { background: var(--primary); font-weight: bold; }
 
-        /* ===== USER INFO SECTION ===== */
         .user-info-section {
             background: linear-gradient(145deg, #1a1a1a, #222);
             border-radius: 15px;
@@ -198,7 +178,6 @@
         }
         .user-welcome-text h3 { color: var(--primary); margin-bottom: 5px; font-size: 1.3rem; }
         .user-welcome-text p { color: var(--text-secondary); font-size: 0.9rem; }
-
         .user-details { display: flex; flex-direction: column; gap: 15px; }
         .user-detail-item {
             display: flex;
@@ -263,7 +242,6 @@
         .status-badge.blocked { background: var(--danger); color: #fff; }
         .status-badge.premium { background: var(--gold); color: #000; }
 
-        /* ===== REQUEST MODAL ===== */
         .request-btn-container { text-align: center; margin: 0 20px 20px; }
         .request-btn {
             background: var(--blue); color: #fff; border: none; padding: 14px 30px;
@@ -323,7 +301,6 @@
         .request-modal .error-msg { color: var(--danger); font-size: 0.85rem; margin-top: 5px; display: none; }
         .request-modal .error-msg.show { display: block; }
 
-        /* ===== MOVIE GRID ===== */
         .movie-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -469,9 +446,7 @@
         <!-- User ID Display -->
         <div class="user-id-display">
             🔑 Your Unique ID: <strong id="user-id-display">Loading...</strong>
-            <button class="copy-btn" onclick="window.copyToClipboard('user-id-display')" style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:0.9rem;">
-                <i class="far fa-copy"></i>
-            </button>
+            <button class="copy-btn" onclick="window.copyToClipboard('user-id-display')"><i class="far fa-copy"></i></button>
         </div>
 
         <!-- Premium Status Bar -->
@@ -702,6 +677,7 @@
             // ===== PREMIUM VARIABLES =====
             const PREMIUM_DURATION_HOURS = 12;
             const BOT_USERNAME = 'BaflixStreamBot';
+            const AD_SITE_URL = 'https://baflix.github.io/Baflix/ad.html';
             let premiumTimerInterval = null;
             let premiumUntil = null;
             let isPremiumActive = false;
@@ -786,7 +762,6 @@
                                 premiumUnlockBtn.disabled = true;
                                 premiumUnlocksCount.textContent = data.totalUnlocks || 0;
                                 
-                                // ইউজার স্ট্যাটাস ব্যাজ আপডেট
                                 userStatusBadge.className = 'status-badge premium';
                                 userStatusBadge.textContent = '👑 Premium';
                                 
@@ -889,7 +864,7 @@
                 currentUserId = uid;
                 
                 // অ্যাড পেজে পাঠান
-                const adPageUrl = `https://your-ad-site.com/ad.html?uid=${uid}`;
+                const adPageUrl = `${AD_SITE_URL}?uid=${uid}`;
                 window.open(adPageUrl, '_blank');
             });
 
@@ -942,10 +917,7 @@
                         userCreatedAt.textContent = date.toLocaleString('bn-BD');
                     }
                     
-                    // ইউজার আইডি দেখান
                     userIdDisplay.textContent = uid;
-                    
-                    // প্রিমিয়াম স্ট্যাটাস লিসেন শুরু করুন
                     listenPremiumStatus(uid);
                     
                 } catch (error) {
@@ -1406,18 +1378,15 @@
             const initializeApp = async () => {
                 console.log('🚀 Initializing app...');
                 
-                // ইউনিক ইউজার আইডি তৈরি/পাওয়া
                 const uid = getUniqueUserId();
                 currentUserId = uid;
                 console.log('👤 User ID:', uid);
                 
-                // ইউজার সেভ করুন
                 await saveUserToFirebase(uid, {
                     platform: 'browser',
                     firstName: 'User'
                 });
                 
-                // বাকি সব লোড করুন
                 await Promise.all([renderSocialLinks(), setupFilters()]);
                 await loadWelcomePopupSettings();
                 await fetchAndRenderMovies(true);
@@ -1489,9 +1458,6 @@
             window.addEventListener('online', () => window.location.reload());
             window.addEventListener('offline', handleConnectionChange);
             
-            // ============================================
-            // ===== START APP =====
-            // ============================================
             try {
                 if (!navigator.onLine) {
                     handleConnectionChange();
