@@ -404,17 +404,7 @@
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
-        @media (min-width: 600px) {
-            .movie-header { flex-direction: row; align-items: flex-start; }
-            .movie-poster-large { max-width: 250px; flex-shrink: 0; }
-            .action-btn { flex: 0 1 auto; }
-        }
-        @media (max-width: 480px) {
-            .actions-section { flex-direction: column; }
-            .action-btn { width: 100%; }
-            .movie-title-large { font-size: 1.6rem; }
-        }
-
+        /* AD POPUP STYLES */
         .ad-popup-overlay {
             position: fixed;
             top:0; left:0; width:100%; height:100%;
@@ -514,6 +504,20 @@
             animation: spin 0.8s linear infinite;
             margin: 15px auto;
         }
+
+        @media (min-width: 600px) {
+            .movie-header { flex-direction: row; align-items: flex-start; }
+            .movie-poster-large { max-width: 250px; flex-shrink: 0; }
+            .action-btn { flex: 0 1 auto; }
+        }
+        @media (max-width: 480px) {
+            .actions-section { flex-direction: column; }
+            .action-btn { width: 100%; }
+            .movie-title-large { font-size: 1.6rem; }
+            .ad-popup-content { padding: 25px 18px; }
+            .ad-popup-content h2 { font-size: 1.3rem; }
+            .ad-watch-btn { padding: 14px 25px; font-size: 1rem; }
+        }
     </style>
 </head>
 <body>
@@ -593,6 +597,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // ===== VSHORT API CONFIGURATION =====
         const VSHORT_API = "c7d18a4a9d26ad6407fbd39fb85470d3c46f42d3";
         const VSHORT_URL = "https://vshort.xyz/api";
         const PREMIUM_HOURS = 12;
@@ -611,6 +616,10 @@
         let currentUserId = null;
         let currentMovieId = null;
         let hasPremium = false;
+
+        // ==========================================
+        // PREMIUM SYSTEM FUNCTIONS
+        // ==========================================
 
         async function checkPremiumStatus(userId) {
             if (!userId) return { hasPremium: false, data: null };
@@ -681,6 +690,10 @@
                 setTimeout(() => toast.remove(), 500);
             }, 5000);
         }
+
+        // ==========================================
+        // PREMIUM POPUP IN IFRAME
+        // ==========================================
 
         function showAdPopupInIframe(shortLink, onComplete) {
             const existing = document.querySelector('.ad-popup-overlay');
@@ -888,6 +901,10 @@
             });
         }
 
+        // ==========================================
+        // URL Verification Check
+        // ==========================================
+
         async function checkUrlForVerification() {
             const params = new URLSearchParams(window.location.search);
             const verify = params.get('verify');
@@ -935,6 +952,10 @@
             return false;
         }
 
+        // ==========================================
+        // Original Functions
+        // ==========================================
+
         const parseEpisodeNumber = (epNumStr) => {
             const str = String(epNumStr).trim();
             if (str.includes('-')) {
@@ -977,11 +998,28 @@
             }
         };
 
+        // ✅ FIXED: incrementDownloadCount with error handling
         const incrementDownloadCount = async (movieId) => {
             if (!movieId) return;
             try {
-                await updateDoc(doc(db, 'movies', movieId), { downloadCount: increment(1) });
-            } catch (error) { console.error("Error incrementing download count:", error); }
+                await updateDoc(doc(db, 'movies', movieId), { 
+                    downloadCount: increment(1) 
+                });
+            } catch (error) {
+                console.log("⚠️ Download count update skipped (permission issue)");
+            }
+        };
+
+        // ✅ FIXED: incrementViewCount with error handling
+        const incrementViewCount = async (movieId) => {
+            if (!movieId) return;
+            try {
+                await updateDoc(doc(db, 'movies', movieId), { 
+                    views: increment(1) 
+                });
+            } catch (error) {
+                console.log("⚠️ View count update skipped (permission issue)");
+            }
         };
 
         const copyToClipboard = (text, button) => {
@@ -1014,9 +1052,15 @@
         };
 
         const goHome = () => {
-            if (window.parent && typeof window.parent.handleSpaBack === 'function') {
-                window.parent.handleSpaBack();
-            } else {
+            try {
+                if (window.parent && typeof window.parent.handleSpaBack === 'function') {
+                    window.parent.handleSpaBack();
+                } else {
+                    const currentPath = window.location.pathname;
+                    const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+                    window.location.href = `${basePath}index.html`;
+                }
+            } catch (e) {
                 const currentPath = window.location.pathname;
                 const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
                 window.location.href = `${basePath}index.html`;
@@ -1061,7 +1105,7 @@
         };
 
         // ==========================================
-        // Load Movie Details (SUPER FAST)
+        // Load Movie Details (FIXED - with URL data)
         // ==========================================
 
         const loadMovieDetails = async (movieId) => {
@@ -1074,40 +1118,55 @@
             currentMovieId = movieId;
             console.log("📽️ Loading movie details for ID:", movieId);
 
-            // ✅ Try multiple sources for preloaded data
-            let preloadedData = null;
+            // ✅ 1. Check URL parameter for data
+            let movieData = null;
+            const params = new URLSearchParams(window.location.search);
+            const dataParam = params.get('data');
             
-            // Method 1: Parent window
-            try {
-                if (window.parent && window.parent.preloadedMovieData) {
-                    preloadedData = window.parent.preloadedMovieData;
-                    console.log("✅ Got preloaded data from parent window");
+            if (dataParam) {
+                try {
+                    movieData = JSON.parse(decodeURIComponent(dataParam));
+                    console.log("✅ Got movie data from URL parameter:", movieData.title);
+                } catch (e) {
+                    console.log("⚠️ Failed to parse data from URL");
                 }
-            } catch (e) {}
+            }
             
-            // Method 2: Current window
-            if (!preloadedData && window.preloadedMovieData) {
-                preloadedData = window.preloadedMovieData;
+            // ✅ 2. Check parent window
+            if (!movieData) {
+                try {
+                    if (window.parent && window.parent.preloadedMovieData) {
+                        movieData = window.parent.preloadedMovieData;
+                        console.log("✅ Got preloaded data from parent window");
+                    }
+                } catch (e) {}
+            }
+            
+            // ✅ 3. Check current window
+            if (!movieData && window.preloadedMovieData) {
+                movieData = window.preloadedMovieData;
                 console.log("✅ Got preloaded data from current window");
             }
             
-            // Method 3: localStorage
-            if (!preloadedData) {
+            // ✅ 4. Check localStorage
+            if (!movieData) {
                 try {
                     const stored = localStorage.getItem('preloadedMovieData_' + movieId);
                     if (stored) {
-                        preloadedData = JSON.parse(stored);
+                        movieData = JSON.parse(stored);
                         console.log("✅ Got preloaded data from localStorage");
                     }
                 } catch (e) {}
             }
 
-            // ✅ If preloaded data found → show instantly (NO LOADING)
-            if (preloadedData && preloadedData.id === movieId) {
-                console.log("🎯 Using preloaded movie data - FAST LOAD");
+            // ✅ If data found → show instantly
+            if (movieData && movieData.id === movieId) {
+                console.log("🎯 Using movie data - FAST LOAD");
                 loadingIndicator.style.display = 'none';
-                renderMovieDetails(preloadedData);
+                renderMovieDetails(movieData);
                 detailsContainer.style.display = 'block';
+                // ✅ Update view count in background (ignore errors)
+                incrementViewCount(movieId);
                 return;
             }
 
@@ -1121,20 +1180,22 @@
                     return;
                 }
 
-                const movie = { id: docSnap.id, ...docSnap.data() };
-                if (movie.status !== 'active') {
+                movieData = { id: docSnap.id, ...docSnap.data() };
+                if (movieData.status !== 'active') {
                     loadingIndicator.style.display = 'none';
                     errorMessage.style.display = 'block';
                     return;
                 }
 
                 try {
-                    localStorage.setItem('preloadedMovieData_' + movieId, JSON.stringify(movie));
+                    localStorage.setItem('preloadedMovieData_' + movieId, JSON.stringify(movieData));
                 } catch (e) {}
 
                 loadingIndicator.style.display = 'none';
-                renderMovieDetails(movie);
+                renderMovieDetails(movieData);
                 detailsContainer.style.display = 'block';
+                // ✅ Update view count in background (ignore errors)
+                incrementViewCount(movieId);
 
             } catch (error) {
                 console.error("❌ Error loading movie:", error);
@@ -1410,14 +1471,19 @@
                 });
             }
 
-            if (tgApp && tgApp.BackButton) {
-                tgApp.BackButton.onClick(goHome);
-                tgApp.BackButton.show();
+            // ✅ FIXED: Check if BackButton is supported
+            try {
+                if (tgApp && tgApp.BackButton && typeof tgApp.BackButton.show === 'function') {
+                    tgApp.BackButton.onClick(goHome);
+                    tgApp.BackButton.show();
+                }
+            } catch (e) {
+                console.log("⚠️ BackButton not supported in this version");
             }
         };
 
         // ==========================================
-        // Initialize (SUPER FAST)
+        // Initialize
         // ==========================================
 
         const initializeDetails = async () => {
@@ -1446,7 +1512,6 @@
             console.log("🎬 Movie ID from URL:", movieId);
             
             if (movieId) {
-                // ✅ SUPER FAST - only 50ms delay
                 setTimeout(() => {
                     loadMovieDetails(movieId);
                 }, 50);
