@@ -404,7 +404,6 @@
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
-        /* AD POPUP STYLES */
         .ad-popup-overlay {
             position: fixed;
             top:0; left:0; width:100%; height:100%;
@@ -597,7 +596,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // ===== VSHORT API CONFIGURATION =====
         const VSHORT_API = "c7d18a4a9d26ad6407fbd39fb85470d3c46f42d3";
         const VSHORT_URL = "https://vshort.xyz/api";
         const PREMIUM_HOURS = 12;
@@ -690,10 +688,6 @@
                 setTimeout(() => toast.remove(), 500);
             }, 5000);
         }
-
-        // ==========================================
-        // PREMIUM POPUP IN IFRAME
-        // ==========================================
 
         function showAdPopupInIframe(shortLink, onComplete) {
             const existing = document.querySelector('.ad-popup-overlay');
@@ -901,10 +895,6 @@
             });
         }
 
-        // ==========================================
-        // URL Verification Check
-        // ==========================================
-
         async function checkUrlForVerification() {
             const params = new URLSearchParams(window.location.search);
             const verify = params.get('verify');
@@ -952,10 +942,6 @@
             return false;
         }
 
-        // ==========================================
-        // Original Functions
-        // ==========================================
-
         const parseEpisodeNumber = (epNumStr) => {
             const str = String(epNumStr).trim();
             if (str.includes('-')) {
@@ -998,7 +984,6 @@
             }
         };
 
-        // ✅ FIXED: incrementDownloadCount with error handling
         const incrementDownloadCount = async (movieId) => {
             if (!movieId) return;
             try {
@@ -1010,7 +995,6 @@
             }
         };
 
-        // ✅ FIXED: incrementViewCount with error handling
         const incrementViewCount = async (movieId) => {
             if (!movieId) return;
             try {
@@ -1105,21 +1089,28 @@
         };
 
         // ==========================================
-        // Load Movie Details (FIXED - with URL data)
+        // LOAD MOVIE DETAILS (প্রথমে মুভি লোড, তারপর প্রিমিয়াম)
         // ==========================================
 
         const loadMovieDetails = async (movieId) => {
+            console.log("🔍 loadMovieDetails called with ID:", movieId);
+            
             if (!movieId) {
+                console.log("❌ No movie ID provided");
                 loadingIndicator.style.display = 'none';
                 errorMessage.style.display = 'block';
                 return;
             }
 
             currentMovieId = movieId;
-            console.log("📽️ Loading movie details for ID:", movieId);
-
-            // ✅ 1. Check URL parameter for data
+            
+            // ==========================================
+            // STEP 1: মুভি ডেটা লোড করা
+            // ==========================================
+            
             let movieData = null;
+            
+            // Method 1: URL parameter
             const params = new URLSearchParams(window.location.search);
             const dataParam = params.get('data');
             
@@ -1132,93 +1123,121 @@
                 }
             }
             
-            // ✅ 2. Check parent window
+            // Method 2: Parent window
             if (!movieData) {
                 try {
                     if (window.parent && window.parent.preloadedMovieData) {
                         movieData = window.parent.preloadedMovieData;
-                        console.log("✅ Got preloaded data from parent window");
+                        console.log("✅ Got preloaded data from parent window:", movieData.title);
                     }
                 } catch (e) {}
             }
             
-            // ✅ 3. Check current window
+            // Method 3: Current window
             if (!movieData && window.preloadedMovieData) {
                 movieData = window.preloadedMovieData;
-                console.log("✅ Got preloaded data from current window");
+                console.log("✅ Got preloaded data from current window:", movieData.title);
             }
             
-            // ✅ 4. Check localStorage
+            // Method 4: localStorage
             if (!movieData) {
                 try {
                     const stored = localStorage.getItem('preloadedMovieData_' + movieId);
                     if (stored) {
                         movieData = JSON.parse(stored);
-                        console.log("✅ Got preloaded data from localStorage");
+                        console.log("✅ Got preloaded data from localStorage:", movieData.title);
                     }
                 } catch (e) {}
             }
 
-            // ✅ If data found → show instantly
+            // Method 5: Firebase (যদি কোথাও না পায়)
+            if (!movieData) {
+                console.log("⏳ Fetching movie from Firebase...");
+                try {
+                    const docSnap = await getDoc(doc(db, 'movies', movieId));
+                    if (docSnap.exists()) {
+                        movieData = { id: docSnap.id, ...docSnap.data() };
+                        console.log("✅ Movie fetched from Firebase:", movieData.title);
+                        try {
+                            localStorage.setItem('preloadedMovieData_' + movieId, JSON.stringify(movieData));
+                        } catch (e) {}
+                    }
+                } catch (error) {
+                    console.error("❌ Error fetching from Firebase:", error);
+                }
+            }
+
+            // ==========================================
+            // STEP 2: মুভি ডেটা রেন্ডার করা
+            // ==========================================
+            
             if (movieData && movieData.id === movieId) {
-                console.log("🎯 Using movie data - FAST LOAD");
+                console.log("🎯 Rendering movie:", movieData.title);
                 loadingIndicator.style.display = 'none';
                 renderMovieDetails(movieData);
                 detailsContainer.style.display = 'block';
-                // ✅ Update view count in background (ignore errors)
+                
+                // ✅ View count update (background)
                 incrementViewCount(movieId);
+                
+                // ==========================================
+                // STEP 3: প্রিমিয়াম চেক করা (মুভি লোড হওয়ার পরে)
+                // ==========================================
+                const tgApp = window.Telegram?.WebApp;
+                if (tgApp && tgApp.initDataUnsafe && tgApp.initDataUnsafe.user) {
+                    currentUserId = String(tgApp.initDataUnsafe.user.id);
+                    console.log("👤 Checking premium for user:", currentUserId);
+                    const { hasPremium: premiumStatus } = await checkPremiumStatus(currentUserId);
+                    hasPremium = premiumStatus;
+                    if (hasPremium) {
+                        premiumBadgeHeader.classList.add('visible');
+                        console.log("⭐ User has premium");
+                    } else {
+                        console.log("⭐ User does not have premium");
+                    }
+                }
+                
                 return;
             }
 
-            // ❌ If not found → fetch from Firebase
-            console.log("⏳ Fetching movie from Firebase...");
-            try {
-                const docSnap = await getDoc(doc(db, 'movies', movieId));
-                if (!docSnap.exists()) {
-                    loadingIndicator.style.display = 'none';
-                    errorMessage.style.display = 'block';
-                    return;
-                }
-
-                movieData = { id: docSnap.id, ...docSnap.data() };
-                if (movieData.status !== 'active') {
-                    loadingIndicator.style.display = 'none';
-                    errorMessage.style.display = 'block';
-                    return;
-                }
-
-                try {
-                    localStorage.setItem('preloadedMovieData_' + movieId, JSON.stringify(movieData));
-                } catch (e) {}
-
-                loadingIndicator.style.display = 'none';
-                renderMovieDetails(movieData);
-                detailsContainer.style.display = 'block';
-                // ✅ Update view count in background (ignore errors)
-                incrementViewCount(movieId);
-
-            } catch (error) {
-                console.error("❌ Error loading movie:", error);
-                loadingIndicator.style.display = 'none';
-                errorMessage.style.display = 'block';
-            }
+            // ==========================================
+            // STEP 4: ডেটা না পেলে এরর দেখানো
+            // ==========================================
+            console.log("❌ No movie data found");
+            loadingIndicator.style.display = 'none';
+            errorMessage.style.display = 'block';
         };
 
         // ==========================================
-        // Render Movie Details
+        // RENDER MOVIE DETAILS
         // ==========================================
 
         const renderMovieDetails = (movie) => {
             console.log("🎬 Rendering movie:", movie.title);
             
-            document.getElementById('detail-poster').src = movie.posterUrl || 'https://via.placeholder.com/300x450/222/fff?text=No+Image';
+            // Poster
+            const poster = document.getElementById('detail-poster');
+            poster.src = movie.posterUrl || 'https://via.placeholder.com/300x450/222/fff?text=No+Image';
+            
+            // Title
             document.getElementById('detail-title').textContent = movie.title || 'Untitled';
+            
+            // Genres
             document.getElementById('detail-genres').textContent = movie.genres || 'N/A';
+            
+            // Rating
             document.getElementById('detail-rating').innerHTML = `<i class="fas fa-star" style="color:gold;"></i> ${movie.rating || 'N/A'}/10`;
+            
+            // Year
             document.getElementById('detail-year').textContent = `Year: ${movie.year || 'N/A'}`;
+            
+            // Language
             document.getElementById('detail-language').textContent = `Language: ${movie.language || 'N/A'}`;
+            
+            // Description
             document.getElementById('detail-description').textContent = movie.description || 'No description available.';
 
+            // Series Info
             const seriesInfoEl = document.getElementById('details-series-info');
             const isSeries = movie.type !== 'movie';
 
@@ -1236,15 +1255,15 @@
                 seriesInfoEl.style.display = 'none';
             }
 
+            // Premium Badge (পোস্টারে)
             const posterBadge = document.getElementById('poster-premium-badge');
             if (movie.isPremium) {
                 posterBadge.style.display = 'block';
-                premiumBadgeHeader.classList.add('visible');
             } else {
                 posterBadge.style.display = 'none';
-                premiumBadgeHeader.classList.remove('visible');
             }
 
+            // Trailer
             const trailerContainer = document.getElementById('detail-trailer-container');
             trailerContainer.innerHTML = '';
             if (movie.trailerUrl) {
@@ -1263,14 +1282,17 @@
                 trailerContainer.appendChild(trailerBtn);
             }
 
+            // Deep Link
             const tgApp = window.Telegram?.WebApp;
             let deepLinkUrl = generateDeepLink(movie.id, movie.title);
             
+            // Actions: Share & Copy
             const actionsContainer = document.getElementById('detail-actions');
             actionsContainer.innerHTML = '';
 
             const shareMessage = `🎬 "${movie.title}" Watch now on Baflix!\n\n${deepLinkUrl}`;
 
+            // Share Button
             const shareBtn = document.createElement('button');
             shareBtn.className = 'action-btn share';
             shareBtn.innerHTML = `<i class="fas fa-share-alt"></i> Share`;
@@ -1296,6 +1318,7 @@
             };
             actionsContainer.appendChild(shareBtn);
 
+            // Copy Button
             const copyBtn = document.createElement('button');
             copyBtn.className = 'action-btn copy';
             copyBtn.innerHTML = `<i class="fas fa-copy"></i> Copy Link`;
@@ -1305,13 +1328,14 @@
             actionsContainer.appendChild(copyBtn);
 
             // ==========================================
-            // DOWNLOADS SECTION
+            // DOWNLOADS SECTION (প্রিমিয়াম চেক এখানে)
             // ==========================================
 
             const downloadsContainer = document.getElementById('detail-downloads');
             downloadsContainer.innerHTML = '';
 
             const handleDownloadClick = async (linkUrl, linkName) => {
+                // ✅ ডাউনলোডের সময় প্রিমিয়াম চেক
                 if (currentUserId) {
                     const { hasPremium: premiumStatus } = await checkPremiumStatus(currentUserId);
                     hasPremium = premiumStatus;
@@ -1351,6 +1375,7 @@
                         e.preventDefault();
                         e.stopPropagation();
 
+                        // ✅ ডাউনলোডের সময় প্রিমিয়াম চেক
                         if (currentUserId) {
                             const { hasPremium: premiumStatus } = await checkPremiumStatus(currentUserId);
                             if (!premiumStatus) {
@@ -1421,6 +1446,7 @@
                                         e.preventDefault();
                                         e.stopPropagation();
 
+                                        // ✅ ডাউনলোডের সময় প্রিমিয়াম চেক
                                         if (currentUserId) {
                                             const { hasPremium: premiumStatus } = await checkPremiumStatus(currentUserId);
                                             if (!premiumStatus) {
@@ -1471,7 +1497,7 @@
                 });
             }
 
-            // ✅ FIXED: Check if BackButton is supported
+            // BackButton
             try {
                 if (tgApp && tgApp.BackButton && typeof tgApp.BackButton.show === 'function') {
                     tgApp.BackButton.onClick(goHome);
@@ -1483,29 +1509,18 @@
         };
 
         // ==========================================
-        // Initialize
+        // INITIALIZE
         // ==========================================
 
         const initializeDetails = async () => {
             console.log("🚀 Initializing details page...");
+            console.log("📍 Current URL:", window.location.href);
             
             const verified = await checkUrlForVerification();
             if (verified) {
                 console.log("✅ Verification complete, reloading...");
                 setTimeout(() => window.location.reload(), 1000);
                 return;
-            }
-
-            const tgApp = window.Telegram?.WebApp;
-            if (tgApp && tgApp.initDataUnsafe && tgApp.initDataUnsafe.user) {
-                currentUserId = String(tgApp.initDataUnsafe.user.id);
-                console.log("👤 User ID:", currentUserId);
-                const { hasPremium: premiumStatus } = await checkPremiumStatus(currentUserId);
-                hasPremium = premiumStatus;
-                if (hasPremium) {
-                    premiumBadgeHeader.classList.add('visible');
-                    console.log("⭐ User has premium");
-                }
             }
 
             const movieId = getMovieIdFromUrl();
