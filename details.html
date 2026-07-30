@@ -9,7 +9,7 @@
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default,es6,fetch"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --blue: #007bff; --danger: #dc3545; }
+        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --blue: #007bff; --danger: #dc3545; --gold: #ffd700; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; -webkit-tap-highlight-color: transparent; }
         body {
             background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
@@ -342,6 +342,37 @@
         }
         #error-message p { color: var(--text-secondary); }
 
+        .toast-notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            color: #fff;
+            padding: 15px 25px;
+            border-radius: 12px;
+            z-index: 9999;
+            display: none;
+            animation: toastIn 0.4s ease;
+            border: 1px solid rgba(255,215,0,0.2);
+            text-align: center;
+            max-width: 90%;
+        }
+        .toast-notification.show {
+            display: block;
+        }
+        .toast-notification .toast-icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+        .toast-notification .toast-icon.success { color: var(--green); }
+        .toast-notification .toast-icon.error { color: var(--danger); }
+        .toast-notification .toast-icon.info { color: var(--blue); }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(30px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
         @media (min-width: 600px) {
             .movie-header { flex-direction: row; align-items: flex-start; }
             .movie-poster-large { max-width: 250px; flex-shrink: 0; }
@@ -394,10 +425,8 @@
 
         <div class="movie-description-full" id="detail-description"></div>
 
-        <!-- Actions: Share & Copy (উপরে) -->
         <div class="actions-section" id="detail-actions"></div>
 
-        <!-- Downloads (নিচে) -->
         <div class="downloads-section" id="detail-downloads"></div>
     </div>
 
@@ -408,6 +437,11 @@
                 <iframe id="youtube-trailer-iframe" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
             </div>
         </div>
+    </div>
+
+    <div class="toast-notification" id="toast-notification">
+        <span class="toast-icon" id="toast-icon">✅</span>
+        <span id="toast-message">Premium unlocked!</span>
     </div>
 
     <script type="module">
@@ -427,8 +461,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        const GP_LINKS_API_KEY = "57d63c9ce694e5d5525f633410a2cd9ef88f2e50";
-
         const loadingIndicator = document.getElementById('loading-indicator');
         const detailsContainer = document.getElementById('details-container');
         const errorMessage = document.getElementById('error-message');
@@ -438,6 +470,29 @@
         const modalOverlay = document.getElementById('trailer-modal');
         const trailerIframe = document.getElementById('youtube-trailer-iframe');
         const trailerCloseBtn = document.getElementById('trailer-close-btn');
+
+        const toastNotification = document.getElementById('toast-notification');
+        const toastMessage = document.getElementById('toast-message');
+        const toastIcon = document.getElementById('toast-icon');
+
+        let isPremiumActive = false;
+
+        const showToast = (message, type = 'success') => {
+            const iconMap = {
+                success: '✅',
+                error: '❌',
+                info: 'ℹ️',
+                warning: '⚠️'
+            };
+            toastIcon.textContent = iconMap[type] || '✅';
+            toastIcon.className = 'toast-icon ' + type;
+            toastMessage.textContent = message;
+            toastNotification.classList.add('show');
+            clearTimeout(toastNotification._timeout);
+            toastNotification._timeout = setTimeout(() => {
+                toastNotification.classList.remove('show');
+            }, 4000);
+        };
 
         const parseEpisodeNumber = (epNumStr) => {
             const str = String(epNumStr).trim();
@@ -453,28 +508,6 @@
             const singleNum = parseInt(str, 10);
             if (!isNaN(singleNum)) return { count: 1, highest: singleNum };
             return { count: 1, highest: 0 };
-        };
-
-        const checkUser12HourPremium = async () => {
-            const tgApp = window.Telegram?.WebApp;
-            const user = tgApp?.initDataUnsafe?.user;
-            if (!user || !user.id) return false;
-
-            try {
-                const userDocSnap = await getDoc(doc(db, "telegramUsers", String(user.id)));
-                if (userDocSnap.exists()) {
-                    const data = userDocSnap.data();
-                    if (data.isPremium && data.premiumExpiresAt) {
-                        const expiresAt = new Date(data.premiumExpiresAt);
-                        if (expiresAt > new Date()) {
-                            return true;
-                        }
-                    }
-                }
-            } catch (e) {
-                console.error("User premium verification error:", e);
-            }
-            return false;
         };
 
         const getYoutubeVideoId = (url) => {
@@ -500,33 +533,6 @@
                 } else { tgApp.openLink(url); }
             } else { 
                 window.open(url, '_blank'); 
-            }
-        };
-
-        const getGpShortenedUrl = async (originalUrl) => {
-            try {
-                const apiEndpoint = `https://gplinks.in/api?api=${GP_LINKS_API_KEY}&url=${encodeURIComponent(originalUrl)}`;
-                const response = await fetch(apiEndpoint);
-                const data = await response.json();
-                if (data && data.shortlink) {
-                    return data.shortlink;
-                }
-            } catch (e) {
-                console.error("GPLinks creation error:", e);
-            }
-            return originalUrl;
-        };
-
-        const handleDownloadLinkClick = async (movieId, originalUrl, button) => {
-            const isPremium = await checkUser12HourPremium();
-            if (isPremium) {
-                incrementDownloadCount(movieId);
-                if (originalUrl) openSafeLink(originalUrl);
-            } else {
-                alert("Your 12-Hour Premium token is either expired or inactive! Generating GP Shortlink for direct access...");
-                const shortUrl = await getGpShortenedUrl(originalUrl);
-                incrementDownloadCount(movieId);
-                openSafeLink(shortUrl);
             }
         };
 
@@ -598,12 +604,38 @@
             return params.get('id');
         };
 
+        const checkPremiumStatus = () => {
+            try {
+                if (window.parent && window.parent.isPremiumActive !== undefined) {
+                    isPremiumActive = window.parent.isPremiumActive;
+                }
+            } catch (e) {}
+            return isPremiumActive;
+        };
+
+        const checkPremiumBeforeDownload = (downloadAction) => {
+            const premiumStatus = checkPremiumStatus();
+            
+            if (premiumStatus) {
+                if (typeof downloadAction === 'function') {
+                    downloadAction();
+                }
+            } else {
+                showToast('🔒 Please unlock premium first!', 'warning');
+                setTimeout(() => {
+                    goHome();
+                }, 1500);
+            }
+        };
+
         const generateDeepLink = (movieId, movieTitle) => {
             const tgApp = window.Telegram?.WebApp;
+            
             if (tgApp && tgApp.initData) {
                 const botUsername = 'Baflix_Movie_Bot';
                 return `https://t.me/${botUsername}?startapp=movie_${movieId}`;
             }
+            
             const currentPath = window.location.pathname;
             const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
             return `${basePath}index.html?id=${movieId}`;
@@ -688,7 +720,7 @@
                         trailerIframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&fs=0&rel=0`;
                         modalOverlay.classList.add('visible');
                     } else {
-                        alert("Invalid trailer link provided.");
+                        showToast('❌ Invalid trailer link provided.', 'error');
                     }
                 };
                 trailerContainer.appendChild(trailerBtn);
@@ -706,7 +738,6 @@
                 deepLinkUrl = `${basePath}index.html?id=${movie.id}`;
             }
             
-            // Actions: Share & Copy
             const actionsContainer = document.getElementById('detail-actions');
             actionsContainer.innerHTML = '';
 
@@ -745,23 +776,42 @@
             };
             actionsContainer.appendChild(copyBtn);
 
-            // Downloads Section
             const downloadsContainer = document.getElementById('detail-downloads');
             downloadsContainer.innerHTML = '';
+
+            const createDownloadButton = (linkData, movieId, isEpisode = false) => {
+                const button = document.createElement('button');
+                button.textContent = linkData.name;
+                button.className = 'download-btn';
+
+                let currentBtnAdLinks = [];
+                if (linkData.ads && typeof linkData.ads === 'string' && linkData.ads.trim() !== '') {
+                    currentBtnAdLinks = linkData.ads.split(',').map(u => u.trim()).filter(u => u);
+                }
+                let clickCount = 0;
+
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    checkPremiumBeforeDownload(() => {
+                        if (currentBtnAdLinks.length > 0 && clickCount < currentBtnAdLinks.length) {
+                            openSafeLink(currentBtnAdLinks[clickCount]);
+                            clickCount++;
+                        } else {
+                            incrementDownloadCount(movieId);
+                            if (linkData.url) openSafeLink(linkData.url);
+                        }
+                    });
+                });
+                button.addEventListener('contextmenu', (e) => e.preventDefault());
+                return button;
+            };
 
             if (movie.type === 'movie' && movie.downloadLinks && movie.downloadLinks.length > 0) {
                 const linksWrapper = document.createElement('div');
                 movie.downloadLinks.forEach(link => {
-                    const button = document.createElement('button');
-                    button.textContent = link.name;
-                    button.className = 'download-btn';
-
-                    button.addEventListener('click', async (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        await handleDownloadLinkClick(movie.id, link.url, button);
-                    });
-                    button.addEventListener('contextmenu', (e) => e.preventDefault());
+                    const button = createDownloadButton(link, movie.id);
                     linksWrapper.appendChild(button);
                 });
                 downloadsContainer.appendChild(linksWrapper);
@@ -793,16 +843,7 @@
 
                             if (episode.downloadLinks && episode.downloadLinks.length > 0) {
                                 episode.downloadLinks.forEach(link => {
-                                    const button = document.createElement('button');
-                                    button.textContent = link.name;
-                                    button.className = 'download-btn';
-
-                                    button.addEventListener('click', async (e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        await handleDownloadLinkClick(movie.id, link.url, button);
-                                    });
-                                    button.addEventListener('contextmenu', (e) => e.preventDefault());
+                                    const button = createDownloadButton(link, movie.id, true);
                                     episodeContainer.appendChild(button);
                                 });
                             } else {
