@@ -1051,7 +1051,7 @@
 
             const requestModalOverlay = document.getElementById('request-modal-overlay');
             const requestModalClose = document.getElementById('request-modal-close');
-            const openRequestBtn = document.getElementById('open-request-btn');
+            const openRequestBtn = document.getElementById('open-request-modal-btn');
             const requestFormModal = document.getElementById('request-form-modal');
             const requestName = document.getElementById('request-movie-name-modal');
             const requestTrailer = document.getElementById('request-trailer-url-modal');
@@ -1080,7 +1080,6 @@
             // PREMIUM SYSTEM FUNCTIONS
             // ==========================================
 
-            // Check premium status from Firebase
             async function checkPremiumStatus(userId) {
                 if (!userId) return { hasPremium: false, data: null };
                 try {
@@ -1098,7 +1097,6 @@
                         if (now < expiry && data.status === 'active') {
                             return { hasPremium: true, data: { ...data, expiry: expiry } };
                         } else {
-                            // Auto-expire if expired
                             if (data.status === 'active') {
                                 await updateDoc(docRef, { status: 'expired' });
                             }
@@ -1112,14 +1110,12 @@
                 }
             }
 
-            // Generate unique token
             function generateToken(userId) {
                 const random = Math.random().toString(36).substring(2, 10);
                 const timestamp = Date.now().toString(36);
                 return `${userId}_${timestamp}_${random}`;
             }
 
-            // Create short link via VShort API
             async function createShortLink(originalUrl, alias = "") {
                 try {
                     const encodedUrl = encodeURIComponent(originalUrl);
@@ -1142,7 +1138,6 @@
                 }
             }
 
-            // Activate premium for user
             async function activatePremium(userId, token) {
                 try {
                     const docRef = doc(db, "premiumUsers", String(userId));
@@ -1166,7 +1161,6 @@
                 }
             }
 
-            // Verify token and grant premium
             async function verifyTokenAndGrantPremium(userId, token) {
                 if (!userId || !token) return { success: false, message: "Missing userId or token" };
                 try {
@@ -1204,7 +1198,6 @@
                 }
             }
 
-            // Show ad popup with short link
             function showAdPopup(shortLink, onComplete) {
                 const existing = document.querySelector('.ad-popup-overlay');
                 if (existing) existing.remove();
@@ -1236,23 +1229,17 @@
                 `;
                 document.body.appendChild(overlay);
                 
-                // Handle Skip
                 document.getElementById('ad-skip-btn').addEventListener('click', () => {
                     overlay.remove();
                     if (onComplete) onComplete(false);
                 });
                 
-                // Handle Watch - just open link, user will come back via verification
                 document.getElementById('ad-watch-btn').addEventListener('click', () => {
-                    // The link opens in new tab/window
-                    // User will be redirected back with ?verify=true&token=xxx&userId=xxx
-                    // We keep the popup open until they return
                     const spinner = document.getElementById('ad-loading-spinner');
                     spinner.style.display = 'block';
                     document.getElementById('ad-watch-btn').style.opacity = '0.6';
                     document.getElementById('ad-watch-btn').style.pointerEvents = 'none';
                     
-                    // Check periodically if user has returned (premium activated)
                     let checkCount = 0;
                     const checkInterval = setInterval(async () => {
                         checkCount++;
@@ -1263,7 +1250,7 @@
                             if (onComplete) onComplete(true);
                             showToast('🎉 Premium Activated! Enjoy ad-free experience for 12 hours.');
                             updatePremiumUI(true);
-                        } else if (checkCount > 60) { // 60 seconds timeout
+                        } else if (checkCount > 60) {
                             clearInterval(checkInterval);
                             spinner.style.display = 'none';
                             document.getElementById('ad-watch-btn').style.opacity = '1';
@@ -1273,15 +1260,12 @@
                 });
             }
 
-            // Show premium required popup
             async function showPremiumRequiredModal(userId) {
                 return new Promise(async (resolve) => {
                     try {
-                        // Generate unique token
                         const token = generateToken(userId);
                         const tokenExpiry = new Date(Date.now() + 30 * 60 * 1000);
                         
-                        // Save token to Firebase
                         const docRef = doc(db, "premiumUsers", String(userId));
                         await setDoc(docRef, {
                             userId: String(userId),
@@ -1291,7 +1275,6 @@
                             updatedAt: serverTimestamp()
                         }, { merge: true });
                         
-                        // Create verification URL
                         const baseUrl = window.location.origin + window.location.pathname;
                         const verifyUrl = `${baseUrl}?verify=true&token=${token}&userId=${userId}`;
                         const shortLink = await createShortLink(verifyUrl);
@@ -1301,7 +1284,6 @@
                                 resolve(result);
                             });
                         } else {
-                            // Fallback: use direct URL
                             showAdPopup(verifyUrl, (result) => {
                                 resolve(result);
                             });
@@ -1324,17 +1306,14 @@
                 const userId = params.get('userId');
                 
                 if (verify === 'true' && token && userId) {
-                    // Clear URL params
                     const newUrl = window.location.pathname;
                     window.history.replaceState({}, document.title, newUrl);
                     
-                    // Verify token
                     const result = await verifyTokenAndGrantPremium(userId, token);
                     
                     if (result.success) {
                         showToast('🎉 Premium activated for 12 hours! Enjoy ad-free experience.');
                         updatePremiumUI(true);
-                        // Refresh to apply premium
                         setTimeout(() => window.location.reload(), 1500);
                     } else {
                         showToast('❌ ' + result.message);
@@ -1401,7 +1380,7 @@
             }
 
             // ==========================================
-            // Original App Functions (modified)
+            // Original App Functions
             // ==========================================
 
             document.body.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -1449,75 +1428,89 @@
                 submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
             };
 
-            openRequestBtn.addEventListener('click', openRequestModal);
-            requestModalClose.addEventListener('click', closeRequestModal);
-            requestModalOverlay.addEventListener('click', (e) => {
-                if (e.target === requestModalOverlay) closeRequestModal();
-            });
+            if (openRequestBtn) {
+                openRequestBtn.addEventListener('click', openRequestModal);
+            } else {
+                console.error("Request button not found!");
+            }
 
-            requestDesc.addEventListener('input', () => {
-                const len = requestDesc.value.length;
-                const max = 150;
-                charCount.textContent = `${len}/${max}`;
-                if (len >= max) {
-                    charCount.classList.add('limit-reached');
-                    charErrorMsg.classList.add('show');
-                    requestDesc.value = requestDesc.value.substring(0, max);
-                } else {
-                    charCount.classList.remove('limit-reached');
-                    charErrorMsg.classList.remove('show');
-                }
-            });
+            if (requestModalClose) {
+                requestModalClose.addEventListener('click', closeRequestModal);
+            }
 
-            requestFormModal.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const name = requestName.value.trim();
-                const trailer = requestTrailer.value.trim();
-                const description = requestDesc.value.trim().substring(0, 150);
+            if (requestModalOverlay) {
+                requestModalOverlay.addEventListener('click', (e) => {
+                    if (e.target === requestModalOverlay) closeRequestModal();
+                });
+            }
 
-                if (!name) {
-                    requestName.focus();
-                    requestName.style.borderColor = 'var(--danger)';
-                    setTimeout(() => requestName.style.borderColor = '', 2000);
-                    return;
-                }
+            if (requestDesc) {
+                requestDesc.addEventListener('input', () => {
+                    const len = requestDesc.value.length;
+                    const max = 150;
+                    charCount.textContent = `${len}/${max}`;
+                    if (len >= max) {
+                        charCount.classList.add('limit-reached');
+                        charErrorMsg.classList.add('show');
+                        requestDesc.value = requestDesc.value.substring(0, max);
+                    } else {
+                        charCount.classList.remove('limit-reached');
+                        charErrorMsg.classList.remove('show');
+                    }
+                });
+            }
 
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+            if (requestFormModal) {
+                requestFormModal.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const name = requestName.value.trim();
+                    const trailer = requestTrailer.value.trim();
+                    const description = requestDesc.value.trim().substring(0, 150);
 
-                try {
-                    const user = currentUser || { id: 'anonymous', first_name: 'Guest' };
-                    await addDoc(collection(db, "movieRequests"), {
-                        userName: (user.first_name || 'Guest') + (user.last_name ? ' ' + user.last_name : ''),
-                        userId: String(user.id || 'anonymous'),
-                        movieName: name,
-                        trailerUrl: trailer || '',
-                        description: description || '',
-                        status: 'pending',
-                        createdAt: serverTimestamp()
-                    });
-                    
-                    successMsg.classList.add('show');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-check"></i> Submitted!';
-                    
-                    requestName.value = '';
-                    requestTrailer.value = '';
-                    requestDesc.value = '';
-                    charCount.textContent = '0/150';
-                    
-                    setTimeout(() => {
-                        closeRequestModal();
+                    if (!name) {
+                        requestName.focus();
+                        requestName.style.borderColor = 'var(--danger)';
+                        setTimeout(() => requestName.style.borderColor = '', 2000);
+                        return;
+                    }
+
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+
+                    try {
+                        const user = currentUser || { id: 'anonymous', first_name: 'Guest' };
+                        await addDoc(collection(db, "movieRequests"), {
+                            userName: (user.first_name || 'Guest') + (user.last_name ? ' ' + user.last_name : ''),
+                            userId: String(user.id || 'anonymous'),
+                            movieName: name,
+                            trailerUrl: trailer || '',
+                            description: description || '',
+                            status: 'pending',
+                            createdAt: serverTimestamp()
+                        });
+                        
+                        successMsg.classList.add('show');
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-check"></i> Submitted!';
+                        
+                        requestName.value = '';
+                        requestTrailer.value = '';
+                        requestDesc.value = '';
+                        charCount.textContent = '0/150';
+                        
+                        setTimeout(() => {
+                            closeRequestModal();
+                            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
+                        }, 2000);
+                        
+                    } catch (error) {
+                        console.error("Error submitting request:", error);
+                        alert('Failed to submit request. Please try again.');
+                        submitBtn.disabled = false;
                         submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
-                    }, 2000);
-                    
-                } catch (error) {
-                    console.error("Error submitting request:", error);
-                    alert('Failed to submit request. Please try again.');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
-                }
-            });
+                    }
+                });
+            }
 
             // SPA Details Open
             const openMovieDetails = async (movieId) => {
@@ -1830,14 +1823,19 @@
                 welcomePopupTimer.style.display = 'block';
             };
 
-            welcomePopupClose.addEventListener('click', (e) => {
-                e.stopPropagation();
-                closeWelcomePopup();
-            });
-            welcomePopupContent.addEventListener('click', () => {
-                if (popupLinkUrl) openSafeLink(popupLinkUrl);
-                closeWelcomePopup();
-            });
+            if (welcomePopupClose) {
+                welcomePopupClose.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    closeWelcomePopup();
+                });
+            }
+
+            if (welcomePopupContent) {
+                welcomePopupContent.addEventListener('click', () => {
+                    if (popupLinkUrl) openSafeLink(popupLinkUrl);
+                    closeWelcomePopup();
+                });
+            }
 
             const copyToClipboard = (elementId) => {
                 const element = document.getElementById(elementId);
@@ -1949,7 +1947,6 @@
                         updateUserStatusBadge('active');
                     }
                     
-                    // Check premium status
                     const { hasPremium } = await checkPremiumStatus(user.id);
                     updatePremiumUI(hasPremium);
                     
@@ -1973,21 +1970,16 @@
             // ==========================================
 
             const handleMovieCardClick = async (movieId) => {
-                // First check if user has premium
                 if (currentUserId) {
                     const { hasPremium } = await checkPremiumStatus(currentUserId);
                     if (!hasPremium) {
-                        // Show premium required popup
                         const watched = await showPremiumRequiredModal(currentUserId);
                         if (watched) {
-                            // After watching, open movie details
                             openMovieDetails(movieId);
                         }
-                        // If not watched, do nothing
                         return;
                     }
                 }
-                // If premium or no check needed, open details
                 openMovieDetails(movieId);
             };
 
@@ -1998,10 +1990,8 @@
             const initializeApp = async (tgInstance) => {
                 console.log("Initializing app...");
                 
-                // Check URL for verification first
                 const verified = await checkUrlForVerification();
                 if (verified) {
-                    // Wait for reload
                     return;
                 }
                 
@@ -2022,7 +2012,6 @@
                 await loadWelcomePopupSettings();
                 await fetchAndRenderMovies(true);
                 
-                // Start premium timer
                 if (premiumCheckInterval) clearInterval(premiumCheckInterval);
                 premiumCheckInterval = setInterval(updatePremiumTimer, 1000);
                 await updatePremiumTimer();
@@ -2034,45 +2023,57 @@
             // Event Listeners
             // ==========================================
 
-            searchForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                performSearch();
-                searchBar.blur();
-            });
+            if (searchForm) {
+                searchForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    performSearch();
+                    searchBar.blur();
+                });
+            }
 
-            searchBar.addEventListener('input', () => {
-                if (searchBar.value.trim() === '') {
-                    movieGrid.classList.remove('list-view');
+            if (searchBar) {
+                searchBar.addEventListener('input', () => {
+                    if (searchBar.value.trim() === '') {
+                        movieGrid.classList.remove('list-view');
+                        fetchAndRenderMovies(true);
+                    }
+                });
+            }
+
+            if (filterContainer) {
+                filterContainer.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('filter')) {
+                        const newFilter = e.target.dataset.filter;
+                        if (newFilter === currentFilter) return;
+                        currentFilter = newFilter;
+                        searchBar.value = '';
+                        document.querySelector('.filter.active').classList.remove('active');
+                        e.target.classList.add('active');
+                        fetchAndRenderMovies(true);
+                    }
+                });
+            }
+
+            if (sortBySelect) {
+                sortBySelect.addEventListener('change', (e) => {
+                    currentSort = e.target.value;
                     fetchAndRenderMovies(true);
-                }
-            });
+                });
+            }
 
-            filterContainer.addEventListener('click', (e) => {
-                if (e.target.classList.contains('filter')) {
-                    const newFilter = e.target.dataset.filter;
-                    if (newFilter === currentFilter) return;
-                    currentFilter = newFilter;
-                    searchBar.value = '';
-                    document.querySelector('.filter.active').classList.remove('active');
-                    e.target.classList.add('active');
-                    fetchAndRenderMovies(true);
-                }
-            });
+            if (movieGrid) {
+                movieGrid.addEventListener('click', (e) => {
+                    const card = e.target.closest('.movie-card');
+                    if (card && card.dataset.movieId) {
+                        console.log('Movie card clicked, ID:', card.dataset.movieId);
+                        handleMovieCardClick(card.dataset.movieId);
+                    }
+                });
+            }
 
-            sortBySelect.addEventListener('change', (e) => {
-                currentSort = e.target.value;
-                fetchAndRenderMovies(true);
-            });
-
-            movieGrid.addEventListener('click', (e) => {
-                const card = e.target.closest('.movie-card');
-                if (card && card.dataset.movieId) {
-                    console.log('Movie card clicked, ID:', card.dataset.movieId);
-                    handleMovieCardClick(card.dataset.movieId);
-                }
-            });
-
-            homeLogo.addEventListener('click', () => window.location.reload());
+            if (homeLogo) {
+                homeLogo.addEventListener('click', () => window.location.reload());
+            }
 
             window.addEventListener('scroll', () => {
                 if (movieGrid.classList.contains('list-view') || isFetchingMore || !lastVisible) return;
