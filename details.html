@@ -9,44 +9,26 @@
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default,es6,fetch"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root {
-            --primary: #e50914;
-            --secondary: #b81d24;
-            --dark: #141414;
-            --light-dark: #222;
-            --text: #fff;
-            --text-secondary: #aaa;
-            --green: #28a745;
-            --blue: #007bff;
-            --danger: #dc3545;
-            --gold: #ffd700;
-            --bg-gradient: linear-gradient(135deg, #0f0f0f, #1a1a1a);
-        }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
+        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --blue: #007bff; --danger: #dc3545; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; -webkit-tap-highlight-color: transparent; }
         body {
-            background: var(--bg-gradient);
+            background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
             color: var(--text);
             min-height: 100vh;
             overflow-x: hidden;
         }
-
+        
         .back-header {
             padding: 15px 20px;
             display: flex;
             align-items: center;
             gap: 15px;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0,0,0,0.6);
             backdrop-filter: blur(10px);
             position: sticky;
             top: 0;
             z-index: 100;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         .back-btn {
             background: none;
@@ -61,9 +43,7 @@
             align-items: center;
             justify-content: center;
         }
-        .back-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
+        .back-btn:hover { background: rgba(255,255,255,0.1); }
         .back-header .logo-text {
             font-size: 1.5rem;
             font-weight: 700;
@@ -73,6 +53,20 @@
             color: transparent;
             cursor: pointer;
         }
+
+        .premium-badge-header {
+            margin-left: auto;
+            background: linear-gradient(45deg, #f7971e, #ffd200);
+            color: #000;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: none;
+            align-items: center;
+            gap: 6px;
+        }
+        .premium-badge-header.visible { display: flex; }
 
         #loading-indicator {
             display: flex;
@@ -90,11 +84,7 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .details-container {
             max-width: 800px;
@@ -115,15 +105,25 @@
             margin: 0 auto;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
         }
         .movie-poster-large img {
             width: 100%;
             display: block;
         }
-        .movie-info-details {
-            flex: 1;
+        .premium-badge-poster {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: linear-gradient(45deg, #f7971e, #ffd200);
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
         }
+        .movie-info-details { flex: 1; }
         .movie-title-large {
             font-size: 2.2rem;
             margin-bottom: 10px;
@@ -141,6 +141,7 @@
         .trailer-btn {
             background: var(--primary);
             color: #fff;
+            text-decoration: none;
             padding: 12px 24px;
             border-radius: 8px;
             transition: background 0.3s;
@@ -153,9 +154,7 @@
             cursor: pointer;
             margin-top: 15px;
         }
-        .trailer-btn:hover {
-            background: var(--secondary);
-        }
+        .trailer-btn:hover { background: var(--secondary); }
 
         .movie-description-full {
             padding: 20px 0;
@@ -174,6 +173,7 @@
         }
         .action-btn {
             color: #fff;
+            text-decoration: none;
             padding: 12px 20px;
             border-radius: 8px;
             transition: all 0.3s;
@@ -188,21 +188,15 @@
             justify-content: center;
             min-width: 120px;
         }
-        .action-btn.share {
-            background: var(--blue);
-        }
-        .action-btn.copy {
-            background: #6c757d;
-        }
-        .action-btn:hover {
-            opacity: 0.85;
-            transform: translateY(-2px);
-        }
+        .action-btn.share { background: var(--blue); }
+        .action-btn.copy { background: #6c757d; }
+        .action-btn:hover { opacity: 0.85; transform: translateY(-2px); }
 
         .download-btn {
             background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
             background-size: 300% 300%;
             color: #fff;
+            text-decoration: none;
             padding: 15px 20px;
             border-radius: 12px;
             font-size: 1.05rem;
@@ -226,31 +220,34 @@
             margin-right: 10px;
         }
         @keyframes instaGradient {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
         .download-btn:hover {
             transform: translateY(-3px) scale(1.02);
             box-shadow: 0 8px 25px rgba(220, 39, 67, 0.6);
         }
-        .download-btn:active {
-            transform: translateY(1px) scale(0.98);
+        .download-btn:active { transform: translateY(1px) scale(0.98); }
+        .download-btn.premium-locked {
+            background: linear-gradient(45deg, #555, #333);
+            animation: none;
+            box-shadow: none;
+        }
+        .download-btn.premium-locked::before {
+            content: '\f023';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-right: 10px;
+        }
+        .download-btn.premium-locked:hover {
+            transform: none;
+            box-shadow: none;
         }
 
-        .downloads-section {
-            margin-top: 20px;
-        }
+        .downloads-section { margin-top: 20px; }
 
-        .season-accordion {
-            margin-bottom: 8px;
-        }
+        .season-accordion { margin-bottom: 8px; }
         .season-accordion-header {
             display: flex;
             justify-content: space-between;
@@ -265,7 +262,7 @@
         }
         .season-accordion-header:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
             background: linear-gradient(145deg, #34495e, #4a627a);
         }
         .season-accordion-header h4 {
@@ -292,7 +289,7 @@
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), padding 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            background-color: rgba(0, 0, 0, 0.2);
+            background-color: rgba(0,0,0,0.2);
             border-bottom-left-radius: 8px;
             border-bottom-right-radius: 8px;
             padding: 0 15px;
@@ -323,7 +320,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0,0,0,0.9);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -384,77 +381,38 @@
             color: var(--text);
             margin-bottom: 10px;
         }
-        #error-message p {
-            color: var(--text-secondary);
-        }
+        #error-message p { color: var(--text-secondary); }
 
         .toast-notification {
             position: fixed;
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.92);
+            background: #1a1a1a;
             color: #fff;
-            padding: 14px 24px;
+            padding: 15px 25px;
             border-radius: 12px;
-            z-index: 9999;
-            display: none;
-            animation: toastIn 0.4s ease;
-            border: 1px solid rgba(255, 215, 0, 0.15);
-            text-align: center;
+            border-left: 4px solid #e50914;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 10000;
             max-width: 90%;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            animation: slideUp 0.5s ease;
         }
-        .toast-notification.show {
-            display: block;
-        }
-        .toast-notification .toast-icon {
-            font-size: 1.3rem;
-            margin-right: 10px;
-        }
-        .toast-notification .toast-icon.success {
-            color: var(--green);
-        }
-        .toast-notification .toast-icon.error {
-            color: var(--danger);
-        }
-        .toast-notification .toast-icon.warning {
-            color: #fbbf24;
-        }
-        @keyframes toastIn {
-            from {
-                opacity: 0;
-                transform: translateX(-50%) translateY(30px) scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0) scale(1);
-            }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(30px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
         @media (min-width: 600px) {
-            .movie-header {
-                flex-direction: row;
-                align-items: flex-start;
-            }
-            .movie-poster-large {
-                max-width: 250px;
-                flex-shrink: 0;
-            }
-            .action-btn {
-                flex: 0 1 auto;
-            }
+            .movie-header { flex-direction: row; align-items: flex-start; }
+            .movie-poster-large { max-width: 250px; flex-shrink: 0; }
+            .action-btn { flex: 0 1 auto; }
         }
         @media (max-width: 480px) {
-            .actions-section {
-                flex-direction: column;
-            }
-            .action-btn {
-                width: 100%;
-            }
-            .movie-title-large {
-                font-size: 1.6rem;
-            }
+            .actions-section { flex-direction: column; }
+            .action-btn { width: 100%; }
+            .movie-title-large { font-size: 1.6rem; }
         }
     </style>
 </head>
@@ -463,6 +421,9 @@
     <div class="back-header">
         <button class="back-btn" id="back-btn"><i class="fas fa-arrow-left"></i></button>
         <span class="logo-text" id="details-logo">Baflix</span>
+        <div class="premium-badge-header" id="premium-badge-header">
+            <i class="fas fa-crown"></i> Premium
+        </div>
     </div>
 
     <div id="loading-indicator">
@@ -474,7 +435,7 @@
         <i class="fas fa-exclamation-circle"></i>
         <h2>Movie Not Found</h2>
         <p>The movie you're looking for doesn't exist or has been removed.</p>
-        <button class="action-btn" style="margin-top: 20px; background: var(--primary);" onclick="goHome()">
+        <button class="action-btn" style="margin-top: 20px;" onclick="goHome()">
             <i class="fas fa-home"></i> Go Home
         </button>
     </div>
@@ -483,6 +444,9 @@
         <div class="movie-header" id="movie-header">
             <div class="movie-poster-large">
                 <img id="detail-poster" src="" alt="Poster" onerror="this.src='https://via.placeholder.com/300x450/222/fff?text=No+Image'">
+                <div class="premium-badge-poster" id="poster-premium-badge" style="display:none;">
+                    <i class="fas fa-crown"></i> Premium
+                </div>
             </div>
             <div class="movie-info-details">
                 <h1 class="movie-title-large" id="detail-title"></h1>
@@ -491,7 +455,7 @@
                 <p class="movie-meta" id="detail-year"></p>
                 <p class="movie-meta" id="detail-language"></p>
                 <p class="movie-meta" id="detail-series-info"></p>
-
+                
                 <div id="detail-trailer-container"></div>
             </div>
         </div>
@@ -512,14 +476,9 @@
         </div>
     </div>
 
-    <div class="toast-notification" id="toast-notification">
-        <span class="toast-icon" id="toast-icon">✅</span>
-        <span id="toast-message">Premium unlocked!</span>
-    </div>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, updateDoc, increment, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA3okSnZJrF9ooUp12KihKISR2VRZq5Ju8",
@@ -534,38 +493,388 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // ===== VSHORT API CONFIGURATION =====
+        const VSHORT_API = "c7d18a4a9d26ad6407fbd39fb85470d3c46f42d3";
+        const VSHORT_URL = "https://vshort.xyz/api";
+        const PREMIUM_HOURS = 12;
+
         const loadingIndicator = document.getElementById('loading-indicator');
         const detailsContainer = document.getElementById('details-container');
         const errorMessage = document.getElementById('error-message');
         const backBtn = document.getElementById('back-btn');
         const detailsLogo = document.getElementById('details-logo');
+        const premiumBadgeHeader = document.getElementById('premium-badge-header');
 
         const modalOverlay = document.getElementById('trailer-modal');
         const trailerIframe = document.getElementById('youtube-trailer-iframe');
         const trailerCloseBtn = document.getElementById('trailer-close-btn');
 
-        const toastNotification = document.getElementById('toast-notification');
-        const toastMessage = document.getElementById('toast-message');
-        const toastIcon = document.getElementById('toast-icon');
+        let currentUserId = null;
+        let currentMovieId = null;
+        let hasPremium = false;
 
-        let isPremiumActive = false;
+        // ==========================================
+        // PREMIUM SYSTEM FUNCTIONS
+        // ==========================================
 
-        const showToast = (message, type = 'success') => {
-            const iconMap = {
-                success: '✅',
-                error: '❌',
-                info: 'ℹ️',
-                warning: '⚠️'
-            };
-            toastIcon.textContent = iconMap[type] || '✅';
-            toastIcon.className = 'toast-icon ' + type;
-            toastMessage.textContent = message;
-            toastNotification.classList.add('show');
-            clearTimeout(toastNotification._timeout);
-            toastNotification._timeout = setTimeout(() => {
-                toastNotification.classList.remove('show');
-            }, 4000);
-        };
+        async function checkPremiumStatus(userId) {
+            if (!userId) return { hasPremium: false, data: null };
+            try {
+                const docRef = doc(db, "premiumUsers", String(userId));
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const now = Date.now();
+                    let expiry = data.expiry;
+                    if (expiry && expiry.toDate) {
+                        expiry = expiry.toDate().getTime();
+                    } else if (expiry) {
+                        expiry = new Date(expiry).getTime();
+                    }
+                    if (now < expiry && data.status === 'active') {
+                        return { hasPremium: true, data: { ...data, expiry: expiry } };
+                    } else {
+                        if (data.status === 'active') {
+                            await updateDoc(docRef, { status: 'expired' });
+                        }
+                        return { hasPremium: false, data: null };
+                    }
+                }
+                return { hasPremium: false, data: null };
+            } catch (error) {
+                console.error("Error checking premium:", error);
+                return { hasPremium: false, data: null };
+            }
+        }
+
+        function generateToken(userId) {
+            const random = Math.random().toString(36).substring(2, 10);
+            const timestamp = Date.now().toString(36);
+            return `${userId}_${timestamp}_${random}`;
+        }
+
+        async function createShortLink(originalUrl, alias = "") {
+            try {
+                const encodedUrl = encodeURIComponent(originalUrl);
+                let apiUrl = `${VSHORT_URL}?api=${VSHORT_API}&url=${encodedUrl}&format=text`;
+                if (alias) {
+                    apiUrl += `&alias=${alias}`;
+                }
+                const response = await fetch(apiUrl);
+                const shortLink = await response.text();
+                if (shortLink && shortLink.startsWith("https://")) {
+                    return shortLink.trim();
+                } else {
+                    return null;
+                }
+            } catch (error) {
+                console.error("Error creating short link:", error);
+                return null;
+            }
+        }
+
+        async function activatePremium(userId, token) {
+            try {
+                const docRef = doc(db, "premiumUsers", String(userId));
+                const expiryTime = new Date();
+                expiryTime.setHours(expiryTime.getHours() + PREMIUM_HOURS);
+                await setDoc(docRef, {
+                    userId: String(userId),
+                    expiry: expiryTime,
+                    status: "active",
+                    token: token,
+                    tokenExpiry: new Date(Date.now() + 30 * 60 * 1000),
+                    lastAdWatch: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+                return { success: true };
+            } catch (error) {
+                console.error("Error activating premium:", error);
+                return { success: false };
+            }
+        }
+
+        function showToast(message) {
+            const existing = document.querySelector('.toast-notification');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.5s';
+                setTimeout(() => toast.remove(), 500);
+            }, 5000);
+        }
+
+        // ==========================================
+        // PREMIUM POPUP IN IFRAME (Communicate with parent)
+        // ==========================================
+
+        function showAdPopupInIframe(shortLink, onComplete) {
+            const existing = document.querySelector('.ad-popup-overlay');
+            if (existing) existing.remove();
+            
+            const overlay = document.createElement('div');
+            overlay.className = 'ad-popup-overlay';
+            overlay.innerHTML = `
+                <div class="ad-popup-content">
+                    <div class="ad-icon"><i class="fas fa-crown"></i></div>
+                    <h2>🎬 Unlock Premium</h2>
+                    <p class="ad-subtitle">
+                        Watch a short ad and get <span class="ad-highlight">${PREMIUM_HOURS} hours</span> of premium access!
+                    </p>
+                    <p class="ad-subtitle" style="font-size:0.85rem; color:#888;">
+                        No ads, direct downloads, and full HD quality.
+                    </p>
+                    <div class="ad-timer-info">
+                        <i class="fas fa-clock"></i> Token expires in 30 minutes
+                    </div>
+                    <a href="${shortLink}" target="_blank" class="ad-watch-btn" id="ad-watch-btn">
+                        <i class="fas fa-play-circle"></i> Watch Ad Now
+                    </a>
+                    <div class="ad-loading-spinner" id="ad-loading-spinner"></div>
+                    <p style="font-size:0.75rem; color:#555; margin-top:5px;">
+                        After watching, you'll be redirected back automatically.
+                    </p>
+                    <button class="ad-skip-btn" id="ad-skip-btn">Skip for now</button>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            // Add styles if not already present
+            if (!document.getElementById('ad-popup-styles')) {
+                const style = document.createElement('style');
+                style.id = 'ad-popup-styles';
+                style.textContent = `
+                    .ad-popup-overlay {
+                        position: fixed;
+                        top:0; left:0; width:100%; height:100%;
+                        background: rgba(0,0,0,0.92);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        z-index: 9999;
+                        backdrop-filter: blur(10px);
+                        animation: fadeIn 0.4s ease;
+                    }
+                    @keyframes fadeIn {
+                        from { opacity: 0; transform: scale(0.95); }
+                        to { opacity: 1; transform: scale(1); }
+                    }
+                    .ad-popup-content {
+                        background: linear-gradient(145deg, #1a1a1a, #222);
+                        padding: 35px 25px;
+                        border-radius: 24px;
+                        max-width: 420px;
+                        width: 92%;
+                        text-align: center;
+                        border: 1px solid rgba(229,9,20,0.3);
+                        box-shadow: 0 20px 60px rgba(229,9,20,0.2);
+                    }
+                    .ad-popup-content .ad-icon {
+                        font-size: 3rem;
+                        color: #ffd700;
+                        margin-bottom: 10px;
+                        animation: bounce 1.5s infinite;
+                    }
+                    @keyframes bounce {
+                        0%, 100% { transform: translateY(0); }
+                        50% { transform: translateY(-8px); }
+                    }
+                    .ad-popup-content h2 {
+                        color: #e50914;
+                        margin-bottom: 8px;
+                        font-size: 1.6rem;
+                    }
+                    .ad-popup-content .ad-subtitle {
+                        color: var(--text-secondary);
+                        font-size: 0.95rem;
+                        line-height: 1.6;
+                        margin-bottom: 5px;
+                    }
+                    .ad-popup-content .ad-highlight {
+                        color: #ffd700;
+                        font-weight: bold;
+                        font-size: 1.1rem;
+                    }
+                    .ad-popup-content .ad-timer-info {
+                        color: #888;
+                        font-size: 0.8rem;
+                        margin: 8px 0 15px;
+                    }
+                    .ad-watch-btn {
+                        display: inline-block;
+                        background: linear-gradient(45deg, #f7971e, #ffd200);
+                        color: #000;
+                        padding: 16px 35px;
+                        border-radius: 50px;
+                        text-decoration: none;
+                        font-weight: bold;
+                        margin: 10px 0 12px;
+                        transition: all 0.3s ease;
+                        font-size: 1.1rem;
+                        box-shadow: 0 4px 20px rgba(255, 210, 0, 0.3);
+                        border: none;
+                        cursor: pointer;
+                    }
+                    .ad-watch-btn:hover {
+                        transform: scale(1.05);
+                        box-shadow: 0 6px 30px rgba(255, 210, 0, 0.5);
+                    }
+                    .ad-watch-btn i { margin-right: 10px; }
+                    .ad-skip-btn {
+                        background: none;
+                        border: none;
+                        color: #666;
+                        cursor: pointer;
+                        font-size: 0.85rem;
+                        text-decoration: underline;
+                        padding: 8px 16px;
+                        transition: color 0.3s;
+                        display: block;
+                        margin: 5px auto 0;
+                    }
+                    .ad-skip-btn:hover { color: #aaa; }
+                    .ad-loading-spinner {
+                        display: none;
+                        width: 30px;
+                        height: 30px;
+                        border: 3px solid #333;
+                        border-top-color: #ffd700;
+                        border-radius: 50%;
+                        animation: spin 0.8s linear infinite;
+                        margin: 15px auto;
+                    }
+                    @keyframes spin { to { transform: rotate(360deg); } }
+                `;
+                document.head.appendChild(style);
+            }
+
+            // Handle Skip
+            document.getElementById('ad-skip-btn').addEventListener('click', () => {
+                overlay.remove();
+                if (onComplete) onComplete(false);
+            });
+
+            // Handle Watch - open link and wait for return
+            document.getElementById('ad-watch-btn').addEventListener('click', () => {
+                const spinner = document.getElementById('ad-loading-spinner');
+                spinner.style.display = 'block';
+                document.getElementById('ad-watch-btn').style.opacity = '0.6';
+                document.getElementById('ad-watch-btn').style.pointerEvents = 'none';
+
+                let checkCount = 0;
+                const checkInterval = setInterval(async () => {
+                    checkCount++;
+                    const { hasPremium: nowHas } = await checkPremiumStatus(currentUserId);
+                    if (nowHas) {
+                        clearInterval(checkInterval);
+                        overlay.remove();
+                        if (onComplete) onComplete(true);
+                        showToast('🎉 Premium Activated! Enjoy ad-free experience for 12 hours.');
+                        premiumBadgeHeader.classList.add('visible');
+                        hasPremium = true;
+                    } else if (checkCount > 60) {
+                        clearInterval(checkInterval);
+                        spinner.style.display = 'none';
+                        document.getElementById('ad-watch-btn').style.opacity = '1';
+                        document.getElementById('ad-watch-btn').style.pointerEvents = 'auto';
+                    }
+                }, 1000);
+            });
+        }
+
+        async function showPremiumRequiredModalInIframe(userId) {
+            return new Promise(async (resolve) => {
+                try {
+                    const token = generateToken(userId);
+                    const tokenExpiry = new Date(Date.now() + 30 * 60 * 1000);
+                    
+                    const docRef = doc(db, "premiumUsers", String(userId));
+                    await setDoc(docRef, {
+                        userId: String(userId),
+                        token: token,
+                        tokenExpiry: tokenExpiry,
+                        status: "pending",
+                        updatedAt: serverTimestamp()
+                    }, { merge: true });
+                    
+                    const baseUrl = window.location.origin + window.location.pathname;
+                    const verifyUrl = `${baseUrl}?verify=true&token=${token}&userId=${userId}`;
+                    const shortLink = await createShortLink(verifyUrl);
+                    
+                    if (shortLink) {
+                        showAdPopupInIframe(shortLink, (result) => {
+                            resolve(result);
+                        });
+                    } else {
+                        showAdPopupInIframe(verifyUrl, (result) => {
+                            resolve(result);
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error in showPremiumRequiredModalInIframe:", error);
+                    resolve(false);
+                }
+            });
+        }
+
+        // ==========================================
+        // URL Verification Check
+        // ==========================================
+
+        async function checkUrlForVerification() {
+            const params = new URLSearchParams(window.location.search);
+            const verify = params.get('verify');
+            const token = params.get('token');
+            const userId = params.get('userId');
+            
+            if (verify === 'true' && token && userId) {
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+                
+                try {
+                    const docRef = doc(db, "premiumUsers", String(userId));
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        const now = Date.now();
+                        let tokenExpiry = data.tokenExpiry;
+                        if (tokenExpiry && tokenExpiry.toDate) {
+                            tokenExpiry = tokenExpiry.toDate().getTime();
+                        } else if (tokenExpiry) {
+                            tokenExpiry = new Date(tokenExpiry).getTime();
+                        }
+                        
+                        if (data.token === token && now < tokenExpiry) {
+                            const expiryTime = new Date();
+                            expiryTime.setHours(expiryTime.getHours() + PREMIUM_HOURS);
+                            await updateDoc(docRef, {
+                                expiry: expiryTime,
+                                status: "active",
+                                token: null,
+                                tokenExpiry: null,
+                                lastAdWatch: serverTimestamp()
+                            });
+                            showToast('🎉 Premium activated for 12 hours!');
+                            premiumBadgeHeader.classList.add('visible');
+                            hasPremium = true;
+                            return true;
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error verifying token:", error);
+                }
+                return false;
+            }
+            return false;
+        }
+
+        // ==========================================
+        // Original Functions (Modified)
+        // ==========================================
 
         const parseEpisodeNumber = (epNumStr) => {
             const str = String(epNumStr).trim();
@@ -584,7 +893,7 @@
         };
 
         const getYoutubeVideoId = (url) => {
-            if (!url) return null;
+            if(!url) return null;
             let videoId = null;
             try {
                 const urlObj = new URL(url);
@@ -604,8 +913,8 @@
                 if (url.includes('t.me/')) {
                     try { tgApp.openTelegramLink(url); } catch (e) { tgApp.openLink(url); }
                 } else { tgApp.openLink(url); }
-            } else {
-                window.open(url, '_blank');
+            } else { 
+                window.open(url, '_blank'); 
             }
         };
 
@@ -649,7 +958,9 @@
             if (window.parent && typeof window.parent.handleSpaBack === 'function') {
                 window.parent.handleSpaBack();
             } else {
-                window.location.href = window.location.origin + window.location.pathname.replace('details.html', 'index.html');
+                const currentPath = window.location.pathname;
+                const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+                window.location.href = `${basePath}index.html`;
             }
         };
 
@@ -675,29 +986,20 @@
             return params.get('id');
         };
 
-        const checkPremiumStatus = () => {
-            try {
-                if (window.parent && window.parent.isPremiumActive !== undefined) {
-                    isPremiumActive = window.parent.isPremiumActive;
-                }
-            } catch (e) {}
-            return isPremiumActive;
-        };
-
-        const checkPremiumBeforeDownload = (downloadAction) => {
-            const premiumStatus = checkPremiumStatus();
-
-            if (premiumStatus) {
-                if (typeof downloadAction === 'function') {
-                    downloadAction();
-                }
-            } else {
-                showToast('🔒 Please unlock premium first!', 'warning');
-                setTimeout(() => {
-                    goHome();
-                }, 1500);
+        const generateDeepLink = (movieId, movieTitle) => {
+            const tgApp = window.Telegram?.WebApp;
+            if (tgApp && tgApp.initData) {
+                const botUsername = 'Baflix_Movie_Bot';
+                return `https://t.me/${botUsername}?startapp=movie_${movieId}`;
             }
+            const currentPath = window.location.pathname;
+            const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+            return `${basePath}index.html?id=${movieId}`;
         };
+
+        // ==========================================
+        // Load Movie Details
+        // ==========================================
 
         const loadMovieDetails = async (movieId) => {
             if (!movieId) {
@@ -705,6 +1007,8 @@
                 errorMessage.style.display = 'block';
                 return;
             }
+
+            currentMovieId = movieId;
 
             if (window.parent && window.parent.preloadedMovieData && window.parent.preloadedMovieData.id === movieId) {
                 console.log('Using preloaded movie data from parent memory');
@@ -740,6 +1044,10 @@
             }
         };
 
+        // ==========================================
+        // Render Movie Details with Premium Check
+        // ==========================================
+
         const renderMovieDetails = (movie) => {
             document.getElementById('detail-poster').src = movie.posterUrl || 'https://via.placeholder.com/300x450/222/fff?text=No+Image';
             document.getElementById('detail-title').textContent = movie.title || 'Untitled';
@@ -749,7 +1057,7 @@
             document.getElementById('detail-language').textContent = `Language: ${movie.language || 'N/A'}`;
             document.getElementById('detail-description').textContent = movie.description || 'No description available.';
 
-            const seriesInfoEl = document.getElementById('detail-series-info');
+            const seriesInfoEl = document.getElementById('details-series-info');
             const isSeries = movie.type !== 'movie';
 
             if (isSeries && movie.seasons && movie.seasons.length > 0) {
@@ -766,6 +1074,17 @@
                 seriesInfoEl.style.display = 'none';
             }
 
+            // Show premium badge if movie is premium
+            const posterBadge = document.getElementById('poster-premium-badge');
+            if (movie.isPremium) {
+                posterBadge.style.display = 'block';
+                premiumBadgeHeader.classList.add('visible');
+            } else {
+                posterBadge.style.display = 'none';
+                premiumBadgeHeader.classList.remove('visible');
+            }
+
+            // Trailer
             const trailerContainer = document.getElementById('detail-trailer-container');
             trailerContainer.innerHTML = '';
             if (movie.trailerUrl) {
@@ -778,21 +1097,16 @@
                         trailerIframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&fs=0&rel=0`;
                         modalOverlay.classList.add('visible');
                     } else {
-                        showToast('❌ Invalid trailer link provided.', 'error');
+                        alert("Invalid trailer link provided.");
                     }
                 };
                 trailerContainer.appendChild(trailerBtn);
             }
 
+            // Actions: Share & Copy
             const tgApp = window.Telegram?.WebApp;
-            let deepLinkUrl;
-            if (tgApp && tgApp.initData) {
-                const botUsername = 'BaflixStreamBot';
-                deepLinkUrl = `https://t.me/${botUsername}/app?startapp=movie_${movie.id}`;
-            } else {
-                deepLinkUrl = `${window.location.origin}${window.location.pathname.replace('details.html', 'index.html')}?id=${movie.id}`;
-            }
-
+            let deepLinkUrl = generateDeepLink(movie.id, movie.title);
+            
             const actionsContainer = document.getElementById('detail-actions');
             actionsContainer.innerHTML = '';
 
@@ -831,42 +1145,89 @@
             };
             actionsContainer.appendChild(copyBtn);
 
+            // ==========================================
+            // DOWNLOADS SECTION (with Premium Check)
+            // ==========================================
+
             const downloadsContainer = document.getElementById('detail-downloads');
             downloadsContainer.innerHTML = '';
 
-            const createDownloadButton = (linkData, movieId, isEpisode = false) => {
-                const button = document.createElement('button');
-                button.textContent = linkData.name;
-                button.className = 'download-btn';
-
-                let currentBtnAdLinks = [];
-                if (linkData.ads && typeof linkData.ads === 'string' && linkData.ads.trim() !== '') {
-                    currentBtnAdLinks = linkData.ads.split(',').map(u => u.trim()).filter(u => u);
-                }
-                let clickCount = 0;
-
-                button.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    checkPremiumBeforeDownload(() => {
-                        if (currentBtnAdLinks.length > 0 && clickCount < currentBtnAdLinks.length) {
-                            openSafeLink(currentBtnAdLinks[clickCount]);
-                            clickCount++;
-                        } else {
-                            incrementDownloadCount(movieId);
-                            if (linkData.url) openSafeLink(linkData.url);
+            // Function to handle download click with premium check
+            const handleDownloadClick = async (linkUrl, linkName) => {
+                // Check premium status
+                if (currentUserId) {
+                    const { hasPremium: premiumStatus } = await checkPremiumStatus(currentUserId);
+                    hasPremium = premiumStatus;
+                    if (!hasPremium) {
+                        // Show premium required popup
+                        const watched = await showPremiumRequiredModalInIframe(currentUserId);
+                        if (watched) {
+                            // Check again and download
+                            const { hasPremium: nowHas } = await checkPremiumStatus(currentUserId);
+                            hasPremium = nowHas;
+                            if (nowHas && linkUrl) {
+                                incrementDownloadCount(movie.id);
+                                openSafeLink(linkUrl);
+                            }
                         }
-                    });
-                });
-                button.addEventListener('contextmenu', (e) => e.preventDefault());
-                return button;
+                        return;
+                    }
+                }
+                // If premium, download directly
+                if (linkUrl) {
+                    incrementDownloadCount(movie.id);
+                    openSafeLink(linkUrl);
+                }
             };
 
             if (movie.type === 'movie' && movie.downloadLinks && movie.downloadLinks.length > 0) {
                 const linksWrapper = document.createElement('div');
                 movie.downloadLinks.forEach(link => {
-                    const button = createDownloadButton(link, movie.id);
+                    const button = document.createElement('button');
+                    button.textContent = link.name;
+                    button.className = 'download-btn';
+                    
+                    // Check if premium required for this link (you can add premium flag per link)
+                    // For now, we'll check global premium
+                    
+                    // Ad links logic (preserved)
+                    let currentBtnAdLinks = [];
+                    if (link.ads && typeof link.ads === 'string' && link.ads.trim() !== '') {
+                        currentBtnAdLinks = link.ads.split(',').map(u => u.trim()).filter(u => u);
+                    }
+                    let clickCount = 0;
+
+                    button.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        // Check premium first
+                        if (currentUserId) {
+                            const { hasPremium: premiumStatus } = await checkPremiumStatus(currentUserId);
+                            if (!premiumStatus) {
+                                const watched = await showPremiumRequiredModalInIframe(currentUserId);
+                                if (watched) {
+                                    const { hasPremium: nowHas } = await checkPremiumStatus(currentUserId);
+                                    hasPremium = nowHas;
+                                    if (nowHas && link.url) {
+                                        incrementDownloadCount(movie.id);
+                                        openSafeLink(link.url);
+                                    }
+                                }
+                                return;
+                            }
+                        }
+
+                        // If premium, handle ad links or direct download
+                        if (currentBtnAdLinks.length > 0 && clickCount < currentBtnAdLinks.length) {
+                            openSafeLink(currentBtnAdLinks[clickCount]);
+                            clickCount++;
+                        } else {
+                            incrementDownloadCount(movie.id);
+                            if (link.url) openSafeLink(link.url);
+                        }
+                    });
+                    button.addEventListener('contextmenu', (e) => e.preventDefault());
                     linksWrapper.appendChild(button);
                 });
                 downloadsContainer.appendChild(linksWrapper);
@@ -898,7 +1259,45 @@
 
                             if (episode.downloadLinks && episode.downloadLinks.length > 0) {
                                 episode.downloadLinks.forEach(link => {
-                                    const button = createDownloadButton(link, movie.id, true);
+                                    const button = document.createElement('button');
+                                    button.textContent = link.name;
+                                    button.className = 'download-btn';
+
+                                    let currentBtnAdLinks = [];
+                                    if (link.ads && typeof link.ads === 'string' && link.ads.trim() !== '') {
+                                        currentBtnAdLinks = link.ads.split(',').map(u => u.trim()).filter(u => u);
+                                    }
+                                    let clickCount = 0;
+
+                                    button.addEventListener('click', async (e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+
+                                        if (currentUserId) {
+                                            const { hasPremium: premiumStatus } = await checkPremiumStatus(currentUserId);
+                                            if (!premiumStatus) {
+                                                const watched = await showPremiumRequiredModalInIframe(currentUserId);
+                                                if (watched) {
+                                                    const { hasPremium: nowHas } = await checkPremiumStatus(currentUserId);
+                                                    hasPremium = nowHas;
+                                                    if (nowHas && link.url) {
+                                                        incrementDownloadCount(movie.id);
+                                                        openSafeLink(link.url);
+                                                    }
+                                                }
+                                                return;
+                                            }
+                                        }
+
+                                        if (currentBtnAdLinks.length > 0 && clickCount < currentBtnAdLinks.length) {
+                                            openSafeLink(currentBtnAdLinks[clickCount]);
+                                            clickCount++;
+                                        } else {
+                                            incrementDownloadCount(movie.id);
+                                            if (link.url) openSafeLink(link.url);
+                                        }
+                                    });
+                                    button.addEventListener('contextmenu', (e) => e.preventDefault());
                                     episodeContainer.appendChild(button);
                                 });
                             } else {
@@ -924,24 +1323,47 @@
                 });
             }
 
+            // Telegram BackButton
             if (tgApp && tgApp.BackButton) {
                 tgApp.BackButton.onClick(goHome);
                 tgApp.BackButton.show();
             }
         };
 
-        const tgApp = window.Telegram?.WebApp;
-        if (tgApp && tgApp.BackButton) {
-            tgApp.BackButton.onClick(goHome);
-            tgApp.BackButton.show();
-        }
+        // ==========================================
+        // Initialize
+        // ==========================================
 
-        const movieId = getMovieIdFromUrl();
-        if (movieId) {
-            loadMovieDetails(movieId);
-        } else {
-            goHome();
-        }
+        const initializeDetails = async () => {
+            // Check URL verification first
+            const verified = await checkUrlForVerification();
+            if (verified) {
+                // Reload after verification
+                setTimeout(() => window.location.reload(), 1500);
+                return;
+            }
+
+            // Get user ID from Telegram
+            const tgApp = window.Telegram?.WebApp;
+            if (tgApp && tgApp.initDataUnsafe && tgApp.initDataUnsafe.user) {
+                currentUserId = String(tgApp.initDataUnsafe.user.id);
+                const { hasPremium: premiumStatus } = await checkPremiumStatus(currentUserId);
+                hasPremium = premiumStatus;
+                if (hasPremium) {
+                    premiumBadgeHeader.classList.add('visible');
+                }
+            }
+
+            const movieId = getMovieIdFromUrl();
+            if (movieId) {
+                loadMovieDetails(movieId);
+            } else {
+                goHome();
+            }
+        };
+
+        // Initialize
+        initializeDetails();
     </script>
 </body>
 </html>
