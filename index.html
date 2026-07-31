@@ -9,7 +9,7 @@
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default,es6,fetch"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --dark-green: #218838; --blue: #007bff; --danger: #dc3545; }
+        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --dark-green: #218838; --blue: #007bff; --danger: #dc3545; --gold: #ffd700; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; -webkit-tap-highlight-color: transparent; }
         body {
             background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
@@ -796,6 +796,27 @@
 
         #spa-details-view { display: none; }
 
+        /* Premium Only Badge on Movie Card */
+        .premium-lock-badge {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: var(--gold);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            z-index: 3;
+            border: 2px solid var(--gold);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .premium-lock-badge i { font-size: 1rem; }
+
         @media (min-width: 600px) { .modal-content { width: 80%; } }
         @media (max-width: 500px) {
             .request-modal { padding: 20px; }
@@ -894,6 +915,13 @@
                     <div class="detail-content">
                         <div class="detail-label">Member Since</div>
                         <div class="detail-value small" id="user-created-at"></div>
+                    </div>
+                </div>
+                <div class="user-detail-item">
+                    <div class="detail-icon"><i class="fas fa-crown"></i></div>
+                    <div class="detail-content">
+                        <div class="detail-label">Premium Status</div>
+                        <div class="detail-value" id="user-premium-status" style="color: var(--gold);"></div>
                     </div>
                 </div>
             </div>
@@ -1031,6 +1059,7 @@
             const userFirstVisit = document.getElementById('user-first-visit');
             const userCreatedAt = document.getElementById('user-created-at');
             const userStatusBadge = document.getElementById('user-status-badge');
+            const userPremiumStatus = document.getElementById('user-premium-status');
 
             const premiumStatusBar = document.getElementById('premium-status-bar');
             const premiumStatusText = document.getElementById('premium-status-text');
@@ -1077,7 +1106,7 @@
             let currentUserId = null;
 
             // ==========================================
-            // PREMIUM SYSTEM FUNCTIONS
+            // PREMIUM SYSTEM FUNCTIONS (Connected to Admin)
             // ==========================================
 
             async function checkPremiumStatus(userId) {
@@ -1250,6 +1279,7 @@
                             if (onComplete) onComplete(true);
                             showToast('🎉 Premium Activated! Enjoy ad-free experience for 12 hours.');
                             updatePremiumUI(true);
+                            updateUserPremiumStatus();
                         } else if (checkCount > 60) {
                             clearInterval(checkInterval);
                             spinner.style.display = 'none';
@@ -1314,6 +1344,7 @@
                     if (result.success) {
                         showToast('🎉 Premium activated for 12 hours! Enjoy ad-free experience.');
                         updatePremiumUI(true);
+                        updateUserPremiumStatus();
                         setTimeout(() => window.location.reload(), 1500);
                     } else {
                         showToast('❌ ' + result.message);
@@ -1338,6 +1369,22 @@
                 }
             }
 
+            async function updateUserPremiumStatus() {
+                if (!currentUserId) {
+                    if (userPremiumStatus) userPremiumStatus.textContent = '❌ Not Premium';
+                    return;
+                }
+                const { hasPremium, data } = await checkPremiumStatus(currentUserId);
+                if (hasPremium && data) {
+                    const expiry = new Date(data.expiry).toLocaleString('bn-BD');
+                    userPremiumStatus.innerHTML = `✅ Active <span style="font-size:0.7rem; color:var(--text-secondary);">(Expires: ${expiry})</span>`;
+                    userPremiumStatus.style.color = '#7ddf7d';
+                } else {
+                    userPremiumStatus.textContent = '❌ Not Premium';
+                    userPremiumStatus.style.color = 'var(--text-secondary)';
+                }
+            }
+
             async function updatePremiumTimer() {
                 if (!currentUserId) return;
                 const { hasPremium, data } = await checkPremiumStatus(currentUserId);
@@ -1353,9 +1400,11 @@
                         updatePremiumUI(true);
                     } else {
                         updatePremiumUI(false);
+                        updateUserPremiumStatus();
                     }
                 } else {
                     updatePremiumUI(false);
+                    updateUserPremiumStatus();
                 }
             }
 
@@ -1430,8 +1479,6 @@
 
             if (openRequestBtn) {
                 openRequestBtn.addEventListener('click', openRequestModal);
-            } else {
-                console.error("Request button not found!");
             }
 
             if (requestModalClose) {
@@ -1505,7 +1552,7 @@
                         
                     } catch (error) {
                         console.error("Error submitting request:", error);
-                        alert('Failed to submit request. Please try again.');
+                        showToast('❌ Failed to submit request. Please try again.');
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
                     }
@@ -1694,6 +1741,14 @@
                         }
                     }
 
+                    // Premium Lock for Premium Content (isPremium: true)
+                    let premiumLockHTML = '';
+                    if (movie.isPremium === true) {
+                        // Check if user has premium
+                        // We'll handle click logic separately
+                        premiumLockHTML = `<div class="premium-lock-badge"><i class="fas fa-lock"></i> Premium</div>`;
+                    }
+
                     let cardHTML = '';
                     let languageBadgeHTML = movie.language ? `<div class="language-badge">${movie.language}</div>` : '';
                     let uploadDateHTML = '';
@@ -1707,10 +1762,11 @@
                         cardHTML = `
                             <div class="movie-poster">
                                 ${uploadDateHTML}${languageBadgeHTML}
+                                ${movie.isPremium ? premiumLockHTML : ''}
                                 <img src="${movie.posterUrl}" alt="${movie.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x450/222/fff?text=Error'">
                             </div>
                             <div class="movie-info">
-                                <h3 class="movie-title">${movie.title}</h3>
+                                <h3 class="movie-title">${movie.title} ${movie.isPremium ? '⭐' : ''}</h3>
                                 <p class="movie-description-snippet">${movie.description || 'No description available.'}</p>
                                 <p class="movie-genres"><b>Genres:</b> ${movie.genres || 'N/A'}</p>
                                 ${seriesInfoHTML}
@@ -1721,11 +1777,12 @@
                         cardHTML = `
                             <div class="movie-poster">
                                 ${uploadDateHTML}${languageBadgeHTML}
+                                ${movie.isPremium ? premiumLockHTML : ''}
                                 <img src="${movie.posterUrl}" alt="${movie.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x450/222/fff?text=Error'">
                                 ${movie.isPremium ? '<div class="premium-badge"><i class="fas fa-crown"></i> Premium</div>' : ''}
                             </div>
                             <div class="movie-info">
-                                <h3 class="movie-title">${movie.title}</h3>
+                                <h3 class="movie-title">${movie.title} ${movie.isPremium ? '⭐' : ''}</h3>
                                 <p class="movie-genres">${movie.genres || ''}</p>
                                 ${seriesInfoHTML}
                                 <p class="movie-rating"><i class="fas fa-star" style="color:gold;"></i> ${movie.rating || 'N/A'}/10</p>
@@ -1908,6 +1965,7 @@
                             setTimeout(() => {
                                 userInfoSection.classList.add('visible');
                                 updateUserStatusBadge(userStatus);
+                                updateUserPremiumStatus();
                             }, 1000);
                         }
                     } else {
@@ -1920,6 +1978,7 @@
                             if (!localStorage.getItem('userInfoShown')) {
                                 userInfoSection.classList.add('visible');
                                 updateUserStatusBadge('active');
+                                updateUserPremiumStatus();
                             }
                         }, 1000);
                     }
@@ -1949,6 +2008,7 @@
                     
                     const { hasPremium } = await checkPremiumStatus(user.id);
                     updatePremiumUI(hasPremium);
+                    await updateUserPremiumStatus();
                     
                 } catch (error) { console.error("Error saving or updating user data:", error); }
             };
@@ -1970,13 +2030,22 @@
             // ==========================================
 
             const handleMovieCardClick = async (movieId) => {
-                if (currentUserId) {
-                    const { hasPremium } = await checkPremiumStatus(currentUserId);
-                    if (!hasPremium) {
-                        const watched = await showPremiumRequiredModal(currentUserId);
-                        if (watched) {
-                            openMovieDetails(movieId);
+                // Find the movie data
+                const movie = currentlyLoadedMovies.find(m => m.id === movieId);
+                if (movie && movie.isPremium === true) {
+                    // Premium content - check if user has premium
+                    if (currentUserId) {
+                        const { hasPremium } = await checkPremiumStatus(currentUserId);
+                        if (!hasPremium) {
+                            const watched = await showPremiumRequiredModal(currentUserId);
+                            if (watched) {
+                                openMovieDetails(movieId);
+                            }
+                            return;
                         }
+                    } else {
+                        // No user ID, show premium required
+                        showToast('❌ Please login to access premium content');
                         return;
                     }
                 }
@@ -2015,6 +2084,7 @@
                 if (premiumCheckInterval) clearInterval(premiumCheckInterval);
                 premiumCheckInterval = setInterval(updatePremiumTimer, 1000);
                 await updatePremiumTimer();
+                await updateUserPremiumStatus();
                 
                 console.log("App initialization complete");
             };
