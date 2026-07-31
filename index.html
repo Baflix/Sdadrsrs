@@ -205,7 +205,6 @@
         .status-badge.blocked { background: var(--danger); color: #fff; }
         .status-badge.inactive { background: #ffc107; color: #000; }
 
-        /* Request Button */
         .request-btn-container {
             text-align: center;
             margin: 0 20px 20px;
@@ -231,7 +230,6 @@
         }
         .request-btn:active { transform: translateY(0); }
 
-        /* Request Modal */
         .request-modal-overlay {
             position: fixed;
             top: 0;
@@ -618,7 +616,6 @@
         }
         .welcome-popup-click-hint i { color: var(--primary); }
 
-        /* Premium Badge on Movie Card */
         .premium-badge {
             position: absolute;
             bottom: 8px;
@@ -638,7 +635,6 @@
             50% { box-shadow: 0 0 20px rgba(255, 210, 0, 0.6); }
         }
 
-        /* Premium Status Bar */
         .premium-status-bar {
             background: linear-gradient(145deg, #1a3a1a, #0d260d);
             border: 1px solid #2d5a2d;
@@ -796,13 +792,12 @@
 
         #spa-details-view { display: none; }
 
-        /* Premium Only Badge on Movie Card */
         .premium-lock-badge {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             color: var(--gold);
             padding: 8px 16px;
             border-radius: 30px;
@@ -829,7 +824,6 @@
 </head>
 <body>
     <div id="spa-main-view">
-        <!-- Welcome Popup -->
         <div id="welcome-popup" class="welcome-popup-overlay">
             <div class="welcome-popup-content" id="welcome-popup-content">
                 <button class="welcome-popup-close" id="welcome-popup-close">&times;</button>
@@ -853,7 +847,6 @@
             <div class="social-icons"></div>
         </header>
 
-        <!-- Premium Status Bar -->
         <div class="premium-status-bar" id="premium-status-bar">
             <div>
                 <span class="premium-icon"><i class="fas fa-crown"></i></span>
@@ -865,7 +858,6 @@
             </div>
         </div>
 
-        <!-- User Info Section -->
         <div id="user-info-section" class="user-info-section">
             <div class="user-info-header">
                 <div class="user-avatar"><i class="fas fa-user"></i></div>
@@ -932,14 +924,12 @@
             </div>
         </div>
 
-        <!-- Request Button -->
         <div class="request-btn-container">
             <button class="request-btn" id="open-request-modal-btn">
                 <i class="fas fa-plus-circle"></i> Movie Request
             </button>
         </div>
 
-        <!-- Request Modal -->
         <div class="request-modal-overlay" id="request-modal-overlay">
             <div class="request-modal">
                 <button class="request-modal-close" id="request-modal-close">&times;</button>
@@ -1013,7 +1003,6 @@
         </div>
     </div>
 
-    <!-- Details Page Iframe -->
     <div id="spa-details-view">
         <iframe id="details-iframe" src="" style="width:100%; height:100vh; border:none; overflow:hidden;"></iframe>
     </div>
@@ -1035,7 +1024,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         
-        // ===== VSHORT API CONFIGURATION =====
         const VSHORT_API = "c7d18a4a9d26ad6407fbd39fb85470d3c46f42d3";
         const VSHORT_URL = "https://vshort.xyz/api";
         const PREMIUM_HOURS = 12;
@@ -1106,7 +1094,7 @@
             let currentUserId = null;
 
             // ==========================================
-            // PREMIUM SYSTEM FUNCTIONS (Connected to Admin)
+            // PREMIUM SYSTEM FUNCTIONS (100% Connected to Admin)
             // ==========================================
 
             async function checkPremiumStatus(userId) {
@@ -1152,41 +1140,15 @@
                     if (alias) {
                         apiUrl += `&alias=${alias}`;
                     }
-                    console.log("Calling VShort API:", apiUrl);
                     const response = await fetch(apiUrl);
                     const shortLink = await response.text();
                     if (shortLink && shortLink.startsWith("https://")) {
                         return shortLink.trim();
                     } else {
-                        console.error("Invalid short link response:", shortLink);
                         return null;
                     }
                 } catch (error) {
-                    console.error("Error creating short link:", error);
                     return null;
-                }
-            }
-
-            async function activatePremium(userId, token) {
-                try {
-                    const docRef = doc(db, "premiumUsers", String(userId));
-                    const expiryTime = new Date();
-                    expiryTime.setHours(expiryTime.getHours() + PREMIUM_HOURS);
-                    
-                    await setDoc(docRef, {
-                        userId: String(userId),
-                        expiry: expiryTime,
-                        status: "active",
-                        token: token,
-                        tokenExpiry: new Date(Date.now() + 30 * 60 * 1000),
-                        lastAdWatch: serverTimestamp(),
-                        updatedAt: serverTimestamp()
-                    }, { merge: true });
-                    
-                    return { success: true };
-                } catch (error) {
-                    console.error("Error activating premium:", error);
-                    return { success: false };
                 }
             }
 
@@ -1222,7 +1184,6 @@
                         return { success: false, message: "Invalid or expired token" };
                     }
                 } catch (error) {
-                    console.error("Error verifying token:", error);
                     return { success: false, message: "Error verifying token" };
                 }
             }
@@ -1429,7 +1390,7 @@
             }
 
             // ==========================================
-            // Original App Functions
+            // Core Functions
             // ==========================================
 
             document.body.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -1459,7 +1420,6 @@
                 } else { window.open(url, '_blank'); }
             };
 
-            // ===== REQUEST MODAL FUNCTIONS =====
             const openRequestModal = () => {
                 requestModalOverlay.classList.add('visible');
                 document.body.style.overflow = 'hidden';
@@ -1559,7 +1519,6 @@
                 });
             }
 
-            // SPA Details Open
             const openMovieDetails = async (movieId) => {
                 savedScrollPosition = window.scrollY;
                 
@@ -1741,11 +1700,8 @@
                         }
                     }
 
-                    // Premium Lock for Premium Content (isPremium: true)
                     let premiumLockHTML = '';
                     if (movie.isPremium === true) {
-                        // Check if user has premium
-                        // We'll handle click logic separately
                         premiumLockHTML = `<div class="premium-lock-badge"><i class="fas fa-lock"></i> Premium</div>`;
                     }
 
@@ -2026,14 +1982,12 @@
             };
 
             // ==========================================
-            // Movie Card Click Handler (with Premium Check)
+            // Movie Card Click Handler
             // ==========================================
 
             const handleMovieCardClick = async (movieId) => {
-                // Find the movie data
                 const movie = currentlyLoadedMovies.find(m => m.id === movieId);
                 if (movie && movie.isPremium === true) {
-                    // Premium content - check if user has premium
                     if (currentUserId) {
                         const { hasPremium } = await checkPremiumStatus(currentUserId);
                         if (!hasPremium) {
@@ -2044,7 +1998,6 @@
                             return;
                         }
                     } else {
-                        // No user ID, show premium required
                         showToast('❌ Please login to access premium content');
                         return;
                     }
