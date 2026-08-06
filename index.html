@@ -8,8 +8,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default,es6,fetch"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- ===== ADSGRAM SDK ===== -->
+    <script src="https://cdn.adsgram.ai/js/adsgram.min.js"></script>
     <style>
-        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --dark-green: #218838; --blue: #007bff; --danger: #dc3545; --gold: #ffd700; }
+        /* আপনার পুরানো CSS এখানে থাকবে - কিছু যোগ হচ্ছে না */
+        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --dark-green: #218838; --blue: #007bff; --danger: #dc3545; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; -webkit-tap-highlight-color: transparent; }
         body {
             background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
@@ -205,6 +208,7 @@
         .status-badge.blocked { background: var(--danger); color: #fff; }
         .status-badge.inactive { background: #ffc107; color: #000; }
 
+        /* Request Button */
         .request-btn-container {
             text-align: center;
             margin: 0 20px 20px;
@@ -230,6 +234,7 @@
         }
         .request-btn:active { transform: translateY(0); }
 
+        /* Request Modal */
         .request-modal-overlay {
             position: fixed;
             top: 0;
@@ -616,214 +621,40 @@
         }
         .welcome-popup-click-hint i { color: var(--primary); }
 
-        .premium-badge {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background: linear-gradient(45deg, #f7971e, #ffd200);
-            color: #000;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 0.65rem;
-            font-weight: bold;
-            z-index: 2;
-            box-shadow: 0 2px 10px rgba(255, 210, 0, 0.3);
-            animation: glowPulse 2s infinite;
-        }
-        @keyframes glowPulse {
-            0%, 100% { box-shadow: 0 0 5px rgba(255, 210, 0, 0.3); }
-            50% { box-shadow: 0 0 20px rgba(255, 210, 0, 0.6); }
-        }
-
-        .premium-status-bar {
-            background: linear-gradient(145deg, #1a3a1a, #0d260d);
-            border: 1px solid #2d5a2d;
-            border-radius: 12px;
-            padding: 12px 18px;
-            margin: 0 20px 15px;
+        #spa-details-view {
             display: none;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .premium-status-bar.visible {
-            display: flex;
-        }
-        .premium-status-bar .premium-icon {
-            color: #ffd700;
-            font-size: 1.2rem;
-        }
-        .premium-status-bar .premium-text {
-            color: #7ddf7d;
-            font-weight: bold;
-            font-size: 0.95rem;
-        }
-        .premium-status-bar .premium-timer {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-        }
-        .premium-status-bar .premium-expiry {
-            color: #ff6b6b;
-            font-size: 0.8rem;
         }
 
-        .ad-popup-overlay {
+        /* ===== NOTIFICATION TOAST ===== */
+        .notification-toast {
             position: fixed;
-            top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.92);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            backdrop-filter: blur(10px);
-            animation: fadeIn 0.4s ease;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        .ad-popup-content {
-            background: linear-gradient(145deg, #1a1a1a, #222);
-            padding: 35px 25px;
-            border-radius: 24px;
-            max-width: 420px;
-            width: 92%;
-            text-align: center;
-            border: 1px solid rgba(229,9,20,0.3);
-            box-shadow: 0 20px 60px rgba(229,9,20,0.2);
-        }
-        .ad-popup-content .ad-icon {
-            font-size: 3rem;
-            color: #ffd700;
-            margin-bottom: 10px;
-            animation: bounce 1.5s infinite;
-        }
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
-        .ad-popup-content h2 {
-            color: #e50914;
-            margin-bottom: 8px;
-            font-size: 1.6rem;
-        }
-        .ad-popup-content .ad-subtitle {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            line-height: 1.6;
-            margin-bottom: 5px;
-        }
-        .ad-popup-content .ad-highlight {
-            color: #ffd700;
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-        .ad-popup-content .ad-timer-info {
-            color: #888;
-            font-size: 0.8rem;
-            margin: 8px 0 15px;
-        }
-        .ad-watch-btn {
-            display: inline-block;
-            background: linear-gradient(45deg, #f7971e, #ffd200);
-            color: #000;
-            padding: 16px 35px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: bold;
-            margin: 10px 0 12px;
-            transition: all 0.3s ease;
-            font-size: 1.1rem;
-            box-shadow: 0 4px 20px rgba(255, 210, 0, 0.3);
-            border: none;
-            cursor: pointer;
-        }
-        .ad-watch-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 30px rgba(255, 210, 0, 0.5);
-        }
-        .ad-watch-btn i { margin-right: 10px; }
-        .ad-skip-btn {
-            background: none;
-            border: none;
-            color: #666;
-            cursor: pointer;
-            font-size: 0.85rem;
-            text-decoration: underline;
-            padding: 8px 16px;
-            transition: color 0.3s;
-            display: block;
-            margin: 5px auto 0;
-        }
-        .ad-skip-btn:hover { color: #aaa; }
-        .ad-loading-spinner {
-            display: none;
-            width: 30px;
-            height: 30px;
-            border: 3px solid #333;
-            border-top-color: #ffd700;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 15px auto;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .toast-notification {
-            position: fixed;
-            bottom: 30px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: #1a1a1a;
-            color: #fff;
-            padding: 15px 25px;
+            background: #0088cc;
+            color: white;
+            padding: 12px 24px;
             border-radius: 12px;
-            border-left: 4px solid #e50914;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            z-index: 10000;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            z-index: 9999;
+            display: none;
+            animation: slideUp 0.3s ease;
             max-width: 90%;
             text-align: center;
-            animation: slideUp 0.5s ease;
+            font-size: 0.9rem;
         }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateX(-50%) translateY(30px); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-
-        #spa-details-view { display: none; }
-
-        .premium-lock-badge {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.85);
-            color: var(--gold);
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            z-index: 3;
-            border: 2px solid var(--gold);
-            backdrop-filter: blur(5px);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .premium-lock-badge i { font-size: 1rem; }
+        @keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(30px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 
         @media (min-width: 600px) { .modal-content { width: 80%; } }
         @media (max-width: 500px) {
             .request-modal { padding: 20px; }
             .request-modal h2 { font-size: 1.2rem; }
-            .ad-popup-content { padding: 25px 18px; }
-            .ad-popup-content h2 { font-size: 1.3rem; }
-            .ad-watch-btn { padding: 14px 25px; font-size: 1rem; }
         }
     </style>
 </head>
 <body>
     <div id="spa-main-view">
+        <!-- Welcome Popup -->
         <div id="welcome-popup" class="welcome-popup-overlay">
             <div class="welcome-popup-content" id="welcome-popup-content">
                 <button class="welcome-popup-close" id="welcome-popup-close">&times;</button>
@@ -847,17 +678,7 @@
             <div class="social-icons"></div>
         </header>
 
-        <div class="premium-status-bar" id="premium-status-bar">
-            <div>
-                <span class="premium-icon"><i class="fas fa-crown"></i></span>
-                <span class="premium-text" id="premium-status-text">🎉 Premium Active</span>
-            </div>
-            <div>
-                <span class="premium-timer" id="premium-timer-display"></span>
-                <span class="premium-expiry" id="premium-expiry-display"></span>
-            </div>
-        </div>
-
+        <!-- User Info Section -->
         <div id="user-info-section" class="user-info-section">
             <div class="user-info-header">
                 <div class="user-avatar"><i class="fas fa-user"></i></div>
@@ -909,13 +730,6 @@
                         <div class="detail-value small" id="user-created-at"></div>
                     </div>
                 </div>
-                <div class="user-detail-item">
-                    <div class="detail-icon"><i class="fas fa-crown"></i></div>
-                    <div class="detail-content">
-                        <div class="detail-label">Premium Status</div>
-                        <div class="detail-value" id="user-premium-status" style="color: var(--gold);"></div>
-                    </div>
-                </div>
             </div>
             <div class="user-info-close">
                 <button class="close-user-info" onclick="window.closeUserInfo()">
@@ -924,12 +738,14 @@
             </div>
         </div>
 
+        <!-- Request Button (NEW) -->
         <div class="request-btn-container">
             <button class="request-btn" id="open-request-modal-btn">
                 <i class="fas fa-plus-circle"></i> Movie Request
             </button>
         </div>
 
+        <!-- Request Modal (NEW) -->
         <div class="request-modal-overlay" id="request-modal-overlay">
             <div class="request-modal">
                 <button class="request-modal-close" id="request-modal-close">&times;</button>
@@ -1003,13 +819,19 @@
         </div>
     </div>
 
+    <!-- ডিটেইলস পেজ আইফ্রেম -->
     <div id="spa-details-view">
         <iframe id="details-iframe" src="" style="width:100%; height:100vh; border:none; overflow:hidden;"></iframe>
     </div>
 
+    <!-- ===== NOTIFICATION TOAST ===== -->
+    <div id="notification-toast" class="notification-toast">
+        <span id="toast-message"></span>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, setDoc, increment, serverTimestamp, query, where, orderBy, startAfter, limit, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, setDoc, increment, serverTimestamp, query, where, orderBy, startAfter, limit, addDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA3okSnZJrF9ooUp12KihKISR2VRZq5Ju8",
@@ -1024,9 +846,76 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         
-        const VSHORT_API = "c7d18a4a9d26ad6407fbd39fb85470d3c46f42d3";
-        const VSHORT_URL = "https://vshort.xyz/api";
-        const PREMIUM_HOURS = 12;
+        // ===== ADSGRAM CONFIG =====
+        const ADSGRAM_API_KEY = 'a3342df6208440d385bfc50124798c32';
+        let adsgramInstance = null;
+
+        // ===== TOAST =====
+        function showToast(message, isSuccess = true) {
+            const toast = document.getElementById('notification-toast');
+            const toastMessage = document.getElementById('toast-message');
+            toastMessage.textContent = message;
+            toast.style.background = isSuccess ? '#0088cc' : '#dc3545';
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        // ===== ADSGRAM INIT =====
+        const initAdsgram = async () => {
+            try {
+                if (typeof Adsgram !== 'undefined') {
+                    adsgramInstance = new Adsgram({
+                        blockId: ADSGRAM_API_KEY,
+                        onReward: () => {
+                            console.log('✅ Ad reward granted!');
+                            return true;
+                        },
+                        onError: (error) => {
+                            console.error('❌ Ad error:', error);
+                            showToast('❌ Failed to load ad. Please try again.', false);
+                        },
+                        onClose: () => {
+                            console.log('Ad closed');
+                        }
+                    });
+                    console.log('✅ Adsgram initialized successfully');
+                } else {
+                    console.warn('⚠️ Adsgram SDK not loaded');
+                }
+            } catch (error) {
+                console.error('Error initializing Adsgram:', error);
+            }
+        };
+
+        // ===== SHOW REWARDED AD (details.html এ কল হবে) =====
+        window.showRewardedAd = async (onSuccess, onError) => {
+            try {
+                if (!adsgramInstance) {
+                    await initAdsgram();
+                }
+                
+                if (adsgramInstance) {
+                    showToast('📺 Loading ad... Please wait');
+                    const result = await adsgramInstance.show();
+                    if (result && result.reward) {
+                        if (onSuccess) onSuccess();
+                        return true;
+                    } else {
+                        if (onError) onError('Ad not completed');
+                        return false;
+                    }
+                } else {
+                    showToast('❌ Ad service not available', false);
+                    if (onError) onError('Ad service not available');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error showing ad:', error);
+                showToast('❌ Failed to show ad', false);
+                if (onError) onError(error.message);
+                return false;
+            }
+        };
 
         document.addEventListener('DOMContentLoaded', () => {
             const movieGrid = document.querySelector('.movie-grid');
@@ -1047,12 +936,6 @@
             const userFirstVisit = document.getElementById('user-first-visit');
             const userCreatedAt = document.getElementById('user-created-at');
             const userStatusBadge = document.getElementById('user-status-badge');
-            const userPremiumStatus = document.getElementById('user-premium-status');
-
-            const premiumStatusBar = document.getElementById('premium-status-bar');
-            const premiumStatusText = document.getElementById('premium-status-text');
-            const premiumTimerDisplay = document.getElementById('premium-timer-display');
-            const premiumExpiryDisplay = document.getElementById('premium-expiry-display');
 
             const welcomePopup = document.getElementById('welcome-popup');
             const welcomePopupClose = document.getElementById('welcome-popup-close');
@@ -1066,6 +949,7 @@
             const spaDetailsView = document.getElementById('spa-details-view');
             const detailsIframe = document.getElementById('details-iframe');
 
+            // ===== REQUEST MODAL ELEMENTS =====
             const requestModalOverlay = document.getElementById('request-modal-overlay');
             const requestModalClose = document.getElementById('request-modal-close');
             const openRequestBtn = document.getElementById('open-request-modal-btn');
@@ -1090,308 +974,6 @@
             let hasShownPopup = false;
             let savedScrollPosition = 0;
             let currentUser = null;
-            let premiumCheckInterval = null;
-            let currentUserId = null;
-
-            // ==========================================
-            // PREMIUM SYSTEM FUNCTIONS (100% Connected to Admin)
-            // ==========================================
-
-            async function checkPremiumStatus(userId) {
-                if (!userId) return { hasPremium: false, data: null };
-                try {
-                    const docRef = doc(db, "premiumUsers", String(userId));
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        const now = Date.now();
-                        let expiry = data.expiry;
-                        if (expiry && expiry.toDate) {
-                            expiry = expiry.toDate().getTime();
-                        } else if (expiry) {
-                            expiry = new Date(expiry).getTime();
-                        }
-                        if (now < expiry && data.status === 'active') {
-                            return { hasPremium: true, data: { ...data, expiry: expiry } };
-                        } else {
-                            if (data.status === 'active') {
-                                await updateDoc(docRef, { status: 'expired' });
-                            }
-                            return { hasPremium: false, data: null };
-                        }
-                    }
-                    return { hasPremium: false, data: null };
-                } catch (error) {
-                    console.error("Error checking premium:", error);
-                    return { hasPremium: false, data: null };
-                }
-            }
-
-            function generateToken(userId) {
-                const random = Math.random().toString(36).substring(2, 10);
-                const timestamp = Date.now().toString(36);
-                return `${userId}_${timestamp}_${random}`;
-            }
-
-            async function createShortLink(originalUrl, alias = "") {
-                try {
-                    const encodedUrl = encodeURIComponent(originalUrl);
-                    let apiUrl = `${VSHORT_URL}?api=${VSHORT_API}&url=${encodedUrl}&format=text`;
-                    if (alias) {
-                        apiUrl += `&alias=${alias}`;
-                    }
-                    const response = await fetch(apiUrl);
-                    const shortLink = await response.text();
-                    if (shortLink && shortLink.startsWith("https://")) {
-                        return shortLink.trim();
-                    } else {
-                        return null;
-                    }
-                } catch (error) {
-                    return null;
-                }
-            }
-
-            async function verifyTokenAndGrantPremium(userId, token) {
-                if (!userId || !token) return { success: false, message: "Missing userId or token" };
-                try {
-                    const docRef = doc(db, "premiumUsers", String(userId));
-                    const docSnap = await getDoc(docRef);
-                    if (!docSnap.exists()) {
-                        return { success: false, message: "No token found for this user" };
-                    }
-                    const data = docSnap.data();
-                    const now = Date.now();
-                    let tokenExpiry = data.tokenExpiry;
-                    if (tokenExpiry && tokenExpiry.toDate) {
-                        tokenExpiry = tokenExpiry.toDate().getTime();
-                    } else if (tokenExpiry) {
-                        tokenExpiry = new Date(tokenExpiry).getTime();
-                    }
-                    
-                    if (data.token === token && now < tokenExpiry) {
-                        const expiryTime = new Date();
-                        expiryTime.setHours(expiryTime.getHours() + PREMIUM_HOURS);
-                        await updateDoc(docRef, {
-                            expiry: expiryTime,
-                            status: "active",
-                            token: null,
-                            tokenExpiry: null,
-                            lastAdWatch: serverTimestamp()
-                        });
-                        return { success: true, message: `Premium activated for ${PREMIUM_HOURS} hours` };
-                    } else {
-                        return { success: false, message: "Invalid or expired token" };
-                    }
-                } catch (error) {
-                    return { success: false, message: "Error verifying token" };
-                }
-            }
-
-            function showAdPopup(shortLink, onComplete) {
-                const existing = document.querySelector('.ad-popup-overlay');
-                if (existing) existing.remove();
-                
-                const overlay = document.createElement('div');
-                overlay.className = 'ad-popup-overlay';
-                overlay.innerHTML = `
-                    <div class="ad-popup-content">
-                        <div class="ad-icon"><i class="fas fa-crown"></i></div>
-                        <h2>🎬 Unlock Premium</h2>
-                        <p class="ad-subtitle">
-                            Watch a short ad and get <span class="ad-highlight">${PREMIUM_HOURS} hours</span> of premium access!
-                        </p>
-                        <p class="ad-subtitle" style="font-size:0.85rem; color:#888;">
-                            No ads, direct downloads, and full HD quality.
-                        </p>
-                        <div class="ad-timer-info">
-                            <i class="fas fa-clock"></i> Token expires in 30 minutes
-                        </div>
-                        <a href="${shortLink}" target="_blank" class="ad-watch-btn" id="ad-watch-btn">
-                            <i class="fas fa-play-circle"></i> Watch Ad Now
-                        </a>
-                        <div class="ad-loading-spinner" id="ad-loading-spinner"></div>
-                        <p style="font-size:0.75rem; color:#555; margin-top:5px;">
-                            After watching, you'll be redirected back automatically.
-                        </p>
-                        <button class="ad-skip-btn" id="ad-skip-btn">Skip for now</button>
-                    </div>
-                `;
-                document.body.appendChild(overlay);
-                
-                document.getElementById('ad-skip-btn').addEventListener('click', () => {
-                    overlay.remove();
-                    if (onComplete) onComplete(false);
-                });
-                
-                document.getElementById('ad-watch-btn').addEventListener('click', () => {
-                    const spinner = document.getElementById('ad-loading-spinner');
-                    spinner.style.display = 'block';
-                    document.getElementById('ad-watch-btn').style.opacity = '0.6';
-                    document.getElementById('ad-watch-btn').style.pointerEvents = 'none';
-                    
-                    let checkCount = 0;
-                    const checkInterval = setInterval(async () => {
-                        checkCount++;
-                        const { hasPremium } = await checkPremiumStatus(currentUserId);
-                        if (hasPremium) {
-                            clearInterval(checkInterval);
-                            overlay.remove();
-                            if (onComplete) onComplete(true);
-                            showToast('🎉 Premium Activated! Enjoy ad-free experience for 12 hours.');
-                            updatePremiumUI(true);
-                            updateUserPremiumStatus();
-                        } else if (checkCount > 60) {
-                            clearInterval(checkInterval);
-                            spinner.style.display = 'none';
-                            document.getElementById('ad-watch-btn').style.opacity = '1';
-                            document.getElementById('ad-watch-btn').style.pointerEvents = 'auto';
-                        }
-                    }, 1000);
-                });
-            }
-
-            async function showPremiumRequiredModal(userId) {
-                return new Promise(async (resolve) => {
-                    try {
-                        const token = generateToken(userId);
-                        const tokenExpiry = new Date(Date.now() + 30 * 60 * 1000);
-                        
-                        const docRef = doc(db, "premiumUsers", String(userId));
-                        await setDoc(docRef, {
-                            userId: String(userId),
-                            token: token,
-                            tokenExpiry: tokenExpiry,
-                            status: "pending",
-                            updatedAt: serverTimestamp()
-                        }, { merge: true });
-                        
-                        const baseUrl = window.location.origin + window.location.pathname;
-                        const verifyUrl = `${baseUrl}?verify=true&token=${token}&userId=${userId}`;
-                        const shortLink = await createShortLink(verifyUrl);
-                        
-                        if (shortLink) {
-                            showAdPopup(shortLink, (result) => {
-                                resolve(result);
-                            });
-                        } else {
-                            showAdPopup(verifyUrl, (result) => {
-                                resolve(result);
-                            });
-                        }
-                    } catch (error) {
-                        console.error("Error in showPremiumRequiredModal:", error);
-                        resolve(false);
-                    }
-                });
-            }
-
-            // ==========================================
-            // URL Verification Check
-            // ==========================================
-
-            async function checkUrlForVerification() {
-                const params = new URLSearchParams(window.location.search);
-                const verify = params.get('verify');
-                const token = params.get('token');
-                const userId = params.get('userId');
-                
-                if (verify === 'true' && token && userId) {
-                    const newUrl = window.location.pathname;
-                    window.history.replaceState({}, document.title, newUrl);
-                    
-                    const result = await verifyTokenAndGrantPremium(userId, token);
-                    
-                    if (result.success) {
-                        showToast('🎉 Premium activated for 12 hours! Enjoy ad-free experience.');
-                        updatePremiumUI(true);
-                        updateUserPremiumStatus();
-                        setTimeout(() => window.location.reload(), 1500);
-                    } else {
-                        showToast('❌ ' + result.message);
-                    }
-                    return true;
-                }
-                return false;
-            }
-
-            // ==========================================
-            // Premium UI Updates
-            // ==========================================
-
-            function updatePremiumUI(hasPremium) {
-                const bar = document.getElementById('premium-status-bar');
-                if (hasPremium) {
-                    bar.classList.add('visible');
-                    premiumStatusText.textContent = '🎉 Premium Active';
-                    premiumStatusText.style.color = '#7ddf7d';
-                } else {
-                    bar.classList.remove('visible');
-                }
-            }
-
-            async function updateUserPremiumStatus() {
-                if (!currentUserId) {
-                    if (userPremiumStatus) userPremiumStatus.textContent = '❌ Not Premium';
-                    return;
-                }
-                const { hasPremium, data } = await checkPremiumStatus(currentUserId);
-                if (hasPremium && data) {
-                    const expiry = new Date(data.expiry).toLocaleString('bn-BD');
-                    userPremiumStatus.innerHTML = `✅ Active <span style="font-size:0.7rem; color:var(--text-secondary);">(Expires: ${expiry})</span>`;
-                    userPremiumStatus.style.color = '#7ddf7d';
-                } else {
-                    userPremiumStatus.textContent = '❌ Not Premium';
-                    userPremiumStatus.style.color = 'var(--text-secondary)';
-                }
-            }
-
-            async function updatePremiumTimer() {
-                if (!currentUserId) return;
-                const { hasPremium, data } = await checkPremiumStatus(currentUserId);
-                if (hasPremium && data && data.expiry) {
-                    const now = Date.now();
-                    const timeLeft = data.expiry - now;
-                    if (timeLeft > 0) {
-                        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-                        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-                        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-                        premiumTimerDisplay.textContent = `${hours}h ${minutes}m ${seconds}s remaining`;
-                        premiumExpiryDisplay.textContent = `Expires: ${new Date(data.expiry).toLocaleString()}`;
-                        updatePremiumUI(true);
-                    } else {
-                        updatePremiumUI(false);
-                        updateUserPremiumStatus();
-                    }
-                } else {
-                    updatePremiumUI(false);
-                    updateUserPremiumStatus();
-                }
-            }
-
-            // ==========================================
-            // Toast Notification
-            // ==========================================
-
-            function showToast(message) {
-                const existing = document.querySelector('.toast-notification');
-                if (existing) existing.remove();
-                
-                const toast = document.createElement('div');
-                toast.className = 'toast-notification';
-                toast.textContent = message;
-                document.body.appendChild(toast);
-                
-                setTimeout(() => {
-                    toast.style.opacity = '0';
-                    toast.style.transition = 'opacity 0.5s';
-                    setTimeout(() => toast.remove(), 500);
-                }, 5000);
-            }
-
-            // ==========================================
-            // Core Functions
-            // ==========================================
 
             document.body.addEventListener('contextmenu', (e) => e.preventDefault());
             
@@ -1420,6 +1002,7 @@
                 } else { window.open(url, '_blank'); }
             };
 
+            // ===== REQUEST MODAL FUNCTIONS =====
             const openRequestModal = () => {
                 requestModalOverlay.classList.add('visible');
                 document.body.style.overflow = 'hidden';
@@ -1437,88 +1020,81 @@
                 submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
             };
 
-            if (openRequestBtn) {
-                openRequestBtn.addEventListener('click', openRequestModal);
-            }
+            openRequestBtn.addEventListener('click', openRequestModal);
+            requestModalClose.addEventListener('click', closeRequestModal);
+            requestModalOverlay.addEventListener('click', (e) => {
+                if (e.target === requestModalOverlay) closeRequestModal();
+            });
 
-            if (requestModalClose) {
-                requestModalClose.addEventListener('click', closeRequestModal);
-            }
+            // Character counter with limit
+            requestDesc.addEventListener('input', () => {
+                const len = requestDesc.value.length;
+                const max = 150;
+                charCount.textContent = `${len}/${max}`;
+                
+                if (len >= max) {
+                    charCount.classList.add('limit-reached');
+                    charErrorMsg.classList.add('show');
+                    requestDesc.value = requestDesc.value.substring(0, max);
+                } else {
+                    charCount.classList.remove('limit-reached');
+                    charErrorMsg.classList.remove('show');
+                }
+            });
 
-            if (requestModalOverlay) {
-                requestModalOverlay.addEventListener('click', (e) => {
-                    if (e.target === requestModalOverlay) closeRequestModal();
-                });
-            }
+            // Request form submission
+            requestFormModal.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const name = requestName.value.trim();
+                const trailer = requestTrailer.value.trim();
+                const description = requestDesc.value.trim().substring(0, 150);
 
-            if (requestDesc) {
-                requestDesc.addEventListener('input', () => {
-                    const len = requestDesc.value.length;
-                    const max = 150;
-                    charCount.textContent = `${len}/${max}`;
-                    if (len >= max) {
-                        charCount.classList.add('limit-reached');
-                        charErrorMsg.classList.add('show');
-                        requestDesc.value = requestDesc.value.substring(0, max);
-                    } else {
-                        charCount.classList.remove('limit-reached');
-                        charErrorMsg.classList.remove('show');
-                    }
-                });
-            }
+                if (!name) {
+                    requestName.focus();
+                    requestName.style.borderColor = 'var(--danger)';
+                    setTimeout(() => requestName.style.borderColor = '', 2000);
+                    return;
+                }
 
-            if (requestFormModal) {
-                requestFormModal.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const name = requestName.value.trim();
-                    const trailer = requestTrailer.value.trim();
-                    const description = requestDesc.value.trim().substring(0, 150);
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
 
-                    if (!name) {
-                        requestName.focus();
-                        requestName.style.borderColor = 'var(--danger)';
-                        setTimeout(() => requestName.style.borderColor = '', 2000);
-                        return;
-                    }
-
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
-
-                    try {
-                        const user = currentUser || { id: 'anonymous', first_name: 'Guest' };
-                        await addDoc(collection(db, "movieRequests"), {
-                            userName: (user.first_name || 'Guest') + (user.last_name ? ' ' + user.last_name : ''),
-                            userId: String(user.id || 'anonymous'),
-                            movieName: name,
-                            trailerUrl: trailer || '',
-                            description: description || '',
-                            status: 'pending',
-                            createdAt: serverTimestamp()
-                        });
-                        
-                        successMsg.classList.add('show');
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = '<i class="fas fa-check"></i> Submitted!';
-                        
-                        requestName.value = '';
-                        requestTrailer.value = '';
-                        requestDesc.value = '';
-                        charCount.textContent = '0/150';
-                        
-                        setTimeout(() => {
-                            closeRequestModal();
-                            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
-                        }, 2000);
-                        
-                    } catch (error) {
-                        console.error("Error submitting request:", error);
-                        showToast('❌ Failed to submit request. Please try again.');
-                        submitBtn.disabled = false;
+                try {
+                    const user = currentUser || { id: 'anonymous', first_name: 'Guest' };
+                    await addDoc(collection(db, "movieRequests"), {
+                        userName: (user.first_name || 'Guest') + (user.last_name ? ' ' + user.last_name : ''),
+                        userId: String(user.id || 'anonymous'),
+                        movieName: name,
+                        trailerUrl: trailer || '',
+                        description: description || '',
+                        status: 'pending',
+                        createdAt: serverTimestamp()
+                    });
+                    
+                    successMsg.classList.add('show');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-check"></i> Submitted!';
+                    
+                    requestName.value = '';
+                    requestTrailer.value = '';
+                    requestDesc.value = '';
+                    charCount.textContent = '0/150';
+                    
+                    setTimeout(() => {
+                        closeRequestModal();
                         submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
-                    }
-                });
-            }
+                    }, 2000);
+                    
+                } catch (error) {
+                    console.error("Error submitting request:", error);
+                    alert('Failed to submit request. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
+                }
+            });
 
+            // SPA ডিটেইলস ওপেন
             const openMovieDetails = async (movieId) => {
                 savedScrollPosition = window.scrollY;
                 
@@ -1700,11 +1276,6 @@
                         }
                     }
 
-                    let premiumLockHTML = '';
-                    if (movie.isPremium === true) {
-                        premiumLockHTML = `<div class="premium-lock-badge"><i class="fas fa-lock"></i> Premium</div>`;
-                    }
-
                     let cardHTML = '';
                     let languageBadgeHTML = movie.language ? `<div class="language-badge">${movie.language}</div>` : '';
                     let uploadDateHTML = '';
@@ -1718,11 +1289,10 @@
                         cardHTML = `
                             <div class="movie-poster">
                                 ${uploadDateHTML}${languageBadgeHTML}
-                                ${movie.isPremium ? premiumLockHTML : ''}
                                 <img src="${movie.posterUrl}" alt="${movie.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x450/222/fff?text=Error'">
                             </div>
                             <div class="movie-info">
-                                <h3 class="movie-title">${movie.title} ${movie.isPremium ? '⭐' : ''}</h3>
+                                <h3 class="movie-title">${movie.title}</h3>
                                 <p class="movie-description-snippet">${movie.description || 'No description available.'}</p>
                                 <p class="movie-genres"><b>Genres:</b> ${movie.genres || 'N/A'}</p>
                                 ${seriesInfoHTML}
@@ -1733,12 +1303,10 @@
                         cardHTML = `
                             <div class="movie-poster">
                                 ${uploadDateHTML}${languageBadgeHTML}
-                                ${movie.isPremium ? premiumLockHTML : ''}
                                 <img src="${movie.posterUrl}" alt="${movie.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x450/222/fff?text=Error'">
-                                ${movie.isPremium ? '<div class="premium-badge"><i class="fas fa-crown"></i> Premium</div>' : ''}
                             </div>
                             <div class="movie-info">
-                                <h3 class="movie-title">${movie.title} ${movie.isPremium ? '⭐' : ''}</h3>
+                                <h3 class="movie-title">${movie.title}</h3>
                                 <p class="movie-genres">${movie.genres || ''}</p>
                                 ${seriesInfoHTML}
                                 <p class="movie-rating"><i class="fas fa-star" style="color:gold;"></i> ${movie.rating || 'N/A'}/10</p>
@@ -1836,19 +1404,14 @@
                 welcomePopupTimer.style.display = 'block';
             };
 
-            if (welcomePopupClose) {
-                welcomePopupClose.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    closeWelcomePopup();
-                });
-            }
-
-            if (welcomePopupContent) {
-                welcomePopupContent.addEventListener('click', () => {
-                    if (popupLinkUrl) openSafeLink(popupLinkUrl);
-                    closeWelcomePopup();
-                });
-            }
+            welcomePopupClose.addEventListener('click', (e) => {
+                e.stopPropagation();
+                closeWelcomePopup();
+            });
+            welcomePopupContent.addEventListener('click', () => {
+                if (popupLinkUrl) openSafeLink(popupLinkUrl);
+                closeWelcomePopup();
+            });
 
             const copyToClipboard = (elementId) => {
                 const element = document.getElementById(elementId);
@@ -1885,7 +1448,6 @@
             const saveOrUpdateTelegramUser = async (user) => {
                 if (!user || !user.id) return;
                 currentUser = user;
-                currentUserId = String(user.id);
                 const userDocRef = doc(db, "telegramUsers", String(user.id));
                 try {
                     const docSnap = await getDoc(userDocRef);
@@ -1921,7 +1483,6 @@
                             setTimeout(() => {
                                 userInfoSection.classList.add('visible');
                                 updateUserStatusBadge(userStatus);
-                                updateUserPremiumStatus();
                             }, 1000);
                         }
                     } else {
@@ -1934,7 +1495,6 @@
                             if (!localStorage.getItem('userInfoShown')) {
                                 userInfoSection.classList.add('visible');
                                 updateUserStatusBadge('active');
-                                updateUserPremiumStatus();
                             }
                         }, 1000);
                     }
@@ -1962,10 +1522,6 @@
                         updateUserStatusBadge('active');
                     }
                     
-                    const { hasPremium } = await checkPremiumStatus(user.id);
-                    updatePremiumUI(hasPremium);
-                    await updateUserPremiumStatus();
-                    
                 } catch (error) { console.error("Error saving or updating user data:", error); }
             };
             
@@ -1981,41 +1537,11 @@
                 } catch (error) { console.error("Failed to log visit:", error); }
             };
 
-            // ==========================================
-            // Movie Card Click Handler
-            // ==========================================
-
-            const handleMovieCardClick = async (movieId) => {
-                const movie = currentlyLoadedMovies.find(m => m.id === movieId);
-                if (movie && movie.isPremium === true) {
-                    if (currentUserId) {
-                        const { hasPremium } = await checkPremiumStatus(currentUserId);
-                        if (!hasPremium) {
-                            const watched = await showPremiumRequiredModal(currentUserId);
-                            if (watched) {
-                                openMovieDetails(movieId);
-                            }
-                            return;
-                        }
-                    } else {
-                        showToast('❌ Please login to access premium content');
-                        return;
-                    }
-                }
-                openMovieDetails(movieId);
-            };
-
-            // ==========================================
-            // Initialize App
-            // ==========================================
-
             const initializeApp = async (tgInstance) => {
                 console.log("Initializing app...");
                 
-                const verified = await checkUrlForVerification();
-                if (verified) {
-                    return;
-                }
+                // ===== Initialize Adsgram =====
+                await initAdsgram();
                 
                 if (tgInstance) {
                     tg = tgInstance;
@@ -2029,74 +1555,52 @@
                 } else {
                     await logVisit(null);
                 }
-                
                 await Promise.all([renderSocialLinks(), setupFilters()]);
                 await loadWelcomePopupSettings();
                 await fetchAndRenderMovies(true);
-                
-                if (premiumCheckInterval) clearInterval(premiumCheckInterval);
-                premiumCheckInterval = setInterval(updatePremiumTimer, 1000);
-                await updatePremiumTimer();
-                await updateUserPremiumStatus();
-                
                 console.log("App initialization complete");
             };
 
-            // ==========================================
             // Event Listeners
-            // ==========================================
+            searchForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                performSearch();
+                searchBar.blur();
+            });
 
-            if (searchForm) {
-                searchForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    performSearch();
-                    searchBar.blur();
-                });
-            }
-
-            if (searchBar) {
-                searchBar.addEventListener('input', () => {
-                    if (searchBar.value.trim() === '') {
-                        movieGrid.classList.remove('list-view');
-                        fetchAndRenderMovies(true);
-                    }
-                });
-            }
-
-            if (filterContainer) {
-                filterContainer.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('filter')) {
-                        const newFilter = e.target.dataset.filter;
-                        if (newFilter === currentFilter) return;
-                        currentFilter = newFilter;
-                        searchBar.value = '';
-                        document.querySelector('.filter.active').classList.remove('active');
-                        e.target.classList.add('active');
-                        fetchAndRenderMovies(true);
-                    }
-                });
-            }
-
-            if (sortBySelect) {
-                sortBySelect.addEventListener('change', (e) => {
-                    currentSort = e.target.value;
+            searchBar.addEventListener('input', () => {
+                if (searchBar.value.trim() === '') {
+                    movieGrid.classList.remove('list-view');
                     fetchAndRenderMovies(true);
-                });
-            }
+                }
+            });
 
-            if (movieGrid) {
-                movieGrid.addEventListener('click', (e) => {
-                    const card = e.target.closest('.movie-card');
-                    if (card && card.dataset.movieId) {
-                        console.log('Movie card clicked, ID:', card.dataset.movieId);
-                        handleMovieCardClick(card.dataset.movieId);
-                    }
-                });
-            }
+            filterContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('filter')) {
+                    const newFilter = e.target.dataset.filter;
+                    if (newFilter === currentFilter) return;
+                    currentFilter = newFilter;
+                    searchBar.value = '';
+                    document.querySelector('.filter.active').classList.remove('active');
+                    e.target.classList.add('active');
+                    fetchAndRenderMovies(true);
+                }
+            });
 
-            if (homeLogo) {
-                homeLogo.addEventListener('click', () => window.location.reload());
-            }
+            sortBySelect.addEventListener('change', (e) => {
+                currentSort = e.target.value;
+                fetchAndRenderMovies(true);
+            });
+
+            movieGrid.addEventListener('click', (e) => {
+                const card = e.target.closest('.movie-card');
+                if (card && card.dataset.movieId) {
+                    console.log('Movie card clicked, ID:', card.dataset.movieId);
+                    openMovieDetails(card.dataset.movieId);
+                }
+            });
+
+            homeLogo.addEventListener('click', () => window.location.reload());
 
             window.addEventListener('scroll', () => {
                 if (movieGrid.classList.contains('list-view') || isFetchingMore || !lastVisible) return;
