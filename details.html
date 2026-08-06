@@ -8,8 +8,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default,es6,fetch"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- ===== ADSGRAM SDK ===== -->
+    <script src="https://cdn.adsgram.ai/js/adsgram.min.js"></script>
     <style>
-        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --blue: #007bff; --danger: #dc3545; }
+        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --blue: #007bff; --danger: #dc3545; --gold: #ffd700; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; -webkit-tap-highlight-color: transparent; }
         body {
             background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
@@ -53,20 +55,6 @@
             color: transparent;
             cursor: pointer;
         }
-
-        .premium-badge-header {
-            margin-left: auto;
-            background: linear-gradient(45deg, #f7971e, #ffd200);
-            color: #000;
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            display: none;
-            align-items: center;
-            gap: 6px;
-        }
-        .premium-badge-header.visible { display: flex; }
 
         #loading-indicator {
             display: flex;
@@ -180,6 +168,86 @@
         .action-btn.copy { background: #6c757d; }
         .action-btn:hover { opacity: 0.85; transform: translateY(-2px); }
 
+        /* ===== AD UNLOCK SECTION ===== */
+        .ad-unlock-section {
+            background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
+            border-radius: 16px;
+            padding: 25px 20px;
+            margin: 20px 0;
+            border: 2px solid var(--gold);
+            box-shadow: 0 5px 30px rgba(255, 215, 0, 0.1);
+            text-align: center;
+        }
+        .ad-unlock-section h3 {
+            color: var(--gold);
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .ad-unlock-section .sub-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        .progress-container {
+            background: #333;
+            border-radius: 30px;
+            height: 20px;
+            margin: 15px 0;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--gold), #ff6b00);
+            width: 0%;
+            border-radius: 30px;
+            transition: width 0.5s ease;
+        }
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .unlock-btn {
+            background: linear-gradient(45deg, var(--gold), #ff6b00);
+            color: #000;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+        }
+        .unlock-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 30px rgba(255, 215, 0, 0.5);
+        }
+        .unlock-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .unlock-status {
+            margin-top: 12px;
+            color: var(--green);
+            font-weight: bold;
+            display: none;
+        }
+        .unlock-status.show { display: block; }
+
         .download-btn {
             background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
             background-size: 300% 300%;
@@ -217,6 +285,12 @@
             box-shadow: 0 8px 25px rgba(220, 39, 67, 0.6);
         }
         .download-btn:active { transform: translateY(1px) scale(0.98); }
+        .download-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
 
         .downloads-section { margin-top: 20px; }
 
@@ -356,6 +430,26 @@
         }
         #error-message p { color: var(--text-secondary); }
 
+        /* ===== NOTIFICATION TOAST ===== */
+        .notification-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0088cc;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            z-index: 9999;
+            display: none;
+            animation: slideUp 0.3s ease;
+            max-width: 90%;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(30px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
         @media (min-width: 600px) {
             .movie-header { flex-direction: row; align-items: flex-start; }
             .movie-poster-large { max-width: 250px; flex-shrink: 0; }
@@ -373,9 +467,6 @@
     <div class="back-header">
         <button class="back-btn" id="back-btn"><i class="fas fa-arrow-left"></i></button>
         <span class="logo-text" id="details-logo">Baflix</span>
-        <div class="premium-badge-header" id="premium-badge-header">
-            <i class="fas fa-crown"></i> Premium
-        </div>
     </div>
 
     <div id="loading-indicator">
@@ -411,6 +502,22 @@
 
         <div class="movie-description-full" id="detail-description"></div>
 
+        <!-- ===== AD UNLOCK SECTION ===== -->
+        <div id="ad-unlock-section" class="ad-unlock-section" style="display: none;">
+            <h3><i class="fas fa-film"></i> Watch ads to unlock</h3>
+            <p class="sub-text">To watch the video, click on the Unlock Video button below and watch the ads, then the download button will automatically appear 😎👍</p>
+            <div class="progress-container">
+                <div class="progress-fill" id="ad-progress-fill" style="width: 0%;"></div>
+                <div class="progress-text" id="ad-progress-text">Progress: 0/4</div>
+            </div>
+            <button class="unlock-btn" id="unlock-video-btn">
+                <i class="fas fa-play"></i> Unlock Video
+            </button>
+            <div class="unlock-status" id="unlock-status">
+                <i class="fas fa-check-circle"></i> Video unlocked! Download buttons are now active.
+            </div>
+        </div>
+
         <!-- Actions: Share & Copy (উপরে) -->
         <div class="actions-section" id="detail-actions"></div>
 
@@ -425,6 +532,11 @@
                 <iframe id="youtube-trailer-iframe" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
             </div>
         </div>
+    </div>
+
+    <!-- ===== NOTIFICATION TOAST ===== -->
+    <div id="notification-toast" class="notification-toast">
+        <span id="toast-message"></span>
     </div>
 
     <script type="module">
@@ -444,55 +556,70 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // ===== ADSGRAM CONFIG =====
+        const ADSGRAM_API_KEY = 'a3342df6208440d385bfc50124798c32';
+        let adsgramInstance = null;
+        let isUnlocked = false;
+        let adWatchCount = 0;
+        const REQUIRED_ADS = 4;
+        let currentMovie = null;
+        let downloadButtons = [];
+
+        // ===== TOAST =====
+        function showToast(message, isSuccess = true) {
+            const toast = document.getElementById('notification-toast');
+            const toastMessage = document.getElementById('toast-message');
+            toastMessage.textContent = message;
+            toast.style.background = isSuccess ? '#0088cc' : '#dc3545';
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        // ===== ADSGRAM INIT =====
+        const initAdsgram = async () => {
+            try {
+                if (typeof Adsgram !== 'undefined') {
+                    adsgramInstance = new Adsgram({
+                        blockId: ADSGRAM_API_KEY,
+                        onReward: () => {
+                            console.log('✅ Ad reward granted!');
+                            return true;
+                        },
+                        onError: (error) => {
+                            console.error('❌ Ad error:', error);
+                            showToast('❌ Failed to load ad. Please try again.', false);
+                            unlockBtn.disabled = false;
+                            unlockBtn.innerHTML = '<i class="fas fa-play"></i> Unlock Video';
+                        },
+                        onClose: () => {
+                            console.log('Ad closed');
+                        }
+                    });
+                    console.log('✅ Adsgram initialized successfully');
+                } else {
+                    console.warn('⚠️ Adsgram SDK not loaded');
+                }
+            } catch (error) {
+                console.error('Error initializing Adsgram:', error);
+            }
+        };
+
+        // ===== DOM REFS =====
         const loadingIndicator = document.getElementById('loading-indicator');
         const detailsContainer = document.getElementById('details-container');
         const errorMessage = document.getElementById('error-message');
         const backBtn = document.getElementById('back-btn');
         const detailsLogo = document.getElementById('details-logo');
-        const premiumBadgeHeader = document.getElementById('premium-badge-header');
 
         const modalOverlay = document.getElementById('trailer-modal');
         const trailerIframe = document.getElementById('youtube-trailer-iframe');
         const trailerCloseBtn = document.getElementById('trailer-close-btn');
 
-        // ==========================================
-        // USER ID & PREMIUM STATUS
-        // ==========================================
-        let currentUserId = null;
-        let hasPremium = false;
-
-        // ==========================================
-        // CHECK PREMIUM STATUS FROM FIREBASE
-        // ==========================================
-        async function checkPremiumStatus(userId) {
-            if (!userId) return { hasPremium: false, data: null };
-            try {
-                const docRef = doc(db, "premiumUsers", String(userId));
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    const now = Date.now();
-                    let expiry = data.expiry;
-                    if (expiry && expiry.toDate) {
-                        expiry = expiry.toDate().getTime();
-                    } else if (expiry) {
-                        expiry = new Date(expiry).getTime();
-                    }
-                    if (now < expiry && data.status === 'active') {
-                        return { hasPremium: true, data: { ...data, expiry: expiry } };
-                    } else {
-                        if (data.status === 'active') {
-                            await updateDoc(docRef, { status: 'expired' });
-                        }
-                        return { hasPremium: false, data: null };
-                    }
-                }
-                return { hasPremium: false, data: null };
-            } catch (error) {
-                console.error("Error checking premium:", error);
-                return { hasPremium: false, data: null };
-            }
-        }
+        const adUnlockSection = document.getElementById('ad-unlock-section');
+        const progressFill = document.getElementById('ad-progress-fill');
+        const progressText = document.getElementById('ad-progress-text');
+        const unlockBtn = document.getElementById('unlock-video-btn');
+        const unlockStatus = document.getElementById('unlock-status');
 
         const parseEpisodeNumber = (epNumStr) => {
             const str = String(epNumStr).trim();
@@ -599,24 +726,103 @@
             }
         });
 
+        // ===== UNLOCK HANDLER =====
+        const handleUnlockClick = async () => {
+            if (isUnlocked) {
+                showToast('✅ Video already unlocked!', true);
+                return;
+            }
+
+            // Check if parent has showRewardedAd function
+            let success = false;
+            
+            try {
+                // Try parent window's function first (from index.html)
+                if (window.parent && typeof window.parent.showRewardedAd === 'function') {
+                    success = await window.parent.showRewardedAd();
+                } else {
+                    // Fallback: local adsgram
+                    if (!adsgramInstance) {
+                        await initAdsgram();
+                    }
+                    
+                    if (adsgramInstance) {
+                        unlockBtn.disabled = true;
+                        unlockBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading ad...';
+                        
+                        const result = await adsgramInstance.show();
+                        if (result && result.reward) {
+                            success = true;
+                        }
+                        unlockBtn.disabled = false;
+                        unlockBtn.innerHTML = '<i class="fas fa-play"></i> Unlock Video';
+                    } else {
+                        showToast('❌ Ad service not available', false);
+                    }
+                }
+            } catch (error) {
+                console.error('Error showing ad:', error);
+                showToast('❌ Failed to show ad', false);
+                unlockBtn.disabled = false;
+                unlockBtn.innerHTML = '<i class="fas fa-play"></i> Unlock Video';
+                return;
+            }
+            
+            if (success) {
+                adWatchCount++;
+                updateProgress();
+                
+                if (adWatchCount >= REQUIRED_ADS) {
+                    isUnlocked = true;
+                    unlockStatus.classList.add('show');
+                    unlockBtn.innerHTML = '<i class="fas fa-check"></i> Unlocked!';
+                    unlockBtn.disabled = true;
+                    showToast('✅ Video unlocked! Download buttons are now active.', true);
+                    enableDownloadButtons(true);
+                } else {
+                    showToast(`✅ Ad ${adWatchCount}/${REQUIRED_ADS} completed!`, true);
+                }
+            } else {
+                showToast('❌ Please watch the full ad to unlock.', false);
+            }
+        };
+
+        // ===== UPDATE PROGRESS =====
+        const updateProgress = () => {
+            const percentage = (adWatchCount / REQUIRED_ADS) * 100;
+            progressFill.style.width = `${Math.min(percentage, 100)}%`;
+            progressText.textContent = `Progress: ${adWatchCount}/${REQUIRED_ADS}`;
+        };
+
+        // ===== ENABLE/DISABLE DOWNLOAD BUTTONS =====
+        const enableDownloadButtons = (enabled) => {
+            downloadButtons.forEach(btn => {
+                if (enabled) {
+                    btn.classList.remove('disabled');
+                    btn.disabled = false;
+                } else {
+                    btn.classList.add('disabled');
+                    btn.disabled = true;
+                }
+            });
+        };
+
+        unlockBtn.addEventListener('click', handleUnlockClick);
+
         const getMovieIdFromUrl = () => {
             const params = new URLSearchParams(window.location.search);
             return params.get('id');
         };
 
-        // ========== ডিপ লিংক তৈরি করার ফাংশন (Telegram Mini App এর জন্য) ==========
+        // ========== ডিপ লিংক তৈরি করার ফাংশন ==========
         const generateDeepLink = (movieId, movieTitle) => {
             const tgApp = window.Telegram?.WebApp;
             
-            // যদি Telegram WebApp এর মধ্যে থাকে (Mini App)
             if (tgApp && tgApp.initData) {
-                // Telegram Mini App এর ডিপ লিংক
-                // বটের ইউজারনেম ডাইনামিক বা সেট করা
                 const botUsername = 'Baflix_Movie_Bot';
                 return `https://t.me/${botUsername}?startapp=movie_${movieId}`;
             }
             
-            // ব্রাউজারে খোলার জন্য (Web)
             const currentPath = window.location.pathname;
             const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
             return `${basePath}index.html?id=${movieId}`;
@@ -629,27 +835,6 @@
                 return;
             }
 
-            // ==========================================
-            // ✅ প্রিমিয়াম চেক (মুভি লোডের আগে)
-            // ==========================================
-            const tgApp = window.Telegram?.WebApp;
-            if (tgApp && tgApp.initDataUnsafe && tgApp.initDataUnsafe.user) {
-                currentUserId = String(tgApp.initDataUnsafe.user.id);
-                console.log("👤 User ID:", currentUserId);
-                const { hasPremium: premiumStatus } = await checkPremiumStatus(currentUserId);
-                hasPremium = premiumStatus;
-                if (hasPremium) {
-                    premiumBadgeHeader.classList.add('visible');
-                    console.log("⭐ User has premium - Badge shown");
-                } else {
-                    premiumBadgeHeader.classList.remove('visible');
-                    console.log("⭐ User does not have premium");
-                }
-            }
-
-            // ==========================================
-            // ✅ মুভি লোড (Firebase থেকে)
-            // ==========================================
             if (window.parent && window.parent.preloadedMovieData && window.parent.preloadedMovieData.id === movieId) {
                 console.log('Using preloaded movie data from parent memory');
                 renderMovieDetails(window.parent.preloadedMovieData);
@@ -685,6 +870,8 @@
         };
 
         const renderMovieDetails = (movie) => {
+            currentMovie = movie;
+            
             document.getElementById('detail-poster').src = movie.posterUrl || 'https://via.placeholder.com/300x450/222/fff?text=No+Image';
             document.getElementById('detail-title').textContent = movie.title || 'Untitled';
             document.getElementById('detail-genres').textContent = movie.genres || 'N/A';
@@ -782,113 +969,141 @@
             };
             actionsContainer.appendChild(copyBtn);
 
-            // Downloads Section
+            // ===== DOWNLOADS SECTION =====
             const downloadsContainer = document.getElementById('detail-downloads');
             downloadsContainer.innerHTML = '';
+            downloadButtons = [];
 
-            if (movie.type === 'movie' && movie.downloadLinks && movie.downloadLinks.length > 0) {
-                const linksWrapper = document.createElement('div');
-                movie.downloadLinks.forEach(link => {
-                    const button = document.createElement('button');
-                    button.textContent = link.name;
-                    button.className = 'download-btn';
+            const hasLinks = (movie.type === 'movie' && movie.downloadLinks && movie.downloadLinks.length > 0) ||
+                            (movie.seasons && movie.seasons.length > 0);
 
-                    let currentBtnAdLinks = [];
-                    if (link.ads && typeof link.ads === 'string' && link.ads.trim() !== '') {
-                        currentBtnAdLinks = link.ads.split(',').map(u => u.trim()).filter(u => u);
-                    }
-                    let clickCount = 0;
+            if (hasLinks) {
+                // Show AD unlock section
+                adUnlockSection.style.display = 'block';
+                adWatchCount = 0;
+                isUnlocked = false;
+                updateProgress();
+                unlockStatus.classList.remove('show');
+                unlockBtn.innerHTML = '<i class="fas fa-play"></i> Unlock Video';
+                unlockBtn.disabled = false;
+                enableDownloadButtons(false);
 
-                    button.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
+                if (movie.type === 'movie' && movie.downloadLinks && movie.downloadLinks.length > 0) {
+                    const linksWrapper = document.createElement('div');
+                    movie.downloadLinks.forEach(link => {
+                        const button = document.createElement('button');
+                        button.textContent = link.name;
+                        button.className = 'download-btn disabled';
+                        button.disabled = true;
 
-                        if (currentBtnAdLinks.length > 0 && clickCount < currentBtnAdLinks.length) {
-                            openSafeLink(currentBtnAdLinks[clickCount]);
-                            clickCount++;
-                        } else {
-                            incrementDownloadCount(movie.id);
-                            if (link.url) openSafeLink(link.url);
+                        let currentBtnAdLinks = [];
+                        if (link.ads && typeof link.ads === 'string' && link.ads.trim() !== '') {
+                            currentBtnAdLinks = link.ads.split(',').map(u => u.trim()).filter(u => u);
+                        }
+                        let clickCount = 0;
+
+                        button.addEventListener('click', (e) => {
+                            if (button.disabled) {
+                                showToast('🔒 Please unlock the video first!', false);
+                                return;
+                            }
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            if (currentBtnAdLinks.length > 0 && clickCount < currentBtnAdLinks.length) {
+                                openSafeLink(currentBtnAdLinks[clickCount]);
+                                clickCount++;
+                            } else {
+                                incrementDownloadCount(movie.id);
+                                if (link.url) openSafeLink(link.url);
+                            }
+                        });
+                        button.addEventListener('contextmenu', (e) => e.preventDefault());
+                        linksWrapper.appendChild(button);
+                        downloadButtons.push(button);
+                    });
+                    downloadsContainer.appendChild(linksWrapper);
+                } else if (movie.seasons && movie.seasons.length > 0) {
+                    movie.seasons.sort((a, b) => a.season_number - b.season_number).forEach(season => {
+                        const seasonAccordion = document.createElement('div');
+                        seasonAccordion.className = 'season-accordion';
+
+                        const seasonHeader = document.createElement('div');
+                        seasonHeader.className = 'season-accordion-header';
+                        seasonHeader.innerHTML = `<h4>Season ${season.season_number}</h4><i class="fas fa-chevron-down"></i>`;
+
+                        const seasonContent = document.createElement('div');
+                        seasonContent.className = 'season-accordion-content';
+
+                        if (season.episodes && season.episodes.length > 0) {
+                            season.episodes.sort((a, b) => {
+                                const highestA = parseEpisodeNumber(a.episode_number).highest;
+                                const highestB = parseEpisodeNumber(b.episode_number).highest;
+                                return highestA - highestB;
+                            }).forEach(episode => {
+                                const episodeContainer = document.createElement('div');
+                                episodeContainer.className = 'episode-container';
+
+                                const episodeTitle = document.createElement('p');
+                                episodeTitle.className = 'episode-title';
+                                episodeTitle.textContent = `Episode ${episode.episode_number}` + (episode.title ? `: ${episode.title}` : '');
+                                episodeContainer.appendChild(episodeTitle);
+
+                                if (episode.downloadLinks && episode.downloadLinks.length > 0) {
+                                    episode.downloadLinks.forEach(link => {
+                                        const button = document.createElement('button');
+                                        button.textContent = link.name;
+                                        button.className = 'download-btn disabled';
+                                        button.disabled = true;
+
+                                        let currentBtnAdLinks = [];
+                                        if (link.ads && typeof link.ads === 'string' && link.ads.trim() !== '') {
+                                            currentBtnAdLinks = link.ads.split(',').map(u => u.trim()).filter(u => u);
+                                        }
+                                        let clickCount = 0;
+
+                                        button.addEventListener('click', (e) => {
+                                            if (button.disabled) {
+                                                showToast('🔒 Please unlock the video first!', false);
+                                                return;
+                                            }
+                                            e.preventDefault();
+                                            e.stopPropagation();
+
+                                            if (currentBtnAdLinks.length > 0 && clickCount < currentBtnAdLinks.length) {
+                                                openSafeLink(currentBtnAdLinks[clickCount]);
+                                                clickCount++;
+                                            } else {
+                                                incrementDownloadCount(movie.id);
+                                                if (link.url) openSafeLink(link.url);
+                                            }
+                                        });
+                                        button.addEventListener('contextmenu', (e) => e.preventDefault());
+                                        episodeContainer.appendChild(button);
+                                        downloadButtons.push(button);
+                                    });
+                                } else {
+                                    const noLinksText = document.createElement('p');
+                                    noLinksText.textContent = 'No links for this episode.';
+                                    noLinksText.style.cssText = "font-size: 0.8rem; color: #777;";
+                                    episodeContainer.appendChild(noLinksText);
+                                }
+                                seasonContent.appendChild(episodeContainer);
+                            });
+                        }
+                        seasonAccordion.appendChild(seasonHeader);
+                        seasonAccordion.appendChild(seasonContent);
+                        downloadsContainer.appendChild(seasonAccordion);
+                    });
+
+                    downloadsContainer.addEventListener('click', function(e) {
+                        const header = e.target.closest('.season-accordion-header');
+                        if (header) {
+                            const accordion = header.parentElement;
+                            accordion.classList.toggle('active');
                         }
                     });
-                    button.addEventListener('contextmenu', (e) => e.preventDefault());
-                    linksWrapper.appendChild(button);
-                });
-                downloadsContainer.appendChild(linksWrapper);
-            } else if (movie.seasons && movie.seasons.length > 0) {
-                movie.seasons.sort((a, b) => a.season_number - b.season_number).forEach(season => {
-                    const seasonAccordion = document.createElement('div');
-                    seasonAccordion.className = 'season-accordion';
-
-                    const seasonHeader = document.createElement('div');
-                    seasonHeader.className = 'season-accordion-header';
-                    seasonHeader.innerHTML = `<h4>Season ${season.season_number}</h4><i class="fas fa-chevron-down"></i>`;
-
-                    const seasonContent = document.createElement('div');
-                    seasonContent.className = 'season-accordion-content';
-
-                    if (season.episodes && season.episodes.length > 0) {
-                        season.episodes.sort((a, b) => {
-                            const highestA = parseEpisodeNumber(a.episode_number).highest;
-                            const highestB = parseEpisodeNumber(b.episode_number).highest;
-                            return highestA - highestB;
-                        }).forEach(episode => {
-                            const episodeContainer = document.createElement('div');
-                            episodeContainer.className = 'episode-container';
-
-                            const episodeTitle = document.createElement('p');
-                            episodeTitle.className = 'episode-title';
-                            episodeTitle.textContent = `Episode ${episode.episode_number}` + (episode.title ? `: ${episode.title}` : '');
-                            episodeContainer.appendChild(episodeTitle);
-
-                            if (episode.downloadLinks && episode.downloadLinks.length > 0) {
-                                episode.downloadLinks.forEach(link => {
-                                    const button = document.createElement('button');
-                                    button.textContent = link.name;
-                                    button.className = 'download-btn';
-
-                                    let currentBtnAdLinks = [];
-                                    if (link.ads && typeof link.ads === 'string' && link.ads.trim() !== '') {
-                                        currentBtnAdLinks = link.ads.split(',').map(u => u.trim()).filter(u => u);
-                                    }
-                                    let clickCount = 0;
-
-                                    button.addEventListener('click', (e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-
-                                        if (currentBtnAdLinks.length > 0 && clickCount < currentBtnAdLinks.length) {
-                                            openSafeLink(currentBtnAdLinks[clickCount]);
-                                            clickCount++;
-                                        } else {
-                                            incrementDownloadCount(movie.id);
-                                            if (link.url) openSafeLink(link.url);
-                                        }
-                                    });
-                                    button.addEventListener('contextmenu', (e) => e.preventDefault());
-                                    episodeContainer.appendChild(button);
-                                });
-                            } else {
-                                const noLinksText = document.createElement('p');
-                                noLinksText.textContent = 'No links for this episode.';
-                                noLinksText.style.cssText = "font-size: 0.8rem; color: #777;";
-                                episodeContainer.appendChild(noLinksText);
-                            }
-                            seasonContent.appendChild(episodeContainer);
-                        });
-                    }
-                    seasonAccordion.appendChild(seasonHeader);
-                    seasonAccordion.appendChild(seasonContent);
-                    downloadsContainer.appendChild(seasonAccordion);
-                });
-
-                downloadsContainer.addEventListener('click', function(e) {
-                    const header = e.target.closest('.season-accordion-header');
-                    if (header) {
-                        const accordion = header.parentElement;
-                        accordion.classList.toggle('active');
-                    }
-                });
+                }
             }
 
             // Telegram BackButton
@@ -898,18 +1113,26 @@
             }
         };
 
-        const tgApp = window.Telegram?.WebApp;
-        if (tgApp && tgApp.BackButton) {
-            tgApp.BackButton.onClick(goHome);
-            tgApp.BackButton.show();
-        }
+        // ===== INIT =====
+        const init = async () => {
+            await initAdsgram();
+            
+            const tgApp = window.Telegram?.WebApp;
+            if (tgApp && tgApp.BackButton) {
+                tgApp.BackButton.onClick(goHome);
+                tgApp.BackButton.show();
+            }
 
-        const movieId = getMovieIdFromUrl();
-        if (movieId) {
-            loadMovieDetails(movieId);
-        } else {
-            goHome();
-        }
+            const movieId = getMovieIdFromUrl();
+            if (movieId) {
+                loadMovieDetails(movieId);
+            } else {
+                goHome();
+            }
+        };
+
+        init();
+
     </script>
 </body>
 </html>
