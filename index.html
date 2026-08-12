@@ -1,5 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -8,11 +6,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default,es6,fetch"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- ===== ADSGRAM SDK ===== -->
-    <script src="https://cdn.adsgram.ai/js/adsgram.min.js"></script>
     <style>
-        /* আপনার পুরানো CSS এখানে থাকবে - কিছু যোগ হচ্ছে না */
-        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --dark-green: #218838; --blue: #007bff; --danger: #dc3545; }
+        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --dark-green: #218838; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; -webkit-tap-highlight-color: transparent; }
         body {
             background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
@@ -32,7 +27,6 @@
             -webkit-animation: flicker 1.5s infinite alternate;
             animation: flicker 1.5s infinite alternate;
             margin-bottom: 15px;
-            cursor: pointer;
         }
         @-webkit-keyframes flicker { 0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { text-shadow: 0 0 4px #fff, 0 0 11px #fff, 0 0 40px var(--primary), 0 0 80px var(--primary); } 20%, 24%, 55% { text-shadow: none; } }
         @keyframes flicker { 0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { text-shadow: 0 0 4px #fff, 0 0 11px #fff, 0 0 40px var(--primary), 0 0 80px var(--primary); } 20%, 24%, 55% { text-shadow: none; } }
@@ -105,6 +99,7 @@
         .filter { padding: 8px 15px; border-radius: 20px; background: var(--light-dark); color: var(--text); cursor: pointer; transition: background 0.3s, transform 0.2s; }
         .filter.active { background: var(--primary); font-weight: bold; }
 
+        /* User Info Section */
         .user-info-section {
             background: linear-gradient(145deg, #1a1a1a, #222);
             border-radius: 15px;
@@ -197,202 +192,6 @@
         }
         .close-user-info:hover { background: var(--secondary); transform: translateY(-2px); }
 
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-        .status-badge.active { background: var(--green); color: #fff; }
-        .status-badge.blocked { background: var(--danger); color: #fff; }
-        .status-badge.inactive { background: #ffc107; color: #000; }
-
-        /* Request Button */
-        .request-btn-container {
-            text-align: center;
-            margin: 0 20px 20px;
-        }
-        .request-btn {
-            background: var(--blue);
-            color: #fff;
-            border: none;
-            padding: 14px 30px;
-            border-radius: 30px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .request-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 25px rgba(0, 123, 255, 0.4);
-        }
-        .request-btn:active { transform: translateY(0); }
-
-        /* Request Modal */
-        .request-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(5px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 3000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-            padding: 20px;
-        }
-        .request-modal-overlay.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-        .request-modal {
-            background: linear-gradient(145deg, #1a1a1a, #222);
-            border-radius: 20px;
-            max-width: 450px;
-            width: 100%;
-            padding: 30px 25px;
-            border: 1px solid rgba(0, 123, 255, 0.3);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            transform: scale(0.9) translateY(20px);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-        }
-        .request-modal-overlay.visible .request-modal {
-            transform: scale(1) translateY(0);
-        }
-        .request-modal-close {
-            position: absolute;
-            top: 12px;
-            right: 15px;
-            background: rgba(255,255,255,0.1);
-            border: none;
-            color: var(--text);
-            font-size: 1.8rem;
-            cursor: pointer;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-        .request-modal-close:hover {
-            background: var(--primary);
-            transform: rotate(90deg);
-        }
-        .request-modal h2 {
-            color: var(--blue);
-            margin-bottom: 8px;
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .request-modal .subtitle {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-        }
-        .request-modal .form-group {
-            margin-bottom: 16px;
-        }
-        .request-modal .form-group label {
-            display: block;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .request-modal .form-group .char-count {
-            float: right;
-            color: var(--text-secondary);
-            font-size: 0.75rem;
-        }
-        .request-modal .form-group .char-count.limit-reached {
-            color: var(--danger);
-        }
-        .request-modal input, 
-        .request-modal textarea {
-            width: 100%;
-            padding: 12px 15px;
-            border-radius: 10px;
-            border: 1px solid #444;
-            background: var(--dark);
-            color: var(--text);
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
-        .request-modal input:focus,
-        .request-modal textarea:focus {
-            outline: none;
-            border-color: var(--blue);
-        }
-        .request-modal textarea {
-            min-height: 80px;
-            resize: vertical;
-            font-family: inherit;
-        }
-        .request-modal textarea:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        .request-modal .btn-submit-request {
-            background: var(--blue);
-            color: #fff;
-            border: none;
-            padding: 14px 30px;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        .request-modal .btn-submit-request:hover {
-            background: #0056b3;
-            transform: translateY(-2px);
-        }
-        .request-modal .btn-submit-request:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-        .request-modal .request-success-msg {
-            color: var(--green);
-            text-align: center;
-            padding: 10px;
-            display: none;
-            font-weight: bold;
-        }
-        .request-modal .request-success-msg.show {
-            display: block;
-        }
-        .request-modal .error-msg {
-            color: var(--danger);
-            font-size: 0.85rem;
-            margin-top: 5px;
-            display: none;
-        }
-        .request-modal .error-msg.show {
-            display: block;
-        }
-
         .movie-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -409,15 +208,11 @@
             cursor: pointer;
             position: relative;
         }
-        .movie-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-        }
         .movie-poster { width: 100%; aspect-ratio: 2 / 3; background-color: #333; overflow: hidden; position: relative; }
         .movie-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .movie-info { padding: 10px; }
         .movie-title { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 5px; }
-        .movie-series-info, .movie-genres, .movie-rating, .movie-year {
+        .movie-series-info, .movie-genres, .movie-rating, .movie-year, .movie-language {
             font-size: 0.7rem;
             color: var(--text-secondary);
             white-space: nowrap;
@@ -438,6 +233,7 @@
             font-weight: bold;
             z-index: 1;
         }
+        
         .upload-date-badge {
             position: absolute;
             top: 8px;
@@ -457,6 +253,7 @@
         .movie-grid.list-view .movie-poster { flex: 0 0 100px; height: 150px; aspect-ratio: auto; position: relative; border-radius: 5px; }
         .movie-grid.list-view .movie-info { padding: 0; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
         .movie-grid.list-view .movie-title { font-size: 1.1rem; white-space: normal; }
+
         .movie-grid.list-view .movie-description-snippet {
             font-size: 0.85rem;
             color: var(--text-secondary);
@@ -485,6 +282,214 @@
         @-webkit-keyframes shimmer { 100% { left: 100%; } }
         @keyframes shimmer { 100% { left: 100%; } }
 
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1002;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: var(--light-dark);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            transform: scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+        
+        .modal-close-btn { position: absolute; top: 15px; right: 20px; background: none; border: none; color: #fff; font-size: 2.5rem; cursor: pointer; z-index: 2; line-height: 1; }
+        .modal-body { display: flex; flex-direction: column; overflow-y: auto; height: 100%; }
+        .modal-header { display: flex; flex-direction: column; gap: 20px; padding: 25px; background-color: #1a1a1a; }
+        .modal-poster img { width: 150px; border-radius: 5px; }
+        .modal-details { flex: 1; }
+        .modal-title { font-size: 2.2rem; margin-bottom: 10px; }
+        .modal-meta { color: var(--text-secondary); margin-bottom: 8px; font-size: 1rem; }
+        #modal-series-info { font-weight: bold; color: var(--green); }
+        .modal-description { padding: 25px; font-size: 1rem; line-height: 1.7; }
+        .modal-downloads { padding: 0 25px 25px; }
+
+        /* ====== NEW INSTAGRAM STYLE DOWNLOAD BUTTON ====== */
+        .download-btn {
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+            background-size: 300% 300%;
+            color: #fff;
+            text-decoration: none;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: block; /* Stack vertically */
+            width: 100%; /* Full width */
+            margin: 12px 0; /* Spacing between buttons */
+            border: none;
+            box-shadow: 0 5px 15px rgba(220, 39, 67, 0.4);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            animation: instaGradient 5s ease infinite;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            font-family: 'Arial', sans-serif;
+            z-index: 1;
+        }
+
+        .download-btn::before {
+            content: '\f019';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-right: 10px;
+        }
+
+        .download-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-25deg);
+            animation: shine 3s infinite;
+            z-index: -1;
+        }
+
+        @keyframes instaGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes shine {
+            0% { left: -100%; }
+            20% { left: 200%; }
+            100% { left: 200%; }
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(220, 39, 67, 0.6);
+        }
+
+        .download-btn:active {
+            transform: translateY(1px) scale(0.98);
+            box-shadow: 0 2px 10px rgba(220, 39, 67, 0.4);
+        }
+        /* =================================================== */
+
+        .trailer-btn { background: var(--primary); color: #fff; text-decoration: none; padding: 12px 18px; border-radius: 5px; transition: background 0.3s; font-size: 0.95rem; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer;}
+        
+        .modal-actions { padding: 0 25px 25px; display: flex; flex-wrap: wrap; gap: 15px; border-top: 1px solid #333; margin: 0 25px; padding-top: 25px; }
+        .action-btn { background: #007bff; color: #fff; text-decoration: none; padding: 12px 18px; border-radius: 5px; transition: background 0.3s; font-size: 0.95rem; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: none; }
+        .action-btn.copy { background: #6c757d; }
+        
+        #trailer-modal .modal-content { max-width: 800px; background: #000; }
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        
+        .social-icons a:hover { transform: scale(1.15) rotate(5deg); }
+        .search-btn, .filter, .trailer-btn, .action-btn, #sort-by {
+            transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), background-color 0.3s ease, box-shadow 0.3s ease;
+            will-change: transform;
+        }
+        .search-btn:hover, .trailer-btn:hover, .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        .filter:not(.active):hover {
+            background-color: var(--secondary);
+            transform: scale(1.05) translateY(-2px);
+        }
+        .search-btn:active, .filter:active, .trailer-btn:active, .action-btn:active {
+            transform: scale(0.97) translateY(0);
+            box-shadow: none;
+            transition-duration: 0.1s;
+        }
+
+        .season-accordion { margin-bottom: 5px; }
+        .season-accordion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 8px;
+            background: linear-gradient(145deg, #2c3e50, #34495e);
+            border: 1px solid #4a627a;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .season-accordion-header:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+            background: linear-gradient(145deg, #34495e, #4a627a);
+        }
+        .season-accordion-header h4 { font-size: 1.1rem; color: var(--text); font-weight: bold; margin: 0; }
+        .season-accordion-header .fas { transition: transform 0.2s cubic-bezier(0.645, 0.045, 0.355, 1); color: var(--text-secondary); font-size: 1rem; }
+        .season-accordion.active .season-accordion-header {
+            background: linear-gradient(145deg, #3a506b, #4a627a);
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        .season-accordion.active .season-accordion-header .fas { transform: rotate(180deg); color: var(--text); }
+        .season-accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), padding 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease-out;
+            background-color: rgba(0,0,0,0.2);
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            padding: 0 15px;
+            opacity: 0;
+        }
+        .season-accordion.active .season-accordion-content {
+            max-height: 2000px;
+            padding: 20px 15px 5px;
+            opacity: 1;
+            transition: max-height 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), padding 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease-in 0.1s;
+        }
+        .episode-container {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #383838;
+            opacity: 0;
+            transform: translateY(-15px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        }
+        .episode-container:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .season-accordion.active .episode-container { opacity: 1; transform: translateY(0); }
+        .season-accordion.active .episode-container:nth-child(1) { transition-delay: 0.1s; }
+        .season-accordion.active .episode-container:nth-child(2) { transition-delay: 0.15s; }
+        .season-accordion.active .episode-container:nth-child(3) { transition-delay: 0.2s; }
+        .season-accordion.active .episode-container:nth-child(4) { transition-delay: 0.25s; }
+        .season-accordion.active .episode-container:nth-child(5) { transition-delay: 0.3s; }
+        .season-accordion.active .episode-container:nth-child(n+6) { transition-delay: 0.35s; }
+        .episode-title { color: var(--text-secondary); margin-bottom: 10px; font-weight: bold; }
+        
+        @media (min-width: 600px) { .modal-header { flex-direction: row; } .modal-poster img { width: 180px; } .modal-content { width: 80%; } }
+
+        /* Welcome Popup Styles */
         .welcome-popup-overlay {
             position: fixed;
             top: 0;
@@ -539,8 +544,11 @@
             transition: all 0.3s ease;
             border: 1px solid rgba(255, 255, 255, 0.2);
             opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease, background 0.3s ease;
         }
-        .welcome-popup-close.visible { opacity: 1; }
+        .welcome-popup-close.visible {
+            opacity: 1;
+        }
         .welcome-popup-close:hover {
             background: var(--primary);
             transform: rotate(90deg);
@@ -559,6 +567,7 @@
             box-shadow: 0 2px 10px rgba(229, 9, 20, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.3);
             backdrop-filter: blur(5px);
+            letter-spacing: 0.5px;
             animation: pulse 1s infinite;
         }
         @keyframes pulse {
@@ -589,7 +598,9 @@
             object-fit: cover;
             transition: transform 0.5s ease;
         }
-        .welcome-popup-image:hover img { transform: scale(1.1); }
+        .welcome-popup-image:hover img {
+            transform: scale(1.1);
+        }
         .welcome-popup-text {
             padding: 25px 20px 30px;
             text-align: center;
@@ -619,219 +630,164 @@
             border-radius: 30px;
             border: 1px dashed rgba(229, 9, 20, 0.3);
         }
-        .welcome-popup-click-hint i { color: var(--primary); }
-
-        #spa-details-view {
-            display: none;
-        }
-
-        /* ===== NOTIFICATION TOAST ===== */
-        .notification-toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #0088cc;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-            z-index: 9999;
-            display: none;
-            animation: slideUp 0.3s ease;
-            max-width: 90%;
-            text-align: center;
-            font-size: 0.9rem;
-        }
-        @keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(30px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-
-        @media (min-width: 600px) { .modal-content { width: 80%; } }
-        @media (max-width: 500px) {
-            .request-modal { padding: 20px; }
-            .request-modal h2 { font-size: 1.2rem; }
+        .welcome-popup-click-hint i {
+            color: var(--primary);
         }
     </style>
 </head>
 <body>
-    <div id="spa-main-view">
-        <!-- Welcome Popup -->
-        <div id="welcome-popup" class="welcome-popup-overlay">
-            <div class="welcome-popup-content" id="welcome-popup-content">
-                <button class="welcome-popup-close" id="welcome-popup-close">&times;</button>
-                <div class="welcome-popup-timer" id="welcome-popup-timer">5s</div>
-                <div class="welcome-popup-image" id="welcome-popup-image">
-                    <img src="" alt="Welcome" id="welcome-popup-img">
-                </div>
-                <div class="welcome-popup-text" id="welcome-popup-text">
-                    <h2 id="welcome-popup-title"></h2>
-                    <p id="welcome-popup-description"></p>
-                    <div class="welcome-popup-click-hint">
-                        <i class="fas fa-mouse-pointer"></i>
-                        <span>Click anywhere to explore</span>
-                    </div>
+    <!-- Welcome Popup -->
+    <div id="welcome-popup" class="welcome-popup-overlay">
+        <div class="welcome-popup-content" id="welcome-popup-content">
+            <button class="welcome-popup-close" id="welcome-popup-close">&times;</button>
+            <div class="welcome-popup-timer" id="welcome-popup-timer">5s</div>
+            <div class="welcome-popup-image" id="welcome-popup-image">
+                <img src="" alt="Welcome" id="welcome-popup-img">
+            </div>
+            <div class="welcome-popup-text" id="welcome-popup-text">
+                <h2 id="welcome-popup-title"></h2>
+                <p id="welcome-popup-description"></p>
+                <div class="welcome-popup-click-hint">
+                    <i class="fas fa-mouse-pointer"></i>
+                    <span>Click anywhere to explore</span>
                 </div>
             </div>
         </div>
+    </div>
 
-        <header>
-            <h1 class="logo" id="home-logo">Baflix</h1>
-            <div class="social-icons"></div>
-        </header>
+    <header>
+        <h1 class="logo">Baflix</h1>
+        <div class="social-icons"></div>
+    </header>
 
-        <!-- User Info Section -->
-        <div id="user-info-section" class="user-info-section">
-            <div class="user-info-header">
-                <div class="user-avatar"><i class="fas fa-user"></i></div>
-                <div class="user-welcome-text">
-                    <h3 id="welcome-user-name"></h3>
-                    <p>Welcome to Baflix!</p>
-                    <span id="user-status-badge" class="status-badge active">✅ Active</span>
-                </div>
+    <!-- User Info Section -->
+    <div id="user-info-section" class="user-info-section">
+        <div class="user-info-header">
+            <div class="user-avatar">
+                <i class="fas fa-user"></i>
             </div>
-            <div class="user-details">
-                <div class="user-detail-item">
-                    <div class="detail-icon"><i class="fas fa-user-circle"></i></div>
-                    <div class="detail-content">
-                        <div class="detail-label">Telegram Name</div>
-                        <div class="detail-value" id="user-telegram-name"></div>
-                    </div>
-                    <button class="copy-btn" onclick="window.copyToClipboard('user-telegram-name')">
-                        <i class="far fa-copy"></i>
-                    </button>
-                </div>
-                <div class="user-detail-item">
-                    <div class="detail-icon"><i class="fas fa-id-card"></i></div>
-                    <div class="detail-content">
-                        <div class="detail-label">Chat ID</div>
-                        <div class="detail-value" id="user-chat-id"></div>
-                    </div>
-                    <button class="copy-btn" onclick="window.copyToClipboard('user-chat-id')">
-                        <i class="far fa-copy"></i>
-                    </button>
-                </div>
-                <div class="user-detail-item">
-                    <div class="detail-icon"><i class="fas fa-at"></i></div>
-                    <div class="detail-content">
-                        <div class="detail-label">Username</div>
-                        <div class="detail-value small" id="user-username"></div>
-                    </div>
-                </div>
-                <div class="user-detail-item">
-                    <div class="detail-icon"><i class="fas fa-calendar-plus"></i></div>
-                    <div class="detail-content">
-                        <div class="detail-label">First Visit</div>
-                        <div class="detail-value small" id="user-first-visit"></div>
-                    </div>
-                </div>
-                <div class="user-detail-item">
-                    <div class="detail-icon"><i class="fas fa-calendar-check"></i></div>
-                    <div class="detail-content">
-                        <div class="detail-label">Member Since</div>
-                        <div class="detail-value small" id="user-created-at"></div>
-                    </div>
-                </div>
+            <div class="user-welcome-text">
+                <h3 id="welcome-user-name"></h3>
+                <p>Welcome to Baflix!</p>
             </div>
-            <div class="user-info-close">
-                <button class="close-user-info" onclick="window.closeUserInfo()">
-                    <i class="fas fa-check"></i> Got it!
+        </div>
+        <div class="user-details">
+            <div class="user-detail-item">
+                <div class="detail-icon">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="detail-content">
+                    <div class="detail-label">Telegram Name</div>
+                    <div class="detail-value" id="user-telegram-name"></div>
+                </div>
+                <button class="copy-btn" onclick="copyToClipboard('user-telegram-name')">
+                    <i class="far fa-copy"></i>
                 </button>
             </div>
+            <div class="user-detail-item">
+                <div class="detail-icon">
+                    <i class="fas fa-id-card"></i>
+                </div>
+                <div class="detail-content">
+                    <div class="detail-label">Chat ID</div>
+                    <div class="detail-value" id="user-chat-id"></div>
+                </div>
+                <button class="copy-btn" onclick="copyToClipboard('user-chat-id')">
+                    <i class="far fa-copy"></i>
+                </button>
+            </div>
+            <div class="user-detail-item">
+                <div class="detail-icon">
+                    <i class="fas fa-at"></i>
+                </div>
+                <div class="detail-content">
+                    <div class="detail-label">Username</div>
+                    <div class="detail-value small" id="user-username"></div>
+                </div>
+            </div>
         </div>
-
-        <!-- Request Button (NEW) -->
-        <div class="request-btn-container">
-            <button class="request-btn" id="open-request-modal-btn">
-                <i class="fas fa-plus-circle"></i> Movie Request
+        <div class="user-info-close">
+            <button class="close-user-info" onclick="closeUserInfo()">
+                <i class="fas fa-check"></i> Got it!
             </button>
         </div>
+    </div>
 
-        <!-- Request Modal (NEW) -->
-        <div class="request-modal-overlay" id="request-modal-overlay">
-            <div class="request-modal">
-                <button class="request-modal-close" id="request-modal-close">&times;</button>
-                <h2><i class="fas fa-film"></i> Movie Request</h2>
-                <p class="subtitle">Request a movie or series you want to watch.</p>
-                
-                <form id="request-form-modal">
-                    <div class="form-group">
-                        <label for="request-movie-name-modal">Movie / Series Name <span style="color:var(--danger);">*</span></label>
-                        <input type="text" id="request-movie-name-modal" placeholder="e.g., Spider-Man: No Way Home" maxlength="100" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="request-trailer-url-modal">Trailer URL (optional)</label>
-                        <input type="url" id="request-trailer-url-modal" placeholder="https://youtube.com/watch?v=..." maxlength="200">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="request-description-modal">
-                            Additional Details
-                            <span class="char-count" id="char-count">0/150</span>
-                        </label>
-                        <textarea id="request-description-modal" placeholder="Any extra info... (max 150 characters)" maxlength="150"></textarea>
-                        <div class="error-msg" id="char-error-msg">Maximum 150 characters allowed!</div>
-                    </div>
-                    
-                    <button type="submit" class="btn-submit-request" id="submit-request-btn">
-                        <i class="fas fa-paper-plane"></i> Submit Request
-                    </button>
-                    <div class="request-success-msg" id="request-success-modal">
-                        ✅ Your request has been submitted successfully!
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div class="search-container-wrapper">
-            <div class="search-container">
-                <form id="search-form">
-                    <input type="search" id="search-bar" class="search-bar" placeholder="Search by title..." enterkeyhint="search" autocapitalize="none">
-                    <button type="submit" id="search-btn" class="search-btn"><i class="fas fa-search"></i></button>
-                </form>
-            </div>
-        </div>
-
-        <div class="controls-container">
-            <select id="sort-by">
-                <option value="updatedAt_desc">Latest</option>
-                <option value="createdAt_asc">Oldest</option>
-                <option value="rating_desc">Top Rated</option>
-                <option value="rating_asc">Lowest Rated</option>
-            </select>
-            <div class="filter-container"></div>
-        </div>
-
-        <main>
-            <div class="movie-grid" style="display: none;"></div>
-            <div id="skeleton-loader">
-                <script>
-                    let skeletonHTML = '';
-                    for (let i = 0; i < 12; i++) {
-                        skeletonHTML += `<div class="skeleton-card shimmer"><div class="skeleton-poster"></div><div class="skeleton-info"><div class="skeleton-line"></div></div></div>`;
-                    }
-                    document.getElementById('skeleton-loader').innerHTML = skeletonHTML;
-                </script>
-            </div>
-        </main>
-
-        <div id="no-movies-message" style="text-align: center; color: var(--text-secondary); margin-top: 50px; display: none;">
-            <p>No content found. Please add content from the admin panel.</p>
+    <div class="search-container-wrapper">
+        <div class="search-container">
+            <form id="search-form">
+                <input type="search" id="search-bar" class="search-bar" placeholder="Search by title..." enterkeyhint="search" autocapitalize="none">
+                <button type="submit" id="search-btn" class="search-btn"><i class="fas fa-search"></i></button>
+            </form>
         </div>
     </div>
 
-    <!-- ডিটেইলস পেজ আইফ্রেম -->
-    <div id="spa-details-view">
-        <iframe id="details-iframe" src="" style="width:100%; height:100vh; border:none; overflow:hidden;"></iframe>
+    <div class="controls-container">
+        <select id="sort-by">
+            <option value="updatedAt_desc">Latest</option>
+            <option value="createdAt_asc">Oldest</option>
+            <option value="rating_desc">Top Rated</option>
+            <option value="rating_asc">Lowest Rated</option>
+        </select>
+        <div class="filter-container"></div>
     </div>
 
-    <!-- ===== NOTIFICATION TOAST ===== -->
-    <div id="notification-toast" class="notification-toast">
-        <span id="toast-message"></span>
+    <main>
+        <div class="movie-grid" style="display: none;"></div>
+        <div id="skeleton-loader">
+            <script>
+                let skeletonHTML = '';
+                for (let i = 0; i < 12; i++) {
+                    skeletonHTML += `<div class="skeleton-card shimmer"><div class="skeleton-poster"></div><div class="skeleton-info"><div class="skeleton-line"></div></div></div>`;
+                }
+                document.getElementById('skeleton-loader').innerHTML = skeletonHTML;
+            </script>
+        </div>
+    </main>
+
+    <div id="no-movies-message" style="text-align: center; color: var(--text-secondary); margin-top: 50px; display: none;">
+        <p>No content found. Please add content from the admin panel.</p>
     </div>
 
+    <!-- Details Modal -->
+    <div id="details-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn" data-target="details-modal">&times;</button>
+            <div class="modal-body">
+                <div class="modal-header">
+                    <div class="modal-poster"><img id="modal-poster-img" src="" alt="Poster"></div>
+                    <div class="modal-details">
+                        <h2 id="modal-title"></h2>
+                        <p id="modal-series-info" class="modal-meta"></p>
+                        <p id="modal-genres" class="modal-meta"></p>
+                        <p id="modal-rating" class="modal-meta"></p>
+                        <p id="modal-year" class="modal-meta"></p>
+                        <p id="modal-language" class="modal-meta"></p>
+                        <div id="modal-trailer-container" style="margin-top: 15px;"></div>
+                    </div>
+                </div>
+                <div id="modal-description" class="modal-description"></div>
+                <div id="modal-actions" class="modal-actions"></div>
+                <div id="modal-downloads" class="modal-downloads"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trailer Modal -->
+    <div id="trailer-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn" data-target="trailer-modal">&times;</button>
+            <div class="video-container">
+                <iframe id="youtube-trailer-iframe" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Firebase Modular SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, setDoc, increment, serverTimestamp, query, where, orderBy, startAfter, limit, addDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, addDoc, updateDoc, setDoc, increment, serverTimestamp, query, where, orderBy, startAfter, limit, deleteField } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA3okSnZJrF9ooUp12KihKISR2VRZq5Ju8",
@@ -846,97 +802,27 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         
-        // ===== ADSGRAM CONFIG =====
-        const ADSGRAM_API_KEY = 'a3342df6208440d385bfc50124798c32';
-        let adsgramInstance = null;
-
-        // ===== TOAST =====
-        function showToast(message, isSuccess = true) {
-            const toast = document.getElementById('notification-toast');
-            const toastMessage = document.getElementById('toast-message');
-            toastMessage.textContent = message;
-            toast.style.background = isSuccess ? '#0088cc' : '#dc3545';
-            toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 3000);
-        }
-
-        // ===== ADSGRAM INIT =====
-        const initAdsgram = async () => {
-            try {
-                if (typeof Adsgram !== 'undefined') {
-                    adsgramInstance = new Adsgram({
-                        blockId: ADSGRAM_API_KEY,
-                        onReward: () => {
-                            console.log('✅ Ad reward granted!');
-                            return true;
-                        },
-                        onError: (error) => {
-                            console.error('❌ Ad error:', error);
-                            showToast('❌ Failed to load ad. Please try again.', false);
-                        },
-                        onClose: () => {
-                            console.log('Ad closed');
-                        }
-                    });
-                    console.log('✅ Adsgram initialized successfully');
-                } else {
-                    console.warn('⚠️ Adsgram SDK not loaded');
-                }
-            } catch (error) {
-                console.error('Error initializing Adsgram:', error);
-            }
-        };
-
-        // ===== SHOW REWARDED AD (details.html এ কল হবে) =====
-        window.showRewardedAd = async (onSuccess, onError) => {
-            try {
-                if (!adsgramInstance) {
-                    await initAdsgram();
-                }
-                
-                if (adsgramInstance) {
-                    showToast('📺 Loading ad... Please wait');
-                    const result = await adsgramInstance.show();
-                    if (result && result.reward) {
-                        if (onSuccess) onSuccess();
-                        return true;
-                    } else {
-                        if (onError) onError('Ad not completed');
-                        return false;
-                    }
-                } else {
-                    showToast('❌ Ad service not available', false);
-                    if (onError) onError('Ad service not available');
-                    return false;
-                }
-            } catch (error) {
-                console.error('Error showing ad:', error);
-                showToast('❌ Failed to show ad', false);
-                if (onError) onError(error.message);
-                return false;
-            }
-        };
-
         document.addEventListener('DOMContentLoaded', () => {
             const movieGrid = document.querySelector('.movie-grid');
             const skeletonLoader = document.getElementById('skeleton-loader');
+            const detailsModal = document.getElementById('details-modal');
+            const trailerModal = document.getElementById('trailer-modal');
+            const youtubeTrailerIframe = document.getElementById('youtube-trailer-iframe');
             const noMoviesMessage = document.getElementById('no-movies-message');
             const socialIconsContainer = document.querySelector('.social-icons');
             const filterContainer = document.querySelector('.filter-container');
             const searchBar = document.getElementById('search-bar');
             const searchForm = document.getElementById('search-form');
             const sortBySelect = document.getElementById('sort-by');
-            const homeLogo = document.getElementById('home-logo');
 
+            // User Info Elements
             const userInfoSection = document.getElementById('user-info-section');
             const welcomeUserName = document.getElementById('welcome-user-name');
             const userTelegramName = document.getElementById('user-telegram-name');
             const userChatId = document.getElementById('user-chat-id');
             const userUsername = document.getElementById('user-username');
-            const userFirstVisit = document.getElementById('user-first-visit');
-            const userCreatedAt = document.getElementById('user-created-at');
-            const userStatusBadge = document.getElementById('user-status-badge');
 
+            // Welcome Popup Elements
             const welcomePopup = document.getElementById('welcome-popup');
             const welcomePopupClose = document.getElementById('welcome-popup-close');
             const welcomePopupTimer = document.getElementById('welcome-popup-timer');
@@ -944,23 +830,8 @@
             const welcomePopupTitle = document.getElementById('welcome-popup-title');
             const welcomePopupDescription = document.getElementById('welcome-popup-description');
             const welcomePopupContent = document.getElementById('welcome-popup-content');
-
-            const spaMainView = document.getElementById('spa-main-view');
-            const spaDetailsView = document.getElementById('spa-details-view');
-            const detailsIframe = document.getElementById('details-iframe');
-
-            // ===== REQUEST MODAL ELEMENTS =====
-            const requestModalOverlay = document.getElementById('request-modal-overlay');
-            const requestModalClose = document.getElementById('request-modal-close');
-            const openRequestBtn = document.getElementById('open-request-modal-btn');
-            const requestFormModal = document.getElementById('request-form-modal');
-            const requestName = document.getElementById('request-movie-name-modal');
-            const requestTrailer = document.getElementById('request-trailer-url-modal');
-            const requestDesc = document.getElementById('request-description-modal');
-            const charCount = document.getElementById('char-count');
-            const charErrorMsg = document.getElementById('char-error-msg');
-            const submitBtn = document.getElementById('submit-request-btn');
-            const successMsg = document.getElementById('request-success-modal');
+            const welcomePopupImage = document.getElementById('welcome-popup-image');
+            const welcomePopupText = document.getElementById('welcome-popup-text');
 
             let currentlyLoadedMovies = [];
             let isFetchingMore = false;
@@ -972,10 +843,11 @@
             let popupTimeLeft = 5;
             let popupLinkUrl = '';
             let hasShownPopup = false;
-            let savedScrollPosition = 0;
-            let currentUser = null;
+            let isUserProcessed = false;
 
-            document.body.addEventListener('contextmenu', (e) => e.preventDefault());
+            document.body.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+            });
             
             const parseEpisodeNumber = (epNumStr) => {
                 const str = String(epNumStr).trim();
@@ -989,162 +861,43 @@
                     }
                 }
                 const singleNum = parseInt(str, 10);
-                if (!isNaN(singleNum)) return { count: 1, highest: singleNum };
+                if (!isNaN(singleNum)) {
+                    return { count: 1, highest: singleNum };
+                }
                 return { count: 1, highest: 0 };
             };
 
+            const incrementDownloadCount = async (movieId) => {
+                if (!movieId) return;
+                const movieRef = doc(db, 'movies', movieId);
+                try {
+                    await updateDoc(movieRef, {
+                        downloadCount: increment(1)
+                    });
+                } catch (error) {
+                    console.error("Error incrementing download count:", error);
+                }
+            };
+
+            // ==========================================
+            // লিংক ওপেন করার সেফ ফাংশন 
+            // ==========================================
             const openSafeLink = (url) => {
                 const tgApp = window.Telegram?.WebApp;
                 if (tgApp && tgApp.initData) {
                     if (url.includes('t.me/')) {
-                        try { tgApp.openTelegramLink(url); } catch (e) { tgApp.openLink(url); }
-                    } else { tgApp.openLink(url); }
-                } else { window.open(url, '_blank'); }
-            };
-
-            // ===== REQUEST MODAL FUNCTIONS =====
-            const openRequestModal = () => {
-                requestModalOverlay.classList.add('visible');
-                document.body.style.overflow = 'hidden';
-                requestName.focus();
-            };
-
-            const closeRequestModal = () => {
-                requestModalOverlay.classList.remove('visible');
-                document.body.style.overflow = '';
-                requestFormModal.reset();
-                successMsg.classList.remove('show');
-                charCount.textContent = '0/150';
-                charErrorMsg.classList.remove('show');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
-            };
-
-            openRequestBtn.addEventListener('click', openRequestModal);
-            requestModalClose.addEventListener('click', closeRequestModal);
-            requestModalOverlay.addEventListener('click', (e) => {
-                if (e.target === requestModalOverlay) closeRequestModal();
-            });
-
-            // Character counter with limit
-            requestDesc.addEventListener('input', () => {
-                const len = requestDesc.value.length;
-                const max = 150;
-                charCount.textContent = `${len}/${max}`;
-                
-                if (len >= max) {
-                    charCount.classList.add('limit-reached');
-                    charErrorMsg.classList.add('show');
-                    requestDesc.value = requestDesc.value.substring(0, max);
+                        try {
+                            tgApp.openTelegramLink(url);
+                        } catch (e) {
+                            tgApp.openLink(url);
+                        }
+                    } else {
+                        tgApp.openLink(url);
+                    }
                 } else {
-                    charCount.classList.remove('limit-reached');
-                    charErrorMsg.classList.remove('show');
-                }
-            });
-
-            // Request form submission
-            requestFormModal.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                const name = requestName.value.trim();
-                const trailer = requestTrailer.value.trim();
-                const description = requestDesc.value.trim().substring(0, 150);
-
-                if (!name) {
-                    requestName.focus();
-                    requestName.style.borderColor = 'var(--danger)';
-                    setTimeout(() => requestName.style.borderColor = '', 2000);
-                    return;
-                }
-
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
-
-                try {
-                    const user = currentUser || { id: 'anonymous', first_name: 'Guest' };
-                    await addDoc(collection(db, "movieRequests"), {
-                        userName: (user.first_name || 'Guest') + (user.last_name ? ' ' + user.last_name : ''),
-                        userId: String(user.id || 'anonymous'),
-                        movieName: name,
-                        trailerUrl: trailer || '',
-                        description: description || '',
-                        status: 'pending',
-                        createdAt: serverTimestamp()
-                    });
-                    
-                    successMsg.classList.add('show');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-check"></i> Submitted!';
-                    
-                    requestName.value = '';
-                    requestTrailer.value = '';
-                    requestDesc.value = '';
-                    charCount.textContent = '0/150';
-                    
-                    setTimeout(() => {
-                        closeRequestModal();
-                        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
-                    }, 2000);
-                    
-                } catch (error) {
-                    console.error("Error submitting request:", error);
-                    alert('Failed to submit request. Please try again.');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
-                }
-            });
-
-            // SPA ডিটেইলস ওপেন
-            const openMovieDetails = async (movieId) => {
-                savedScrollPosition = window.scrollY;
-                
-                const currentPath = window.location.pathname;
-                const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
-                const detailsUrl = `${basePath}details.html?id=${movieId}`;
-                
-                const targetMovieData = currentlyLoadedMovies.find(m => m.id === movieId);
-                if(targetMovieData) {
-                    window.preloadedMovieData = targetMovieData;
-                }
-
-                history.pushState({view: 'details', movieId: movieId}, '', window.location.pathname + `?id=${movieId}`);
-                
-                spaMainView.style.display = 'none';
-                spaDetailsView.style.display = 'block';
-                detailsIframe.src = detailsUrl;
-
-                try {
-                    const docRef = doc(db, 'movies', movieId);
-                    await updateDoc(docRef, { views: increment(1) });
-                } catch(e) {
-                    console.error("Error updating view count:", e);
-                }
-
-                const tgApp = window.Telegram?.WebApp;
-                if (tgApp && tgApp.BackButton) {
-                    tgApp.BackButton.show();
+                    window.open(url, '_blank');
                 }
             };
-
-            window.handleSpaBack = () => {
-                spaDetailsView.style.display = 'none';
-                spaMainView.style.display = 'block';
-                detailsIframe.src = '';
-                
-                history.replaceState({view: 'home'}, '', window.location.pathname);
-                window.scrollTo(0, savedScrollPosition);
-                
-                const tgApp = window.Telegram?.WebApp;
-                if (tgApp && tgApp.BackButton) {
-                    tgApp.BackButton.hide();
-                }
-            };
-
-            window.addEventListener('popstate', (e) => {
-                if (spaDetailsView.style.display === 'block') {
-                    window.handleSpaBack();
-                }
-            });
 
             const fetchAndRenderMovies = async (isInitial = false) => {
                 if (isFetchingMore) return;
@@ -1168,10 +921,13 @@
                     if (currentFilter !== 'All') {
                         queryConstraints.push(where('categories', 'array-contains', currentFilter));
                     }
+                    
                     queryConstraints.push(orderBy(sortField, sortDirection));
+                    
                     if (!isInitial && lastVisible) {
                         queryConstraints.push(startAfter(lastVisible));
                     }
+                    
                     queryConstraints.push(limit(MOVIES_PER_PAGE));
 
                     const q = query(moviesCollection, ...queryConstraints);
@@ -1207,6 +963,9 @@
                 }
             };
             
+            // ==========================================
+            // Updated Case-Insensitive Search
+            // ==========================================
             const performSearch = async () => {
                 const searchTerm = searchBar.value.trim();
                 if (!searchTerm) {
@@ -1215,7 +974,9 @@
                     return;
                 }
                 
+                // সার্চের টেক্সট ছোট হাতের (lowercase) করে নেওয়া হচ্ছে
                 const searchTermLower = searchTerm.toLowerCase();
+
                 movieGrid.innerHTML = '';
                 movieGrid.style.display = 'none';
                 noMoviesMessage.style.display = 'none';
@@ -1223,7 +984,12 @@
 
                 try {
                     const moviesCollection = collection(db, 'movies');
-                    const q = query(moviesCollection, where('status', '==', 'active'));
+                    
+                    const q = query(
+                        moviesCollection,
+                        where('status', '==', 'active')
+                    );
+
                     const snapshot = await getDocs(q);
                     skeletonLoader.style.display = 'none';
                     
@@ -1233,12 +999,14 @@
                     
                     currentlyLoadedMovies = filteredMovies;
                     movieGrid.classList.add('list-view');
+                    
                     renderMovies(filteredMovies.slice(0, 50));
 
                     if (filteredMovies.length === 0) {
                         noMoviesMessage.querySelector('p').textContent = `"${searchTerm}" এর জন্য কোনো কন্টেন্ট পাওয়া যায়নি।`;
                         noMoviesMessage.style.display = 'block';
                     }
+
                 } catch (error) {
                     console.error("Error fetching movies for search:", error);
                     skeletonLoader.style.display = 'none';
@@ -1262,6 +1030,7 @@
                     if (isSeries && movie.seasons && movie.seasons.length > 0) {
                         const sortedSeasons = [...movie.seasons].sort((a, b) => b.season_number - a.season_number);
                         const latestSeason = sortedSeasons[0];
+
                         if (latestSeason && latestSeason.episodes && latestSeason.episodes.length > 0) {
                             const sortedEpisodes = [...latestSeason.episodes].sort((a, b) => {
                                 const highestA = parseEpisodeNumber(a.episode_number).highest;
@@ -1269,6 +1038,7 @@
                                 return highestB - highestA;
                             });
                             const latestEpisode = sortedEpisodes[0];
+                            
                             if (latestEpisode) {
                                 const latestEpisodeInfo = parseEpisodeNumber(latestEpisode.episode_number);
                                 seriesInfoHTML = `<p class="movie-series-info">S${latestSeason.season_number} | E${latestEpisodeInfo.highest}</p>`;
@@ -1278,6 +1048,7 @@
 
                     let cardHTML = '';
                     let languageBadgeHTML = movie.language ? `<div class="language-badge">${movie.language}</div>` : '';
+                    
                     let uploadDateHTML = '';
                     if (movie.createdAt && typeof movie.createdAt.toDate === 'function') {
                         const uploadDate = movie.createdAt.toDate();
@@ -1288,7 +1059,8 @@
                     if (isListView) {
                         cardHTML = `
                             <div class="movie-poster">
-                                ${uploadDateHTML}${languageBadgeHTML}
+                                ${uploadDateHTML}
+                                ${languageBadgeHTML}
                                 <img src="${movie.posterUrl}" alt="${movie.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x450/222/fff?text=Error'">
                             </div>
                             <div class="movie-info">
@@ -1302,7 +1074,8 @@
                     } else {
                         cardHTML = `
                             <div class="movie-poster">
-                                ${uploadDateHTML}${languageBadgeHTML}
+                                ${uploadDateHTML}
+                                ${languageBadgeHTML}
                                 <img src="${movie.posterUrl}" alt="${movie.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x450/222/fff?text=Error'">
                             </div>
                             <div class="movie-info">
@@ -1342,7 +1115,7 @@
             };
 
             const setupFilters = async () => {
-                try {
+                 try {
                     const q = query(collection(db, 'filters'), orderBy('name'));
                     const filtersSnapshot = await getDocs(q);
                     const filters = filtersSnapshot.docs.map(doc => doc.data().name);
@@ -1386,10 +1159,12 @@
                 popupTimeLeft = 5;
                 welcomePopupTimer.textContent = `${popupTimeLeft}s`;
                 welcomePopupClose.classList.remove('visible');
+                
                 if (popupTimer) clearInterval(popupTimer);
                 popupTimer = setInterval(() => {
                     popupTimeLeft--;
                     welcomePopupTimer.textContent = `${popupTimeLeft}s`;
+                    
                     if (popupTimeLeft <= 0) {
                         clearInterval(popupTimer);
                         welcomePopupClose.classList.add('visible');
@@ -1400,175 +1175,302 @@
 
             const closeWelcomePopup = () => {
                 welcomePopup.classList.remove('visible');
-                if (popupTimer) clearInterval(popupTimer);
+                if (popupTimer) {
+                    clearInterval(popupTimer);
+                }
                 welcomePopupTimer.style.display = 'block';
+            };
+
+            const handleWelcomePopupClick = () => {
+                if (popupLinkUrl) {
+                    openSafeLink(popupLinkUrl);
+                }
+                closeWelcomePopup();
             };
 
             welcomePopupClose.addEventListener('click', (e) => {
                 e.stopPropagation();
                 closeWelcomePopup();
             });
-            welcomePopupContent.addEventListener('click', () => {
-                if (popupLinkUrl) openSafeLink(popupLinkUrl);
-                closeWelcomePopup();
+
+            welcomePopupContent.addEventListener('click', handleWelcomePopupClick);
+            
+            const copyToClipboard = (text, button) => {
+                const originalText = button.innerHTML;
+                const showSuccess = () => {
+                    button.innerHTML = `<i class="fas fa-check"></i> Copied!`;
+                    setTimeout(() => { button.innerHTML = originalText; }, 2000);
+                };
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(text).then(showSuccess).catch(err => {
+                        fallbackCopy(text, button, originalText);
+                    });
+                } else {
+                    fallbackCopy(text, button, originalText);
+                }
+            };
+            const fallbackCopy = (text, button, originalText) => {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.top = '-9999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                         button.innerHTML = `<i class="fas fa-check"></i> Copied!`;
+                         setTimeout(() => { button.innerHTML = originalText; }, 2000);
+                    }
+                } catch (err) { console.error("Error during fallback copy:", err); }
+                document.body.removeChild(textArea);
+            };
+            const getYoutubeVideoId = (url) => {
+                if(!url) return null;
+                let videoId = null;
+                try {
+                    const urlObj = new URL(url);
+                    if (urlObj.hostname === 'youtu.be') videoId = urlObj.pathname.slice(1);
+                    else if (urlObj.hostname.includes('youtube.com')) videoId = urlObj.searchParams.get('v');
+                } catch (e) {
+                    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+                    const match = url.match(regex);
+                    if (match) videoId = match[1];
+                }
+                return videoId;
+            };
+            let tg = null;
+            let backButton = null;
+            function updateBackButton() {
+                if (!backButton) return;
+                const visibleModal = document.querySelector('.modal-overlay.visible');
+                if (visibleModal) {
+                    backButton.show();
+                } else {
+                    backButton.hide();
+                }
+            }
+
+            const openDetailsModal = (movie) => {
+                document.querySelector('#details-modal .modal-body').scrollTop = 0;
+
+                document.getElementById('modal-poster-img').src = movie.posterUrl;
+                document.getElementById('modal-title').textContent = movie.title;
+                document.getElementById('modal-genres').textContent = movie.genres || 'N/A';
+                document.getElementById('modal-rating').innerHTML = `<i class="fas fa-star" style="color:gold;"></i> ${movie.rating || 'N/A'}/10`;
+                document.getElementById('modal-year').textContent = `Year: ${movie.year || 'N/A'}`;
+                document.getElementById('modal-language').textContent = `Language: ${movie.language || 'N/A'}`;
+                document.getElementById('modal-description').textContent = movie.description || 'No description available.';
+
+                const modalSeriesInfo = document.getElementById('modal-series-info');
+                const isSeries = movie.type !== 'movie';
+
+                if (isSeries && movie.seasons && movie.seasons.length > 0) {
+                    const seasonCount = movie.seasons.length;
+                    const episodeCount = movie.seasons.reduce((totalAcc, season) => {
+                        if (!season.episodes || season.episodes.length === 0) {
+                            return totalAcc;
+                        }
+                        const seasonEpisodeCount = season.episodes.reduce((seasonAcc, episode) => {
+                            const episodeInfo = parseEpisodeNumber(episode.episode_number);
+                            return seasonAcc + episodeInfo.count;
+                        }, 0);
+                        return totalAcc + seasonEpisodeCount;
+                    }, 0);
+                    modalSeriesInfo.textContent = `Total Seasons: ${seasonCount} | Total Episodes: ${episodeCount}`;
+                    modalSeriesInfo.style.display = 'block';
+                } else {
+                    modalSeriesInfo.style.display = 'none';
+                }
+                
+                const trailerContainer = document.getElementById('modal-trailer-container');
+                const downloadsContainer = document.getElementById('modal-downloads');
+                const actionsContainer = document.getElementById('modal-actions');
+                
+                trailerContainer.innerHTML = '';
+                downloadsContainer.innerHTML = '';
+                actionsContainer.innerHTML = '';
+
+                if (movie.trailerUrl) {
+                    const trailerBtn = document.createElement('button');
+                    trailerBtn.className = 'trailer-btn';
+                    trailerBtn.innerHTML = `<i class="fas fa-play"></i> Watch Trailer`;
+                    trailerBtn.onclick = () => {
+                        const videoId = getYoutubeVideoId(movie.trailerUrl);
+                        if (videoId) {
+                            youtubeTrailerIframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&fs=0&rel=0`;
+                            trailerModal.classList.add('visible');
+                            updateBackButton();
+                        } else {
+                            alert("Invalid trailer link provided.");
+                        }
+                    };
+                    trailerContainer.appendChild(trailerBtn);
+                }
+                
+                const botUsername = "BaflixStreamBot"; 
+                const deepLink = `https://t.me/${botUsername}?startapp=movie_${movie.id}`;
+
+                const shareMessage = `🎬 "${movie.title}" Watch now a Baflix!\n\nClick on the link to watch the movie `;
+                const fullTextToCopy = `${shareMessage}\n${deepLink}`;
+
+                const shareBtn = document.createElement('button');
+                shareBtn.className = 'action-btn';
+                shareBtn.innerHTML = `<i class="fas fa-share-alt"></i> Share`;
+                shareBtn.onclick = () => {
+                    const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(deepLink)}&text=${encodeURIComponent(shareMessage)}`;
+                    openSafeLink(telegramShareUrl);
+                };
+                actionsContainer.appendChild(shareBtn);
+                
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'action-btn copy';
+                copyBtn.innerHTML = `<i class="fas fa-copy"></i> Copy Link`;
+                copyBtn.onclick = (e) => copyToClipboard(fullTextToCopy, e.currentTarget);
+                actionsContainer.appendChild(copyBtn);
+
+                if (movie.type === 'movie' && movie.downloadLinks && movie.downloadLinks.length > 0) {
+                     const linksWrapper = document.createElement('div');
+                    movie.downloadLinks.forEach(link => {
+                        const button = document.createElement('button');
+                        button.textContent = link.name;
+                        button.className = 'download-btn';
+                        
+                        let currentBtnAdLinks = [];
+                        // অ্যাড লিংক যদি ডাটাবেসে দেওয়া থাকে, তবেই সেটিকে অ্যাররে-তে যুক্ত করবে।
+                        // অন্যথায় currentBtnAdLinks ফাঁকাই থাকবে এবং ইউজার কোনো অ্যাডে যাবে গ্যা।
+                        if (link.ads && typeof link.ads === 'string' && link.ads.trim() !== '') {
+                            currentBtnAdLinks = link.ads.split(',').map(u => u.trim()).filter(u => u);
+                        }
+
+                        let clickCount = 0; 
+                        
+                        button.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            e.stopPropagation(); 
+                            
+                            // যদি অ্যাড লিংক থাকে এবং সেটাতে এখনো ক্লিক করা বাকি থাকে
+                            if (currentBtnAdLinks.length > 0 && clickCount < currentBtnAdLinks.length) {
+                                openSafeLink(currentBtnAdLinks[clickCount]);
+                                clickCount++;
+                            } else {
+                                // অ্যাড না থাকলে অথবা অ্যাড ক্লিক করা শেষ হয়ে গেলে সরাসরি ডাউনলোডে নিয়ে যাবে
+                                incrementDownloadCount(movie.id);
+                                if (link.url) {
+                                    openSafeLink(link.url);
+                                }
+                            }
+                        });
+                        button.addEventListener('contextmenu', (e) => e.preventDefault());
+                        linksWrapper.appendChild(button);
+                    });
+                    downloadsContainer.appendChild(linksWrapper);
+                } 
+                else if (movie.seasons && movie.seasons.length > 0) {
+                    movie.seasons.sort((a, b) => a.season_number - b.season_number).forEach(season => {
+                        
+                        const seasonAccordion = document.createElement('div');
+                        seasonAccordion.className = 'season-accordion';
+
+                        const seasonHeader = document.createElement('div');
+                        seasonHeader.className = 'season-accordion-header';
+                        seasonHeader.innerHTML = `<h4>Season ${season.season_number}</h4><i class="fas fa-chevron-down"></i>`;
+                        
+                        const seasonContent = document.createElement('div');
+                        seasonContent.className = 'season-accordion-content';
+
+                        if (season.episodes && season.episodes.length > 0) {
+                            season.episodes.sort((a, b) => {
+                                const highestA = parseEpisodeNumber(a.episode_number).highest;
+                                const highestB = parseEpisodeNumber(b.episode_number).highest;
+                                return highestA - highestB;
+                            }).forEach(episode => {
+                                const episodeContainer = document.createElement('div');
+                                episodeContainer.className = 'episode-container';
+
+                                const episodeTitle = document.createElement('p');
+                                episodeTitle.className = 'episode-title';
+                                episodeTitle.textContent = `Episode ${episode.episode_number}` + (episode.title ? `: ${episode.title}` : '');
+                                episodeContainer.appendChild(episodeTitle);
+                                
+                                if (episode.downloadLinks && episode.downloadLinks.length > 0) {
+                                    episode.downloadLinks.forEach(link => {
+                                        const button = document.createElement('button');
+                                        button.textContent = link.name;
+                                        button.className = 'download-btn';
+                                        
+                                        let currentBtnAdLinks = [];
+                                        // অ্যাড লিংক থাকলে শুধুমাত্র সেগুলো যুক্ত হবে
+                                        if (link.ads && typeof link.ads === 'string' && link.ads.trim() !== '') {
+                                            currentBtnAdLinks = link.ads.split(',').map(u => u.trim()).filter(u => u);
+                                        }
+
+                                        let clickCount = 0; 
+                                        
+                                        button.addEventListener('click', (e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation(); 
+                                            
+                                            // যদি অ্যাড লিংক থাকে তবে অ্যাড শো করবে
+                                            if (currentBtnAdLinks.length > 0 && clickCount < currentBtnAdLinks.length) {
+                                                openSafeLink(currentBtnAdLinks[clickCount]);
+                                                clickCount++;
+                                            } else {
+                                                // অ্যাড লিংক না থাকলে সরাসরি ডাউনলোড হবে
+                                                incrementDownloadCount(movie.id);
+                                                if (link.url) {
+                                                    openSafeLink(link.url);
+                                                }
+                                            }
+                                        });
+                                        button.addEventListener('contextmenu', (e) => e.preventDefault());
+                                        episodeContainer.appendChild(button);
+                                    });
+                                } else {
+                                    const noLinksText = document.createElement('p');
+                                    noLinksText.textContent = 'No links for this episode.';
+                                    noLinksText.style.cssText = "font-size: 0.8rem; color: #777;";
+                                    episodeContainer.appendChild(noLinksText);
+                                }
+                                seasonContent.appendChild(episodeContainer);
+                            });
+                        }
+                        seasonAccordion.appendChild(seasonHeader);
+                        seasonAccordion.appendChild(seasonContent);
+                        downloadsContainer.appendChild(seasonAccordion);
+                    });
+                }
+                
+                detailsModal.classList.add('visible');
+                updateBackButton();
+            };
+
+            const closeModal = (modalOrId) => {
+                 let modal;
+                if (typeof modalOrId === 'string') modal = document.getElementById(modalOrId);
+                else modal = modalOrId;
+                if (!modal) return;
+                modal.classList.remove('visible');
+                if (modal.id === 'trailer-modal') youtubeTrailerIframe.src = '';
+                updateBackButton();
+            };
+            
+            document.getElementById('modal-downloads').addEventListener('click', function(e) {
+                const header = e.target.closest('.season-accordion-header');
+                if (header) {
+                    const accordion = header.parentElement;
+                    accordion.classList.toggle('active');
+                }
             });
 
-            const copyToClipboard = (elementId) => {
-                const element = document.getElementById(elementId);
-                if (element) {
-                    const text = element.textContent;
-                    const tempInput = document.createElement('input');
-                    tempInput.value = text;
-                    document.body.appendChild(tempInput);
-                    tempInput.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(tempInput);
-                    const copyBtn = document.querySelector(`[onclick*="${elementId}"]`);
-                    if (copyBtn) {
-                        const originalHTML = copyBtn.innerHTML;
-                        copyBtn.innerHTML = '<i class="fas fa-check"></i>';
-                        setTimeout(() => { copyBtn.innerHTML = originalHTML; }, 2000);
-                    }
-                }
-            };
-            window.copyToClipboard = copyToClipboard;
-
-            let tg = null;
-            
-            const updateUserStatusBadge = (status) => {
-                if (status === 'blocked') {
-                    userStatusBadge.className = 'status-badge blocked';
-                    userStatusBadge.textContent = '🚫 Blocked';
-                } else {
-                    userStatusBadge.className = 'status-badge active';
-                    userStatusBadge.textContent = '✅ Active';
-                }
-            };
-
-            const saveOrUpdateTelegramUser = async (user) => {
-                if (!user || !user.id) return;
-                currentUser = user;
-                const userDocRef = doc(db, "telegramUsers", String(user.id));
-                try {
-                    const docSnap = await getDoc(userDocRef);
-                    const now = new Date();
-                    const userData = {
-                        id: user.id,
-                        firstName: user.first_name || '',
-                        lastName: user.last_name || '',
-                        username: user.username || '',
-                        lastSeen: serverTimestamp(),
-                        lastActive: serverTimestamp(),
-                        lastVisit: now.toISOString(),
-                        visitCount: increment(1)
-                    };
-                    
-                    let userStatus = 'active';
-                    if (docSnap.exists()) {
-                        const existingData = docSnap.data();
-                        userStatus = existingData.status || 'active';
-                        
-                        if (userStatus === 'blocked' && existingData.unblockAt) {
-                            const unblockDate = existingData.unblockAt.toDate ? existingData.unblockAt.toDate() : new Date(existingData.unblockAt);
-                            if (new Date() > unblockDate) {
-                                userStatus = 'active';
-                                userData.status = 'active';
-                                userData.unblockAt = null;
-                            }
-                        }
-                        
-                        await updateDoc(userDocRef, userData);
-                        const currentVisits = (existingData.visitCount || 0) + 1;
-                        if (currentVisits % 5 === 0 && !localStorage.getItem('userInfoShown')) {
-                            setTimeout(() => {
-                                userInfoSection.classList.add('visible');
-                                updateUserStatusBadge(userStatus);
-                            }, 1000);
-                        }
-                    } else {
-                        userData.createdAt = serverTimestamp();
-                        userData.status = 'active';
-                        userData.visitCount = 1;
-                        userData.firstVisit = now.toISOString();
-                        await setDoc(userDocRef, userData);
-                        setTimeout(() => {
-                            if (!localStorage.getItem('userInfoShown')) {
-                                userInfoSection.classList.add('visible');
-                                updateUserStatusBadge('active');
-                            }
-                        }, 1000);
-                    }
-                    
-                    const fullName = user.first_name + (user.last_name ? ' ' + user.last_name : '');
-                    if (welcomeUserName) welcomeUserName.textContent = `Welcome, ${fullName}!`;
-                    if (userTelegramName) userTelegramName.textContent = fullName;
-                    if (userChatId) userChatId.textContent = user.id;
-                    if (userUsername) userUsername.textContent = user.username ? '@' + user.username : 'No username';
-                    
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        if (data.firstVisit) {
-                            const date = new Date(data.firstVisit);
-                            userFirstVisit.textContent = date.toLocaleString('bn-BD');
-                        }
-                        if (data.createdAt) {
-                            const date = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
-                            userCreatedAt.textContent = date.toLocaleString('bn-BD');
-                        }
-                        updateUserStatusBadge(data.status || 'active');
-                    } else {
-                        userFirstVisit.textContent = now.toLocaleString('bn-BD');
-                        userCreatedAt.textContent = now.toLocaleString('bn-BD');
-                        updateUserStatusBadge('active');
-                    }
-                    
-                } catch (error) { console.error("Error saving or updating user data:", error); }
-            };
-            
-            const logVisit = async (user) => {
-                try {
-                    await addDoc(collection(db, "visits"), {
-                        timestamp: serverTimestamp(),
-                        userId: user ? String(user.id) : 'anonymous',
-                        userAgent: navigator.userAgent,
-                        platform: navigator.platform,
-                        language: navigator.language
-                    });
-                } catch (error) { console.error("Failed to log visit:", error); }
-            };
-
-            const initializeApp = async (tgInstance) => {
-                console.log("Initializing app...");
-                
-                // ===== Initialize Adsgram =====
-                await initAdsgram();
-                
-                if (tgInstance) {
-                    tg = tgInstance;
-                    tg.expand();
-                    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                        await saveOrUpdateTelegramUser(tg.initDataUnsafe.user);
-                        await logVisit(tg.initDataUnsafe.user);
-                    } else {
-                        await logVisit(null);
-                    }
-                } else {
-                    await logVisit(null);
-                }
-                await Promise.all([renderSocialLinks(), setupFilters()]);
-                await loadWelcomePopupSettings();
-                await fetchAndRenderMovies(true);
-                console.log("App initialization complete");
-            };
-
-            // Event Listeners
             searchForm.addEventListener('submit', (e) => {
-                e.preventDefault();
+                e.preventDefault(); 
                 performSearch();
                 searchBar.blur();
             });
 
-            searchBar.addEventListener('input', () => {
+            searchBar.addEventListener('input', () => { 
                 if (searchBar.value.trim() === '') {
                     movieGrid.classList.remove('list-view');
                     fetchAndRenderMovies(true);
@@ -1594,13 +1496,11 @@
 
             movieGrid.addEventListener('click', (e) => {
                 const card = e.target.closest('.movie-card');
-                if (card && card.dataset.movieId) {
-                    console.log('Movie card clicked, ID:', card.dataset.movieId);
-                    openMovieDetails(card.dataset.movieId);
+                 if (card && card.dataset.movieId) {
+                    const movie = currentlyLoadedMovies.find(m => m.id == card.dataset.movieId);
+                    if (movie) openDetailsModal(movie);
                 }
             });
-
-            homeLogo.addEventListener('click', () => window.location.reload());
 
             window.addEventListener('scroll', () => {
                 if (movieGrid.classList.contains('list-view') || isFetchingMore || !lastVisible) return;
@@ -1610,9 +1510,182 @@
                 }
             });
 
+            document.querySelectorAll('.modal-close-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const modal = document.getElementById(btn.dataset.target);
+                    if(modal) closeModal(modal);
+                });
+            });
+            
+            document.querySelectorAll('.modal-overlay').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                     if (e.target === modal) closeModal(modal);
+                });
+            });
+
+            // User Info Functions
             window.closeUserInfo = () => {
                 userInfoSection.classList.remove('visible');
                 localStorage.setItem('userInfoShown', 'true');
+            };
+
+            window.copyToClipboard = (elementId) => {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    const text = element.textContent;
+                    const tempInput = document.createElement('input');
+                    tempInput.value = text;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    
+                    const copyBtn = event.currentTarget;
+                    const originalHTML = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalHTML;
+                    }, 2000);
+                }
+            };
+            
+            const saveOrUpdateTelegramUser = async (user) => {
+                if (!user || !user.id) return;
+                
+                const userDocRef = doc(db, "telegramUsers", String(user.id));
+                
+                try {
+                    const docSnap = await getDoc(userDocRef);
+                    const now = new Date();
+                    
+                    const userData = {
+                        id: user.id,
+                        firstName: user.first_name || '',
+                        lastName: user.last_name || '',
+                        username: user.username || '',
+                        lastSeen: serverTimestamp(),
+                        lastActive: serverTimestamp(), 
+                        lastVisit: now.toISOString(),
+                        visitCount: increment(1)
+                    };
+
+                    if (docSnap.exists()) {
+                        await updateDoc(userDocRef, userData);
+                        console.log("✅ Existing user updated with lastActive:", user.id);
+                        
+                        const currentVisits = (docSnap.data().visitCount || 0) + 1;
+                        if (currentVisits % 5 === 0 && !localStorage.getItem('userInfoShown')) {
+                            setTimeout(() => {
+                                userInfoSection.classList.add('visible');
+                            }, 1000);
+                        }
+                    } else {
+                        userData.createdAt = serverTimestamp();
+                        userData.status = 'active';
+                        userData.visitCount = 1;
+                        userData.firstVisit = now.toISOString();
+                        await setDoc(userDocRef, userData);
+                        console.log("✅ New user created with lastActive:", user.id);
+                        
+                        setTimeout(() => {
+                            if (!localStorage.getItem('userInfoShown')) {
+                                userInfoSection.classList.add('visible');
+                            }
+                        }, 1000);
+                    }
+                    
+                    const fullName = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+                    if (welcomeUserName) welcomeUserName.textContent = `Welcome, ${fullName}!`;
+                    if (userTelegramName) userTelegramName.textContent = fullName;
+                    if (userChatId) userChatId.textContent = user.id;
+                    if (userUsername) userUsername.textContent = user.username ? '@' + user.username : 'No username';
+                    
+                } catch (error) {
+                    console.error("Error saving or updating user data:", error);
+                }
+            };
+            
+            const logVisit = async (user) => {
+                try {
+                    await addDoc(collection(db, "visits"), {
+                        timestamp: serverTimestamp(),
+                        userId: user ? String(user.id) : 'anonymous',
+                        userAgent: navigator.userAgent,
+                        platform: navigator.platform,
+                        language: navigator.language
+                    });
+                    console.log('✅ Visit logged successfully.');
+                } catch (error) {
+                    console.error("Failed to log visit:", error);
+                }
+            };
+
+            const initializeApp = async (tgInstance) => {
+                console.log("Initializing app...");
+                
+                if (tgInstance) {
+                    tg = tgInstance;
+                    tg.expand();
+                    
+                    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                        console.log("Telegram user detected:", tg.initDataUnsafe.user);
+                        
+                        await saveOrUpdateTelegramUser(tg.initDataUnsafe.user);
+                        await logVisit(tg.initDataUnsafe.user);
+                        
+                    } else {
+                        console.log("No Telegram user data");
+                        await logVisit(null);
+                    }
+
+                    backButton = tg.BackButton;
+                    
+                    const handleBackClick = () => {
+                        const visibleModal = document.querySelector('.modal-overlay.visible');
+                        if (visibleModal) {
+                            closeModal(visibleModal);
+                        } else {
+                            tg.close();
+                        }
+                    };
+
+                    if (backButton) {
+                        backButton.onClick(handleBackClick);
+                        tg.onEvent('backButtonClicked', handleBackClick);
+                        backButton.hide();
+                    }
+                } else {
+                    console.log('Not running in Telegram. Initializing in standalone mode.');
+                    await logVisit(null);
+                }
+
+                await Promise.all([
+                    renderSocialLinks(),
+                    setupFilters()
+                ]);
+
+                await loadWelcomePopupSettings();
+
+                if (tg) {
+                    const startParam = tg.initDataUnsafe?.start_param;
+                    if (startParam && startParam.startsWith('movie_')) {
+                        const movieId = startParam.split('_')[1];
+                        try {
+                            const movieDoc = await getDoc(doc(db, 'movies', movieId));
+                            if (movieDoc.exists()) {
+                                const movieData = { id: movieDoc.id, ...movieDoc.data() };
+                                currentlyLoadedMovies.push(movieData);
+                                openDetailsModal(movieData);
+                            }
+                        } catch (e) {
+                            console.error("Failed to fetch deep-linked movie:", e);
+                        }
+                    }
+                }
+
+                await fetchAndRenderMovies(true);
+                
+                console.log("App initialization complete");
             };
 
             const handleConnectionChange = () => {
@@ -1627,7 +1700,7 @@
             window.addEventListener('offline', handleConnectionChange);
             
             try {
-                if (!navigator.onLine) {
+                 if (!navigator.onLine) {
                     handleConnectionChange();
                     return;
                 }
@@ -1635,6 +1708,7 @@
                 if (webApp && webApp.initData) {
                     initializeApp(webApp);
                 } else {
+                    console.log('Not running in Telegram. Initializing in standalone mode.');
                     initializeApp(null);
                 }
             } catch (error) {
