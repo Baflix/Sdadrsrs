@@ -9,6 +9,7 @@
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default,es6,fetch"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* ====== সমস্ত CSS আগের মতোই থাকবে ====== */
         :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --dark-green: #218838; --warning: #ffc107; --danger: #dc3545; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; -webkit-tap-highlight-color: transparent; }
         body {
@@ -245,6 +246,81 @@
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        .user-info-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #ff6b6b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #fff;
+            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
+        }
+        .user-welcome-text h3 { color: var(--primary); margin-bottom: 5px; font-size: 1.3rem; }
+        .user-welcome-text p { color: var(--text-secondary); font-size: 0.9rem; }
+        .user-details { display: flex; flex-direction: column; gap: 15px; }
+        .user-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+        .detail-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .detail-content { flex: 1; }
+        .detail-label { color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 3px; }
+        .detail-value { color: #fff; font-weight: bold; font-size: 1.1rem; word-break: break-word; }
+        .detail-value.small { font-size: 0.9rem; color: var(--text-secondary); }
+        .copy-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 5px 10px;
+            transition: all 0.3s ease;
+        }
+        .copy-btn:hover { transform: scale(1.1); }
+        .user-info-close {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+        }
+        .close-user-info {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .close-user-info:hover { background: var(--secondary); transform: translateY(-2px); }
 
         .movie-grid {
             display: grid;
@@ -944,10 +1020,58 @@
             return `<span class="lang-label">Language:</span> <span class="lang-value ${langInfo.cssClass}">${langInfo.display}</span>`;
         }
 
-        // ====== BLOCKED USER FUNCTIONS ======
-        let blockTimerInterval = null;
+        // ====== BLOCKED USER VARIABLES ======
         let blockCountdownInterval = null;
+        let currentUserId = null;
 
+        // ====== AUTO UNBLOCK FUNCTION ======
+        async function autoUnblockUser() {
+            try {
+                const userId = currentUserId;
+                if (!userId) {
+                    console.error('No user ID found for auto unblock');
+                    return;
+                }
+                
+                console.log('🔄 Attempting to auto-unblock user:', userId);
+                
+                const userDoc = await getDoc(doc(db, 'telegramUsers', String(userId)));
+                if (!userDoc.exists()) {
+                    console.error('User not found:', userId);
+                    return;
+                }
+                
+                const userData = userDoc.data();
+                
+                if (userData.status !== 'blocked') {
+                    console.log('User is not blocked, skipping unblock');
+                    hideBlockedOverlay();
+                    return;
+                }
+                
+                await updateDoc(doc(db, 'telegramUsers', String(userId)), {
+                    status: 'active',
+                    unblockAt: deleteField(),
+                    blockReasonTitle: deleteField(),
+                    blockReasonDesc: deleteField()
+                });
+                
+                console.log('✅ User auto-unblocked successfully');
+                hideBlockedOverlay();
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Error during auto unblock:', error);
+                setTimeout(() => {
+                    hideBlockedOverlay();
+                    window.location.reload();
+                }, 5000);
+            }
+        }
+
+        // ====== SHOW BLOCKED OVERLAY ======
         function showBlockedOverlay(blockData) {
             const overlay = document.getElementById('blocked-overlay');
             const title = document.getElementById('blocked-title');
@@ -956,7 +1080,6 @@
             const timerDisplay = document.getElementById('blocked-timer');
             const progressBar = document.getElementById('blocked-progress-bar');
 
-            // Set reason
             if (blockData.reasonTitle) {
                 reasonTitle.textContent = blockData.reasonTitle;
             } else {
@@ -969,7 +1092,6 @@
                 reasonDesc.textContent = 'Your account has been temporarily blocked.';
             }
 
-            // Set title based on block type
             if (blockData.unblockAt) {
                 title.textContent = 'Account Temporarily Blocked';
                 startBlockTimer(blockData.unblockAt, timerDisplay, progressBar);
@@ -984,11 +1106,27 @@
             document.body.style.overflow = 'hidden';
         }
 
+        // ====== START BLOCK TIMER ======
         function startBlockTimer(unblockAt, timerDisplay, progressBar) {
-            const unblockTime = new Date(unblockAt).getTime();
+            let unblockTime;
+            
+            // Firebase Timestamp কনভার্ট
+            if (unblockAt && typeof unblockAt.toDate === 'function') {
+                unblockTime = unblockAt.toDate().getTime();
+            } else if (unblockAt) {
+                const parsed = new Date(unblockAt);
+                if (!isNaN(parsed.getTime())) {
+                    unblockTime = parsed.getTime();
+                } else {
+                    unblockTime = Date.now() + (60 * 60 * 1000);
+                }
+            } else {
+                unblockTime = Date.now() + (60 * 60 * 1000);
+            }
             
             if (blockCountdownInterval) {
                 clearInterval(blockCountdownInterval);
+                blockCountdownInterval = null;
             }
 
             function updateTimer() {
@@ -997,12 +1135,10 @@
 
                 if (timeLeft <= 0) {
                     clearInterval(blockCountdownInterval);
+                    blockCountdownInterval = null;
                     timerDisplay.textContent = '00:00:00';
                     progressBar.style.width = '0%';
-                    // Auto unblock - reload page
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 2000);
+                    autoUnblockUser();
                     return;
                 }
 
@@ -1015,10 +1151,8 @@
                     String(minutes).padStart(2, '0') + ':' +
                     String(seconds).padStart(2, '0');
 
-                // Calculate progress
-                const totalTime = unblockTime - Date.now();
-                const maxTime = 24 * 60 * 60 * 1000; // 24 hours max for progress bar
-                const progress = Math.min((totalTime / maxTime) * 100, 100);
+                const maxTime = 24 * 60 * 60 * 1000;
+                const progress = Math.min((timeLeft / maxTime) * 100, 100);
                 progressBar.style.width = Math.max(progress, 0) + '%';
             }
 
@@ -1026,9 +1160,12 @@
             blockCountdownInterval = setInterval(updateTimer, 1000);
         }
 
+        // ====== HIDE BLOCKED OVERLAY ======
         function hideBlockedOverlay() {
             const overlay = document.getElementById('blocked-overlay');
-            overlay.classList.remove('visible');
+            if (overlay) {
+                overlay.classList.remove('visible');
+            }
             document.body.style.overflow = '';
             if (blockCountdownInterval) {
                 clearInterval(blockCountdownInterval);
@@ -1036,7 +1173,7 @@
             }
         }
 
-        // ====== Check if user is blocked ======
+        // ====== CHECK USER BLOCKED ======
         async function checkUserBlocked(userId) {
             if (!userId) return false;
             
@@ -1046,19 +1183,23 @@
                 
                 const userData = userDoc.data();
                 
-                // Check if user is blocked
                 if (userData.status === 'blocked') {
-                    const blockData = {
-                        reasonTitle: userData.blockReasonTitle || 'Account Blocked',
-                        reasonDesc: userData.blockReasonDesc || 'Your account has been temporarily blocked.',
-                        unblockAt: userData.unblockAt || null
-                    };
+                    let unblockAt = userData.unblockAt;
                     
                     // Check if unblock time has passed
-                    if (userData.unblockAt) {
-                        const unblockTime = new Date(userData.unblockAt).getTime();
-                        if (Date.now() >= unblockTime) {
-                            // Auto unblock
+                    if (unblockAt) {
+                        let unblockTime = null;
+                        if (typeof unblockAt.toDate === 'function') {
+                            unblockTime = unblockAt.toDate().getTime();
+                        } else if (typeof unblockAt === 'string' || typeof unblockAt === 'number') {
+                            const parsed = new Date(unblockAt);
+                            if (!isNaN(parsed.getTime())) {
+                                unblockTime = parsed.getTime();
+                            }
+                        }
+                        
+                        if (unblockTime && Date.now() >= unblockTime) {
+                            console.log('⏰ Unblock time passed, auto-unblocking...');
                             await updateDoc(doc(db, 'telegramUsers', String(userId)), {
                                 status: 'active',
                                 unblockAt: deleteField(),
@@ -1068,6 +1209,12 @@
                             return false;
                         }
                     }
+                    
+                    const blockData = {
+                        reasonTitle: userData.blockReasonTitle || 'Account Blocked',
+                        reasonDesc: userData.blockReasonDesc || 'Your account has been temporarily blocked.',
+                        unblockAt: userData.unblockAt || null
+                    };
                     
                     showBlockedOverlay(blockData);
                     return true;
@@ -1118,7 +1265,6 @@
             let popupTimeLeft = 5;
             let popupLinkUrl = '';
             let hasShownPopup = false;
-            let currentUserId = null;
 
             document.body.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
