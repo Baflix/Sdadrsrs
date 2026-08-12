@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -7,7 +9,7 @@
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default,es6,fetch"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --dark-green: #218838; }
+        :root { --primary: #e50914; --secondary: #b81d24; --dark: #141414; --light-dark: #222; --text: #fff; --text-secondary: #aaa; --green: #28a745; --dark-green: #218838; --warning: #ffc107; --danger: #dc3545; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; -webkit-tap-highlight-color: transparent; }
         body {
             background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
@@ -99,7 +101,133 @@
         .filter { padding: 8px 15px; border-radius: 20px; background: var(--light-dark); color: var(--text); cursor: pointer; transition: background 0.3s, transform 0.2s; }
         .filter.active { background: var(--primary); font-weight: bold; }
 
-        /* User Info Section */
+        /* ====== BLOCKED USER OVERLAY ====== */
+        #blocked-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        #blocked-overlay.visible {
+            display: flex;
+        }
+        #blocked-overlay .blocked-content {
+            background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
+            border-radius: 20px;
+            padding: 40px 30px;
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+            border: 2px solid var(--danger);
+            box-shadow: 0 20px 60px rgba(220, 53, 69, 0.3);
+            animation: blockedPulse 2s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+        #blocked-overlay .blocked-content::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(220, 53, 69, 0.05), transparent, rgba(220, 53, 69, 0.05), transparent);
+            animation: blockedRotate 10s linear infinite;
+        }
+        @keyframes blockedRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes blockedPulse {
+            0%, 100% { box-shadow: 0 20px 60px rgba(220, 53, 69, 0.3); }
+            50% { box-shadow: 0 20px 80px rgba(220, 53, 69, 0.5); }
+        }
+        #blocked-overlay .blocked-content > * {
+            position: relative;
+            z-index: 1;
+        }
+        #blocked-overlay .blocked-icon {
+            font-size: 4rem;
+            color: var(--danger);
+            margin-bottom: 20px;
+            animation: blockedIcon 1.5s ease-in-out infinite;
+        }
+        @keyframes blockedIcon {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(10deg); }
+        }
+        #blocked-overlay .blocked-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--danger);
+            margin-bottom: 10px;
+        }
+        #blocked-overlay .blocked-reason {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 10px;
+            line-height: 1.6;
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid var(--danger);
+        }
+        #blocked-overlay .blocked-reason-title {
+            color: var(--text);
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        #blocked-overlay .blocked-reason-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        #blocked-overlay .blocked-timer {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #fff;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 30px rgba(220, 53, 69, 0.3);
+        }
+        #blocked-overlay .blocked-timer-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        #blocked-overlay .blocked-progress {
+            width: 100%;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        #blocked-overlay .blocked-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--danger), var(--warning));
+            border-radius: 3px;
+            transition: width 1s linear;
+            width: 100%;
+        }
+        #blocked-overlay .blocked-footer {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin-top: 15px;
+        }
+        #blocked-overlay .blocked-footer i {
+            color: var(--danger);
+            margin-right: 5px;
+        }
+
         .user-info-section {
             background: linear-gradient(145deg, #1a1a1a, #222);
             border-radius: 15px;
@@ -117,80 +245,6 @@
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .user-info-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #333;
-        }
-        .user-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), #ff6b6b);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            color: #fff;
-            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
-        }
-        .user-welcome-text h3 { color: var(--primary); margin-bottom: 5px; font-size: 1.3rem; }
-        .user-welcome-text p { color: var(--text-secondary); font-size: 0.9rem; }
-        .user-details { display: flex; flex-direction: column; gap: 15px; }
-        .user-detail-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 12px 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            border: 1px solid #333;
-        }
-        .detail-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-        }
-        .detail-content { flex: 1; }
-        .detail-label { color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 3px; }
-        .detail-value { color: #fff; font-weight: bold; font-size: 1.1rem; word-break: break-word; }
-        .detail-value.small { font-size: 0.9rem; color: var(--text-secondary); }
-        .copy-btn {
-            background: none;
-            border: none;
-            color: var(--primary);
-            cursor: pointer;
-            font-size: 1.2rem;
-            padding: 5px 10px;
-            transition: all 0.3s ease;
-        }
-        .copy-btn:hover { transform: scale(1.1); }
-        .user-info-close {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #333;
-        }
-        .close-user-info {
-            background: var(--primary);
-            color: #fff;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 25px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .close-user-info:hover { background: var(--secondary); transform: translateY(-2px); }
 
         .movie-grid {
             display: grid;
@@ -221,30 +275,38 @@
             margin-bottom: 4px;
         }
         .movie-series-info { font-weight: bold; color: var(--green); }
+        
         .language-badge {
             position: absolute;
             top: 8px;
             right: 8px;
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: rgba(0, 0, 0, 0.75);
             color: #fff;
-            padding: 3px 8px;
+            padding: 4px 10px;
             border-radius: 4px;
             font-size: 0.7rem;
             font-weight: bold;
             z-index: 1;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.1);
         }
+        .language-badge.lang-bn { border-left: 3px solid #4CAF50; }
+        .language-badge.lang-en { border-left: 3px solid #2196F3; }
+        .language-badge.lang-hi { border-left: 3px solid #FF9800; }
+        .language-badge.lang-default { border-left: 3px solid #888; }
         
         .upload-date-badge {
             position: absolute;
             top: 8px;
             left: 8px;
-            background-color: rgba(229, 9, 20, 0.8);
+            background-color: rgba(229, 9, 20, 0.85);
             color: #fff;
             padding: 3px 8px;
             border-radius: 4px;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: bold;
             z-index: 1;
+            backdrop-filter: blur(4px);
         }
 
         .movie-grid.list-view { display: block; max-width: 800px; }
@@ -253,7 +315,6 @@
         .movie-grid.list-view .movie-poster { flex: 0 0 100px; height: 150px; aspect-ratio: auto; position: relative; border-radius: 5px; }
         .movie-grid.list-view .movie-info { padding: 0; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
         .movie-grid.list-view .movie-title { font-size: 1.1rem; white-space: normal; }
-
         .movie-grid.list-view .movie-description-snippet {
             font-size: 0.85rem;
             color: var(--text-secondary);
@@ -326,10 +387,31 @@
         .modal-title { font-size: 2.2rem; margin-bottom: 10px; }
         .modal-meta { color: var(--text-secondary); margin-bottom: 8px; font-size: 1rem; }
         #modal-series-info { font-weight: bold; color: var(--green); }
+        
+        .language-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .language-display .lang-label {
+            color: var(--text-secondary);
+        }
+        .language-display .lang-value {
+            font-weight: bold;
+            padding: 2px 12px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .language-display .lang-value.lang-bn { color: #4CAF50; border-color: #4CAF50; }
+        .language-display .lang-value.lang-en { color: #2196F3; border-color: #2196F3; }
+        .language-display .lang-value.lang-hi { color: #FF9800; border-color: #FF9800; }
+        .language-display .lang-value.lang-default { color: #aaa; border-color: #555; }
+
         .modal-description { padding: 25px; font-size: 1rem; line-height: 1.7; }
         .modal-downloads { padding: 0 25px 25px; }
 
-        /* ====== NEW INSTAGRAM STYLE DOWNLOAD BUTTON ====== */
         .download-btn {
             background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
             background-size: 300% 300%;
@@ -340,9 +422,9 @@
             font-size: 1.05rem;
             font-weight: bold;
             cursor: pointer;
-            display: block; /* Stack vertically */
-            width: 100%; /* Full width */
-            margin: 12px 0; /* Spacing between buttons */
+            display: block;
+            width: 100%;
+            margin: 12px 0;
             border: none;
             box-shadow: 0 5px 15px rgba(220, 39, 67, 0.4);
             text-align: center;
@@ -395,7 +477,6 @@
             transform: translateY(1px) scale(0.98);
             box-shadow: 0 2px 10px rgba(220, 39, 67, 0.4);
         }
-        /* =================================================== */
 
         .trailer-btn { background: var(--primary); color: #fff; text-decoration: none; padding: 12px 18px; border-radius: 5px; transition: background 0.3s; font-size: 0.95rem; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer;}
         
@@ -489,7 +570,6 @@
         
         @media (min-width: 600px) { .modal-header { flex-direction: row; } .modal-poster img { width: 180px; } .modal-content { width: 80%; } }
 
-        /* Welcome Popup Styles */
         .welcome-popup-overlay {
             position: fixed;
             top: 0;
@@ -636,6 +716,26 @@
     </style>
 </head>
 <body>
+    <!-- ====== BLOCKED USER OVERLAY ====== -->
+    <div id="blocked-overlay">
+        <div class="blocked-content">
+            <div class="blocked-icon"><i class="fas fa-ban"></i></div>
+            <div class="blocked-title" id="blocked-title">Account Blocked</div>
+            <div class="blocked-reason" id="blocked-reason-container">
+                <div class="blocked-reason-title" id="blocked-reason-title">Reason:</div>
+                <div class="blocked-reason-desc" id="blocked-reason-desc">Your account has been temporarily blocked.</div>
+            </div>
+            <div class="blocked-timer" id="blocked-timer">--:--:--</div>
+            <div class="blocked-timer-label">Time remaining until unblock</div>
+            <div class="blocked-progress">
+                <div class="blocked-progress-bar" id="blocked-progress-bar" style="width: 100%;"></div>
+            </div>
+            <div class="blocked-footer">
+                <i class="fas fa-shield-alt"></i> If you think this is a mistake, please contact support
+            </div>
+        </div>
+    </div>
+
     <!-- Welcome Popup -->
     <div id="welcome-popup" class="welcome-popup-overlay">
         <div class="welcome-popup-content" id="welcome-popup-content">
@@ -660,7 +760,6 @@
         <div class="social-icons"></div>
     </header>
 
-    <!-- User Info Section -->
     <div id="user-info-section" class="user-info-section">
         <div class="user-info-header">
             <div class="user-avatar">
@@ -749,7 +848,6 @@
         <p>No content found. Please add content from the admin panel.</p>
     </div>
 
-    <!-- Details Modal -->
     <div id="details-modal" class="modal-overlay">
         <div class="modal-content">
             <button class="modal-close-btn" data-target="details-modal">&times;</button>
@@ -762,7 +860,7 @@
                         <p id="modal-genres" class="modal-meta"></p>
                         <p id="modal-rating" class="modal-meta"></p>
                         <p id="modal-year" class="modal-meta"></p>
-                        <p id="modal-language" class="modal-meta"></p>
+                        <p id="modal-language" class="modal-meta language-display"></p>
                         <div id="modal-trailer-container" style="margin-top: 15px;"></div>
                     </div>
                 </div>
@@ -773,7 +871,6 @@
         </div>
     </div>
 
-    <!-- Trailer Modal -->
     <div id="trailer-modal" class="modal-overlay">
         <div class="modal-content">
             <button class="modal-close-btn" data-target="trailer-modal">&times;</button>
@@ -783,8 +880,6 @@
         </div>
     </div>
 
-
-    <!-- Firebase Modular SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
         import { getFirestore, collection, getDocs, doc, getDoc, addDoc, updateDoc, setDoc, increment, serverTimestamp, query, where, orderBy, startAfter, limit, deleteField } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
@@ -801,7 +896,191 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        
+
+        // ====== ভাষা ম্যাপ ======
+        const languageMap = {
+            'বাংলা': { display: 'Bengali', cssClass: 'lang-bn' },
+            'ইংরেজি': { display: 'English', cssClass: 'lang-en' },
+            'হিন্দি': { display: 'Hindi', cssClass: 'lang-hi' },
+            'উর্দু': { display: 'Urdu', cssClass: 'lang-default' },
+            'আরবি': { display: 'Arabic', cssClass: 'lang-default' },
+            'স্প্যানিশ': { display: 'Spanish', cssClass: 'lang-default' },
+            'ফ্রেঞ্চ': { display: 'French', cssClass: 'lang-default' },
+            'জার্মান': { display: 'German', cssClass: 'lang-default' },
+            'জাপানি': { display: 'Japanese', cssClass: 'lang-default' },
+            'কোরিয়ান': { display: 'Korean', cssClass: 'lang-default' },
+            'চাইনিজ': { display: 'Chinese', cssClass: 'lang-default' },
+            'তামিল': { display: 'Tamil', cssClass: 'lang-default' },
+            'তেলেগু': { display: 'Telugu', cssClass: 'lang-default' },
+            'মালায়ালাম': { display: 'Malayalam', cssClass: 'lang-default' },
+            'কন্নড়': { display: 'Kannada', cssClass: 'lang-default' },
+            'পাঞ্জাবি': { display: 'Punjabi', cssClass: 'lang-default' },
+            'মারাঠি': { display: 'Marathi', cssClass: 'lang-default' },
+            'গুজরাটি': { display: 'Gujarati', cssClass: 'lang-default' },
+            'ওড়িয়া': { display: 'Odia', cssClass: 'lang-default' },
+            'অসমীয়া': { display: 'Assamese', cssClass: 'lang-default' },
+            'ইংরেজি (সাবটাইটেল)': { display: 'English (Subtitle)', cssClass: 'lang-en' },
+            'বাংলা (সাবটাইটেল)': { display: 'Bengali (Subtitle)', cssClass: 'lang-bn' },
+            'হিন্দি (সাবটাইটেল)': { display: 'Hindi (Subtitle)', cssClass: 'lang-hi' },
+            'মাল্টি-অডিও': { display: 'Multi-Audio', cssClass: 'lang-default' }
+        };
+
+        function getLanguageDisplay(langCode) {
+            if (!langCode) return { display: 'N/A', cssClass: 'lang-default' };
+            const found = languageMap[langCode];
+            if (found) return found;
+            return { display: langCode, cssClass: 'lang-default' };
+        }
+
+        function getLanguageBadgeHTML(language) {
+            if (!language) return '';
+            const langInfo = getLanguageDisplay(language);
+            return `<div class="language-badge ${langInfo.cssClass}">${langInfo.display}</div>`;
+        }
+
+        function getLanguageDisplayHTML(language) {
+            if (!language) return '<span class="lang-value lang-default">N/A</span>';
+            const langInfo = getLanguageDisplay(language);
+            return `<span class="lang-label">Language:</span> <span class="lang-value ${langInfo.cssClass}">${langInfo.display}</span>`;
+        }
+
+        // ====== BLOCKED USER FUNCTIONS ======
+        let blockTimerInterval = null;
+        let blockCountdownInterval = null;
+
+        function showBlockedOverlay(blockData) {
+            const overlay = document.getElementById('blocked-overlay');
+            const title = document.getElementById('blocked-title');
+            const reasonTitle = document.getElementById('blocked-reason-title');
+            const reasonDesc = document.getElementById('blocked-reason-desc');
+            const timerDisplay = document.getElementById('blocked-timer');
+            const progressBar = document.getElementById('blocked-progress-bar');
+
+            // Set reason
+            if (blockData.reasonTitle) {
+                reasonTitle.textContent = blockData.reasonTitle;
+            } else {
+                reasonTitle.textContent = 'Reason:';
+            }
+            
+            if (blockData.reasonDesc) {
+                reasonDesc.textContent = blockData.reasonDesc;
+            } else {
+                reasonDesc.textContent = 'Your account has been temporarily blocked.';
+            }
+
+            // Set title based on block type
+            if (blockData.unblockAt) {
+                title.textContent = 'Account Temporarily Blocked';
+                startBlockTimer(blockData.unblockAt, timerDisplay, progressBar);
+            } else {
+                title.textContent = 'Account Permanently Blocked';
+                timerDisplay.textContent = '∞';
+                timerDisplay.style.fontSize = '4rem';
+                progressBar.style.width = '0%';
+            }
+
+            overlay.classList.add('visible');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function startBlockTimer(unblockAt, timerDisplay, progressBar) {
+            const unblockTime = new Date(unblockAt).getTime();
+            
+            if (blockCountdownInterval) {
+                clearInterval(blockCountdownInterval);
+            }
+
+            function updateTimer() {
+                const now = Date.now();
+                const timeLeft = unblockTime - now;
+
+                if (timeLeft <= 0) {
+                    clearInterval(blockCountdownInterval);
+                    timerDisplay.textContent = '00:00:00';
+                    progressBar.style.width = '0%';
+                    // Auto unblock - reload page
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                    return;
+                }
+
+                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+                timerDisplay.textContent = 
+                    String(hours).padStart(2, '0') + ':' +
+                    String(minutes).padStart(2, '0') + ':' +
+                    String(seconds).padStart(2, '0');
+
+                // Calculate progress
+                const totalTime = unblockTime - Date.now();
+                const maxTime = 24 * 60 * 60 * 1000; // 24 hours max for progress bar
+                const progress = Math.min((totalTime / maxTime) * 100, 100);
+                progressBar.style.width = Math.max(progress, 0) + '%';
+            }
+
+            updateTimer();
+            blockCountdownInterval = setInterval(updateTimer, 1000);
+        }
+
+        function hideBlockedOverlay() {
+            const overlay = document.getElementById('blocked-overlay');
+            overlay.classList.remove('visible');
+            document.body.style.overflow = '';
+            if (blockCountdownInterval) {
+                clearInterval(blockCountdownInterval);
+                blockCountdownInterval = null;
+            }
+        }
+
+        // ====== Check if user is blocked ======
+        async function checkUserBlocked(userId) {
+            if (!userId) return false;
+            
+            try {
+                const userDoc = await getDoc(doc(db, 'telegramUsers', String(userId)));
+                if (!userDoc.exists()) return false;
+                
+                const userData = userDoc.data();
+                
+                // Check if user is blocked
+                if (userData.status === 'blocked') {
+                    const blockData = {
+                        reasonTitle: userData.blockReasonTitle || 'Account Blocked',
+                        reasonDesc: userData.blockReasonDesc || 'Your account has been temporarily blocked.',
+                        unblockAt: userData.unblockAt || null
+                    };
+                    
+                    // Check if unblock time has passed
+                    if (userData.unblockAt) {
+                        const unblockTime = new Date(userData.unblockAt).getTime();
+                        if (Date.now() >= unblockTime) {
+                            // Auto unblock
+                            await updateDoc(doc(db, 'telegramUsers', String(userId)), {
+                                status: 'active',
+                                unblockAt: deleteField(),
+                                blockReasonTitle: deleteField(),
+                                blockReasonDesc: deleteField()
+                            });
+                            return false;
+                        }
+                    }
+                    
+                    showBlockedOverlay(blockData);
+                    return true;
+                }
+                
+                return false;
+            } catch (error) {
+                console.error('Error checking user block status:', error);
+                return false;
+            }
+        }
+
+        // ====== Main App Code ======
         document.addEventListener('DOMContentLoaded', () => {
             const movieGrid = document.querySelector('.movie-grid');
             const skeletonLoader = document.getElementById('skeleton-loader');
@@ -815,14 +1094,12 @@
             const searchForm = document.getElementById('search-form');
             const sortBySelect = document.getElementById('sort-by');
 
-            // User Info Elements
             const userInfoSection = document.getElementById('user-info-section');
             const welcomeUserName = document.getElementById('welcome-user-name');
             const userTelegramName = document.getElementById('user-telegram-name');
             const userChatId = document.getElementById('user-chat-id');
             const userUsername = document.getElementById('user-username');
 
-            // Welcome Popup Elements
             const welcomePopup = document.getElementById('welcome-popup');
             const welcomePopupClose = document.getElementById('welcome-popup-close');
             const welcomePopupTimer = document.getElementById('welcome-popup-timer');
@@ -830,8 +1107,6 @@
             const welcomePopupTitle = document.getElementById('welcome-popup-title');
             const welcomePopupDescription = document.getElementById('welcome-popup-description');
             const welcomePopupContent = document.getElementById('welcome-popup-content');
-            const welcomePopupImage = document.getElementById('welcome-popup-image');
-            const welcomePopupText = document.getElementById('welcome-popup-text');
 
             let currentlyLoadedMovies = [];
             let isFetchingMore = false;
@@ -843,7 +1118,7 @@
             let popupTimeLeft = 5;
             let popupLinkUrl = '';
             let hasShownPopup = false;
-            let isUserProcessed = false;
+            let currentUserId = null;
 
             document.body.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
@@ -879,9 +1154,6 @@
                 }
             };
 
-            // ==========================================
-            // লিংক ওপেন করার সেফ ফাংশন 
-            // ==========================================
             const openSafeLink = (url) => {
                 const tgApp = window.Telegram?.WebApp;
                 if (tgApp && tgApp.initData) {
@@ -963,9 +1235,6 @@
                 }
             };
             
-            // ==========================================
-            // Updated Case-Insensitive Search
-            // ==========================================
             const performSearch = async () => {
                 const searchTerm = searchBar.value.trim();
                 if (!searchTerm) {
@@ -974,7 +1243,6 @@
                     return;
                 }
                 
-                // সার্চের টেক্সট ছোট হাতের (lowercase) করে নেওয়া হচ্ছে
                 const searchTermLower = searchTerm.toLowerCase();
 
                 movieGrid.innerHTML = '';
@@ -1003,14 +1271,14 @@
                     renderMovies(filteredMovies.slice(0, 50));
 
                     if (filteredMovies.length === 0) {
-                        noMoviesMessage.querySelector('p').textContent = `"${searchTerm}" এর জন্য কোনো কন্টেন্ট পাওয়া যায়নি।`;
+                        noMoviesMessage.querySelector('p').textContent = `No content found for "${searchTerm}".`;
                         noMoviesMessage.style.display = 'block';
                     }
 
                 } catch (error) {
                     console.error("Error fetching movies for search:", error);
                     skeletonLoader.style.display = 'none';
-                    noMoviesMessage.innerHTML = `<p>সার্চ করতে একটি সমস্যা হয়েছে।</p>`;
+                    noMoviesMessage.innerHTML = `<p>Something went wrong while searching.</p>`;
                     noMoviesMessage.style.display = 'block';
                 }
             };
@@ -1047,7 +1315,7 @@
                     }
 
                     let cardHTML = '';
-                    let languageBadgeHTML = movie.language ? `<div class="language-badge">${movie.language}</div>` : '';
+                    const languageBadgeHTML = movie.language ? getLanguageBadgeHTML(movie.language) : '';
                     
                     let uploadDateHTML = '';
                     if (movie.createdAt && typeof movie.createdAt.toDate === 'function') {
@@ -1055,6 +1323,8 @@
                         const formattedDate = uploadDate.toLocaleDateString('en-GB');
                         uploadDateHTML = `<div class="upload-date-badge">${formattedDate}</div>`;
                     }
+
+                    const languageDisplayText = movie.language ? getLanguageDisplay(movie.language).display : 'N/A';
 
                     if (isListView) {
                         cardHTML = `
@@ -1070,6 +1340,7 @@
                                 ${seriesInfoHTML}
                                 <p class="movie-rating"><i class="fas fa-star" style="color:gold;"></i> ${movie.rating || 'N/A'}/10</p>
                                 <p class="movie-year"><b>Year:</b> ${movie.year || 'N/A'}</p>
+                                <p class="movie-language"><b>Language:</b> ${languageDisplayText}</p>
                             </div>`;
                     } else {
                         cardHTML = `
@@ -1084,6 +1355,7 @@
                                 ${seriesInfoHTML}
                                 <p class="movie-rating"><i class="fas fa-star" style="color:gold;"></i> ${movie.rating || 'N/A'}/10</p>
                                 <p class="movie-year">${movie.year || 'N/A'}</p>
+                                <p class="movie-language">${languageDisplayText}</p>
                             </div>`;
                     }
                     movieCard.innerHTML = cardHTML;
@@ -1260,8 +1532,11 @@
                 document.getElementById('modal-genres').textContent = movie.genres || 'N/A';
                 document.getElementById('modal-rating').innerHTML = `<i class="fas fa-star" style="color:gold;"></i> ${movie.rating || 'N/A'}/10`;
                 document.getElementById('modal-year').textContent = `Year: ${movie.year || 'N/A'}`;
-                document.getElementById('modal-language').textContent = `Language: ${movie.language || 'N/A'}`;
-                document.getElementById('modal-description').textContent = movie.description || 'No description available.';
+                
+                const languageElement = document.getElementById('modal-language');
+                if (languageElement) {
+                    languageElement.innerHTML = getLanguageDisplayHTML(movie.language);
+                }
 
                 const modalSeriesInfo = document.getElementById('modal-series-info');
                 const isSeries = movie.type !== 'movie';
@@ -1312,7 +1587,7 @@
                 const botUsername = "BaflixStreamBot"; 
                 const deepLink = `https://t.me/${botUsername}?startapp=movie_${movie.id}`;
 
-                const shareMessage = `🎬 "${movie.title}" Watch now a Baflix!\n\nClick on the link to watch the movie `;
+                const shareMessage = `🎬 "${movie.title}" Watch now on Baflix!\n\nClick on the link to watch the movie `;
                 const fullTextToCopy = `${shareMessage}\n${deepLink}`;
 
                 const shareBtn = document.createElement('button');
@@ -1338,8 +1613,6 @@
                         button.className = 'download-btn';
                         
                         let currentBtnAdLinks = [];
-                        // অ্যাড লিংক যদি ডাটাবেসে দেওয়া থাকে, তবেই সেটিকে অ্যাররে-তে যুক্ত করবে।
-                        // অন্যথায় currentBtnAdLinks ফাঁকাই থাকবে এবং ইউজার কোনো অ্যাডে যাবে গ্যা।
                         if (link.ads && typeof link.ads === 'string' && link.ads.trim() !== '') {
                             currentBtnAdLinks = link.ads.split(',').map(u => u.trim()).filter(u => u);
                         }
@@ -1350,12 +1623,10 @@
                             e.preventDefault();
                             e.stopPropagation(); 
                             
-                            // যদি অ্যাড লিংক থাকে এবং সেটাতে এখনো ক্লিক করা বাকি থাকে
                             if (currentBtnAdLinks.length > 0 && clickCount < currentBtnAdLinks.length) {
                                 openSafeLink(currentBtnAdLinks[clickCount]);
                                 clickCount++;
                             } else {
-                                // অ্যাড না থাকলে অথবা অ্যাড ক্লিক করা শেষ হয়ে গেলে সরাসরি ডাউনলোডে নিয়ে যাবে
                                 incrementDownloadCount(movie.id);
                                 if (link.url) {
                                     openSafeLink(link.url);
@@ -1401,7 +1672,6 @@
                                         button.className = 'download-btn';
                                         
                                         let currentBtnAdLinks = [];
-                                        // অ্যাড লিংক থাকলে শুধুমাত্র সেগুলো যুক্ত হবে
                                         if (link.ads && typeof link.ads === 'string' && link.ads.trim() !== '') {
                                             currentBtnAdLinks = link.ads.split(',').map(u => u.trim()).filter(u => u);
                                         }
@@ -1412,12 +1682,10 @@
                                             e.preventDefault();
                                             e.stopPropagation(); 
                                             
-                                            // যদি অ্যাড লিংক থাকে তবে অ্যাড শো করবে
                                             if (currentBtnAdLinks.length > 0 && clickCount < currentBtnAdLinks.length) {
                                                 openSafeLink(currentBtnAdLinks[clickCount]);
                                                 clickCount++;
                                             } else {
-                                                // অ্যাড লিংক না থাকলে সরাসরি ডাউনলোড হবে
                                                 incrementDownloadCount(movie.id);
                                                 if (link.url) {
                                                     openSafeLink(link.url);
@@ -1523,7 +1791,6 @@
                 });
             });
 
-            // User Info Functions
             window.closeUserInfo = () => {
                 userInfoSection.classList.remove('visible');
                 localStorage.setItem('userInfoShown', 'true');
@@ -1552,7 +1819,8 @@
             const saveOrUpdateTelegramUser = async (user) => {
                 if (!user || !user.id) return;
                 
-                const userDocRef = doc(db, "telegramUsers", String(user.id));
+                currentUserId = String(user.id);
+                const userDocRef = doc(db, "telegramUsers", currentUserId);
                 
                 try {
                     const docSnap = await getDoc(userDocRef);
@@ -1599,6 +1867,9 @@
                     if (userTelegramName) userTelegramName.textContent = fullName;
                     if (userChatId) userChatId.textContent = user.id;
                     if (userUsername) userUsername.textContent = user.username ? '@' + user.username : 'No username';
+                    
+                    // Check if user is blocked
+                    await checkUserBlocked(currentUserId);
                     
                 } catch (error) {
                     console.error("Error saving or updating user data:", error);
