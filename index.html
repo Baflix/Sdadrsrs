@@ -6,8 +6,10 @@
     <title>TG MASTER</title>
     <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Adsgram SDK -->
-    <script src="https://adsgram.ai/js/adsgram-ad-sdk.js"></script>
+    
+    <!-- Adsgram SDK (সঠিকভাবে ইন্টিগ্রেট করা হয়েছে) -->
+    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+    
     <!-- Swiper JS CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
@@ -90,7 +92,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, doc, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // আপনার ফায়ারবেস কনফিগ
+        // ফায়ারবেস কনফিগারেশন
         const firebaseConfig = {
             apiKey: "AIzaSyA3okSnZJrF9ooUp12KihKISR2VRZq5Ju8",
             authDomain: "baflix-man.firebaseapp.com",
@@ -177,7 +179,7 @@
                     <div class="movie-info">
                         <div class="movie-title">${movie.title}</div>
                         <div class="movie-meta">
-                            <span>${movie.quality}</span>
+                            <span>${movie.quality || 'HD'}</span>
                             <span>👁️ ${movie.views || 0} | 📥 ${movie.downloads || 0}</span>
                         </div>
                         ${isUnlocked ? `
@@ -204,14 +206,14 @@
             });
         }
 
-        // ৩. Adsgram অ্যাড প্রদর্শন
+        // ৩. Adsgram অ্যাড প্রদর্শন (সেফটি চেকসহ)
         function startAd(movieId) {
             if (!ADSGRAM_BLOCK_ID) {
-                alert("Adsgram Block ID কনফিগার করা নেই!");
+                alert("Adsgram Block ID কনফিগার করা নেই! এডমিন ড্যাশবোর্ডে গিয়ে Block ID বসান।");
                 return;
             }
 
-            if (window.Adsgram) {
+            if (typeof window.Adsgram !== "undefined") {
                 const AdController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID });
                 AdController.show().then(async () => {
                     // ভিউ বাড়ানো
@@ -225,11 +227,12 @@
                     saveProgress(progress);
                     renderMovies();
 
-                }).catch(() => {
+                }).catch((error) => {
+                    console.log("Ad Status:", error);
                     alert("অ্যাড পুরোপুরি দেখতে হবে!");
                 });
             } else {
-                alert("Ad SDK লোড হয়নি!");
+                alert("Ad SDK লোড হচ্ছে... ১-২ সেকেন্ড পর আবার চেষ্টা করুন বা ইন্টারনেট কানেকশন চেক করুন।");
             }
         }
 
