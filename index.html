@@ -1,98 +1,386 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TG MASTER</title>
     <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
     <!-- Adsgram SDK -->
     <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
-    
     <!-- Swiper JS CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-
     <style>
+        /* ===== ROOT ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            user-select: none;
+        }
         :root {
-            --bg-color: #0f172a;
+            --bg: #0f172a;
             --card-bg: #1e293b;
-            --accent-color: #0088cc;
-            --accent-glow: rgba(0, 136, 204, 0.4);
-            --text-color: #f8fafc;
-            --text-muted: #94a3b8;
-            --success-color: #22c55e;
-            --border-radius: 14px;
+            --accent: #0088cc;
+            --glow: rgba(0, 136, 204, 0.4);
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --success: #22c55e;
+            --radius: 14px;
         }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; user-select: none; }
-        body { background-color: var(--bg-color); color: var(--text-color); padding: 16px; padding-bottom: 30px; overflow-x: hidden; }
-
-        header { text-align: center; margin-top: 10px; margin-bottom: 20px; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            padding: 16px 16px 30px;
+            overflow-x: hidden;
+        }
+        /* ===== HEADER ===== */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0 20px;
+        }
         .app-title {
-            font-size: 38px; font-weight: 900; letter-spacing: 2px; color: #ffffff;
-            text-shadow: 0 0 15px var(--accent-glow), 0 0 30px var(--accent-color);
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #fff;
+            text-shadow: 0 0 15px var(--glow);
             background: linear-gradient(180deg, #ffffff 0%, #0088cc 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
         }
-
-        .slider-section { width: 100%; margin-bottom: 25px; }
+        .search-icon-btn {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text);
+            padding: 10px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        /* ===== CATEGORY CHIPS ===== */
+        .category-container {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            padding-bottom: 5px;
+            scrollbar-width: none;
+        }
+        .category-container::-webkit-scrollbar { display: none; }
+        .cat-chip {
+            background: var(--card-bg);
+            color: var(--muted);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .cat-chip.active {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 0 10px var(--glow);
+        }
+        /* ===== SWIPER BANNER ===== */
+        .slider-section { width: 100%; margin-bottom: 20px; }
         .swiper { width: 100%; padding-top: 10px; padding-bottom: 30px; }
         .swiper-slide {
-            background-position: center; background-size: cover; width: 260px; height: 160px;
-            border-radius: var(--border-radius); overflow: hidden; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-position: center;
+            background-size: cover;
+            width: 260px;
+            height: 160px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
         }
         .swiper-slide img { display: block; width: 100%; height: 100%; object-fit: cover; }
-        .swiper-pagination-bullet { background: var(--text-muted); opacity: 0.5; }
-        .swiper-pagination-bullet-active { background: var(--accent-color); opacity: 1; width: 16px; border-radius: 4px; }
+        .swiper-pagination-bullet { background: var(--muted); opacity: 0.5; }
+        .swiper-pagination-bullet-active { background: var(--accent); opacity: 1; width: 16px; border-radius: 4px; }
 
-        .section-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-        .movie-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        /* ===== MOVIE GRID (main) ===== */
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .movie-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
         .movie-card {
-            background-color: var(--card-bg); border-radius: var(--border-radius); overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex; flex-direction: column;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
         }
-        .poster-container { width: 100%; height: 180px; background-color: #334155; overflow: hidden; }
+        .poster-container {
+            width: 100%;
+            height: 180px;
+            background: #334155;
+            overflow: hidden;
+            position: relative;
+        }
         .poster-container img { width: 100%; height: 100%; object-fit: cover; }
-        .movie-info { padding: 14px; display: flex; flex-direction: column; flex-grow: 1; }
-        .movie-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
-        .movie-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; display: flex; justify-content: space-between; }
-
-        .action-btn {
-            background-color: var(--accent-color); color: white; border: none; padding: 12px;
-            border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; width: 100%;
-            display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s background;
+        .movie-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 6px;
+            color: #fff;
         }
-        .action-btn.unlocked { background-color: var(--success-color); text-decoration: none; }
+        .movie-info {
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        .movie-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+        .movie-meta {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .action-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+            text-decoration: none;
+        }
+        .action-btn.unlocked {
+            background: var(--success);
+            text-decoration: none;
+        }
+        .loader-text {
+            text-align: center;
+            color: var(--muted);
+            font-size: 14px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        /* ======================================================
+               ✨ PROFESSIONAL SEARCH OVERLAY (Only this part updated)
+               ====================================================== */
+        #searchView {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            z-index: 999;
+            display: none;
+            flex-direction: column;
+            padding: 16px 16px 30px;
+            overflow-y: auto;
+        }
+        .search-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .search-input {
+            flex-grow: 1;
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 15px;
+            outline: none;
+        }
+        .search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0,136,204,0.2);
+        }
+        .search-submit-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .search-submit-btn:hover { opacity: 0.9; }
+        .close-search {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0 5px;
+        }
+        .search-results-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            margin-top: 4px;
+        }
+
+        /* --- upgraded search result cards (professional look) --- */
+        .search-result-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.06);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.15s, box-shadow 0.2s;
+        }
+        .search-result-card:hover {
+            transform: scale(1.005);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+        .search-result-card .poster-container {
+            height: 160px;  /* slightly shorter for search card */
+        }
+        .search-result-card .movie-info {
+            padding: 12px 14px 14px;
+        }
+        .search-result-card .movie-title {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        .search-result-card .movie-meta {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+        .search-result-card .action-btn {
+            padding: 10px;
+            font-size: 13px;
+            border-radius: 6px;
+        }
+        .search-result-card .movie-badge {
+            top: 8px;
+            left: 8px;
+            font-size: 10px;
+            padding: 3px 9px;
+        }
+        /* empty state */
+        .empty-search {
+            text-align: center;
+            color: var(--muted);
+            margin-top: 40px;
+            font-size: 15px;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px dashed rgba(255,255,255,0.08);
+        }
+        /* loader inside search */
+        .search-loader {
+            color: var(--muted);
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+        }
+
+        /* ===== responsive fine-tune ===== */
+        @media (min-width: 480px) {
+            .movie-grid { grid-template-columns: 1fr 1fr; }
+            .search-results-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (min-width: 768px) {
+            .movie-grid { grid-template-columns: 1fr 1fr 1fr; }
+            .search-results-grid { grid-template-columns: 1fr 1fr; }
+        }
     </style>
 </head>
 <body>
 
     <header>
         <div class="app-title">TG MASTER</div>
+        <button class="search-icon-btn" id="openSearchBtn">🔍 সার্চ</button>
     </header>
 
-    <!-- স্লাইডার -->
-    <div class="slider-section">
+    <!-- category chips -->
+    <div class="category-container" id="categoryContainer">
+        <div class="cat-chip active" data-cat="All">সকল কনটেন্ট</div>
+    </div>
+
+    <!-- banner slider -->
+    <div class="slider-section" id="sliderSectionWrapper">
         <div class="swiper mySwiper">
             <div class="swiper-wrapper" id="sliderWrapper"></div>
             <div class="swiper-pagination"></div>
         </div>
     </div>
 
-    <!-- মুভি গ্রিড -->
-    <div class="section-title">🎬 Featured Movies</div>
-    <div class="movie-grid" id="movieContainer">লোডিং হচ্ছে...</div>
+    <!-- main grid -->
+    <div class="section-title" id="gridTitle">🎬 Featured Movies</div>
+    <div class="movie-grid" id="movieContainer"></div>
+    <div class="loader-text" id="loaderText">আরো লোড হচ্ছে...</div>
+
+    <!-- ===== SEARCH OVERLAY (updated UI) ===== -->
+    <div id="searchView">
+        <div class="search-header">
+            <button class="close-search" id="closeSearchBtn">✕</button>
+            <input type="text" class="search-input" id="searchInput" placeholder="সঠিক মুভি বা কনটেন্টের নাম লিখুন..." />
+            <button class="search-submit-btn" id="searchSubmitBtn">খুঁজুন</button>
+        </div>
+        <div class="section-title" style="margin-bottom:6px;">🔎 সার্চ রেজাল্ট</div>
+        <div class="search-results-grid" id="searchResultsContainer">
+            <div class="empty-search">নাম লিখে 'খুঁজুন' বাটনে চাপ দিন</div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
+            }
+        }
+    </script>
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, doc, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { initializeApp } from "firebase/app";
+        import { getFirestore, collection, doc, onSnapshot, getDocs, query, limit, startAfter, where, updateDoc, increment } from "firebase/firestore";
 
-        // ফায়ারবেস কনফিগারেশন
+        // Firebase config
         const firebaseConfig = {
             apiKey: "AIzaSyA3okSnZJrF9ooUp12KihKISR2VRZq5Ju8",
             authDomain: "baflix-man.firebaseapp.com",
@@ -102,152 +390,277 @@
             appId: "1:1041860946828:web:fa8b976dc07ced6ce704a9",
             measurementId: "G-XDZ9EFWCX5"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // টেলিগ্রাম ইউজার আইডি সংগ্রাহক
+        // Telegram user
         let userId = "guest_user";
-        if (window.Telegram && window.Telegram.WebApp) {
+        if (window.Telegram?.WebApp) {
             window.Telegram.WebApp.ready();
             window.Telegram.WebApp.expand();
-            if (window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
-                userId = window.Telegram.WebApp.initDataUnsafe.user.id.toString();
-            }
+            const u = window.Telegram.WebApp.initDataUnsafe?.user;
+            if (u) userId = u.id.toString();
         }
 
         let REQUIRED_ADS = 3;
         let ADSGRAM_BLOCK_ID = "";
+        let currentCategory = "All";
         let moviesData = [];
+        let lastVisibleDoc = null;
+        let isLoading = false;
+        let hasMore = true;
+        const PAGE_LIMIT = 20;
 
-        // ১. কনফিগারেশন লোড করা
+        // ---- settings + categories ----
         onSnapshot(doc(db, "settings", "config"), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 REQUIRED_ADS = data.requiredAds || 3;
                 ADSGRAM_BLOCK_ID = data.adsgramBlockId || "";
-                
-                if (data.banners && data.banners.length > 0) {
+
+                // banners
+                if (data.banners?.length) {
                     const wrapper = document.getElementById("sliderWrapper");
-                    wrapper.innerHTML = data.banners.map(url => `
-                        <div class="swiper-slide"><img src="${url}" alt="Banner"></div>
-                    `).join("");
+                    wrapper.innerHTML = data.banners.map(url =>
+                        `<div class="swiper-slide"><img src="${url}" alt="Banner"></div>`
+                    ).join("");
                     initSwiper();
+                }
+
+                // categories from admin
+                if (Array.isArray(data.categories)) {
+                    const catContainer = document.getElementById("categoryContainer");
+                    catContainer.innerHTML =
+                        `<div class="cat-chip active" data-cat="All">সকল কনটেন্ট</div>`;
+                    data.categories.forEach(cat => {
+                        catContainer.innerHTML +=
+                            `<div class="cat-chip" data-cat="${cat}">${cat}</div>`;
+                    });
+                    document.querySelectorAll(".cat-chip").forEach(chip => {
+                        chip.addEventListener("click", (e) => {
+                            document.querySelectorAll(".cat-chip").forEach(c => c.classList.remove("active"));
+                            e.target.classList.add("active");
+                            changeCategory(e.target.dataset.cat);
+                        });
+                    });
                 }
             }
         });
 
         function initSwiper() {
             new Swiper(".mySwiper", {
-                effect: "coverflow", grabCursor: true, centeredSlides: true,
-                slidesPerView: "auto", loop: true,
+                effect: "coverflow",
+                grabCursor: true,
+                centeredSlides: true,
+                slidesPerView: "auto",
+                loop: true,
                 coverflowEffect: { rotate: 20, stretch: 0, depth: 100, modifier: 1, slideShadows: true },
                 autoplay: { delay: 5000, disableOnInteraction: false },
                 pagination: { el: ".swiper-pagination", clickable: true },
             });
         }
 
-        // ২. মুভি ডাটা লোড করা
-        onSnapshot(collection(db, "movies"), (snapshot) => {
-            moviesData = [];
-            snapshot.forEach((doc) => {
-                moviesData.push({ id: doc.id, ...doc.data() });
-            });
-            renderMovies();
-        });
-
-        // ইউজার আইডি ভিত্তিক প্রোগ্রেস গেট করা
         function getProgress() {
             const data = localStorage.getItem(`tgmaster_progress_${userId}`);
             return data ? JSON.parse(data) : {};
         }
+        function saveProgress(p) { localStorage.setItem(`tgmaster_progress_${userId}`, JSON.stringify(p)); }
 
-        // ইউজার আইডি ভিত্তিক প্রোগ্রেস সেভ করা
-        function saveProgress(progress) {
-            localStorage.setItem(`tgmaster_progress_${userId}`, JSON.stringify(progress));
+        function changeCategory(cat) {
+            currentCategory = cat;
+            moviesData = [];
+            lastVisibleDoc = null;
+            hasMore = true;
+            document.getElementById("movieContainer").innerHTML = "";
+            document.getElementById("gridTitle").innerText = cat === "All" ? "🎬 Featured Movies" : `🎬 ${cat}`;
+            loadMovies();
         }
 
-        function renderMovies() {
-            const container = document.getElementById("movieContainer");
-            const progress = getProgress();
-            container.innerHTML = "";
+        // ---- load movies (infinite) ----
+        async function loadMovies() {
+            if (isLoading || !hasMore) return;
+            isLoading = true;
+            document.getElementById("loaderText").style.display = "block";
 
-            moviesData.forEach(movie => {
-                const currentAds = progress[movie.id] || 0;
-                const isUnlocked = currentAds >= REQUIRED_ADS;
+            let q;
+            const colRef = collection(db, "movies");
+            if (currentCategory !== "All") {
+                q = lastVisibleDoc
+                    ? query(colRef, where("category", "==", currentCategory), startAfter(lastVisibleDoc), limit(PAGE_LIMIT))
+                    : query(colRef, where("category", "==", currentCategory), limit(PAGE_LIMIT));
+            } else {
+                q = lastVisibleDoc
+                    ? query(colRef, startAfter(lastVisibleDoc), limit(PAGE_LIMIT))
+                    : query(colRef, limit(PAGE_LIMIT));
+            }
 
-                const card = document.createElement("div");
-                card.className = "movie-card";
-
-                card.innerHTML = `
-                    <div class="poster-container">
-                        <img src="${movie.poster}" alt="${movie.title}">
-                    </div>
-                    <div class="movie-info">
-                        <div class="movie-title">${movie.title}</div>
-                        <div class="movie-meta">
-                            <span>${movie.quality || 'HD'}</span>
-                            <span>👁️ ${movie.views || 0} | 📥 ${movie.downloads || 0}</span>
-                        </div>
-                        ${isUnlocked ? `
-                            <a href="${movie.link}" target="_blank" data-id="${movie.id}" class="action-btn unlocked download-link">
-                                📥 Download / Stream
-                            </a>
-                        ` : `
-                            <button class="action-btn ad-btn" data-id="${movie.id}">
-                                🔒 Unlock Movie (${currentAds}/${REQUIRED_ADS})
-                            </button>
-                        `}
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-
-            // ইভেন্ট লিসেনার
-            document.querySelectorAll(".ad-btn").forEach(btn => {
-                btn.addEventListener("click", (e) => startAd(e.target.dataset.id));
-            });
-
-            document.querySelectorAll(".download-link").forEach(link => {
-                link.addEventListener("click", (e) => trackDownload(e.target.dataset.id));
-            });
-        }
-
-        // ৩. Adsgram অ্যাড প্রদর্শন
-        function startAd(movieId) {
-            if (!ADSGRAM_BLOCK_ID) {
-                alert("Adsgram Block ID কনফিগার করা নেই! এডমিন ড্যাশবোর্ডে গিয়ে Block ID বসান।");
+            const snapshot = await getDocs(q);
+            if (snapshot.empty) {
+                hasMore = false;
+                document.getElementById("loaderText").innerText = "আর কোনো কনটেন্ট নেই";
+                isLoading = false;
                 return;
             }
 
-            if (typeof window.Adsgram !== "undefined") {
-                const AdController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID });
-                AdController.show().then(async () => {
-                    // ফায়ারবেসে ভিউ বাড়ানো
-                    await updateDoc(doc(db, "movies", movieId), {
-                        views: increment(1)
-                    });
+            lastVisibleDoc = snapshot.docs[snapshot.docs.length - 1];
+            snapshot.forEach((docSnap) => {
+                const item = { id: docSnap.id, ...docSnap.data() };
+                moviesData.push(item);
+                renderSingleMovie(item, "movieContainer", false); // false = not search style
+            });
 
-                    // নির্দিষ্ট ইউজার আইডির জন্য প্রোগ্রেস সেভ
+            isLoading = false;
+            document.getElementById("loaderText").style.display = "none";
+        }
+
+        // ---- render helper (isSearch: true → use .search-result-card) ----
+        function renderSingleMovie(movie, containerId, isSearch = false) {
+            const container = document.getElementById(containerId);
+            const progress = getProgress();
+            const currentAds = progress[movie.id] || 0;
+            const isUnlocked = currentAds >= REQUIRED_ADS;
+
+            const card = document.createElement("div");
+            // if search container → professional search card class
+            card.className = isSearch ? "search-result-card" : "movie-card";
+            card.id = `card-${containerId}-${movie.id}`;
+
+            card.innerHTML = getMovieCardHTML(movie, currentAds, isUnlocked, isSearch);
+            container.appendChild(card);
+            attachCardEvents(card, movie.id);
+        }
+
+        function getMovieCardHTML(movie, currentAds, isUnlocked, isSearch) {
+            // slightly different layout for search cards (more compact)
+            const posterHeight = isSearch ? "160px" : "180px";
+            return `
+                <div class="poster-container" style="height:${posterHeight};">
+                    <span class="movie-badge">${movie.category || 'General'}</span>
+                    <img src="${movie.poster}" alt="${movie.title}" loading="lazy">
+                </div>
+                <div class="movie-info">
+                    <div class="movie-title">${movie.title}</div>
+                    <div class="movie-meta">
+                        <span>${movie.quality || 'HD'}</span>
+                        <span>👁️ ${movie.views || 0} | 📥 ${movie.downloads || 0}</span>
+                    </div>
+                    ${isUnlocked ? `
+                        <a href="${movie.link}" target="_blank" data-id="${movie.id}" class="action-btn unlocked download-link">
+                            📥 Download / Stream
+                        </a>
+                    ` : `
+                        <button class="action-btn ad-btn" data-id="${movie.id}">
+                            🔒 Unlock (${currentAds}/${REQUIRED_ADS})
+                        </button>
+                    `}
+                </div>
+            `;
+        }
+
+        function attachCardEvents(card, movieId) {
+            const adBtn = card.querySelector(".ad-btn");
+            if (adBtn) adBtn.addEventListener("click", () => startAd(movieId));
+
+            const dl = card.querySelector(".download-link");
+            if (dl) dl.addEventListener("click", () => trackDownload(movieId));
+        }
+
+        function updateCardDOM(movieId) {
+            // update both main grid and search results if present
+            ["movieContainer", "searchResultsContainer"].forEach(containerId => {
+                const card = document.getElementById(`card-${containerId}-${movieId}`);
+                const movie = moviesData.find(m => m.id === movieId) || window._lastSearchResults?.find(m => m.id === movieId);
+                if (card && movie) {
                     const progress = getProgress();
-                    progress[movieId] = (progress[movieId] || 0) + 1;
-                    saveProgress(progress);
-                    renderMovies();
+                    const currentAds = progress[movieId] || 0;
+                    const isUnlocked = currentAds >= REQUIRED_ADS;
+                    const isSearch = containerId === "searchResultsContainer";
+                    card.innerHTML = getMovieCardHTML(movie, currentAds, isUnlocked, isSearch);
+                    attachCardEvents(card, movieId);
+                }
+            });
+        }
 
-                }).catch((error) => {
-                    console.log("Ad Status:", error);
-                    alert("অ্যাড পুরোপুরি দেখতে হবে!");
+        // ---- infinite scroll ----
+        window.addEventListener("scroll", () => {
+            const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+            if (scrollTop + clientHeight >= scrollHeight - 300) loadMovies();
+        });
+
+        // ---- SEARCH (updated: uses professional card style) ----
+        document.getElementById("openSearchBtn").addEventListener("click", () => {
+            document.getElementById("searchView").style.display = "flex";
+            document.getElementById("searchInput").focus();
+        });
+        document.getElementById("closeSearchBtn").addEventListener("click", () => {
+            document.getElementById("searchView").style.display = "none";
+        });
+        document.getElementById("searchSubmitBtn").addEventListener("click", performSearch);
+        document.getElementById("searchInput").addEventListener("keypress", (e) => { if (e.key === "Enter") performSearch(); });
+
+        async function performSearch() {
+            const queryText = document.getElementById("searchInput").value.trim().toLowerCase();
+            const resultsContainer = document.getElementById("searchResultsContainer");
+            resultsContainer.innerHTML = "";
+
+            if (!queryText) {
+                resultsContainer.innerHTML = `<div class="empty-search">দয়া করে কনটেন্টের নাম লিখুন</div>`;
+                return;
+            }
+
+            resultsContainer.innerHTML = `<div class="search-loader">⏳ অনুসন্ধান করা হচ্ছে...</div>`;
+
+            try {
+                const snapshot = await getDocs(collection(db, "movies"));
+                const matched = [];
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const title = (data.title || "").toLowerCase();
+                    if (title.includes(queryText)) matched.push({ id: docSnap.id, ...data });
                 });
-            } else {
-                alert("Ad SDK লোড হচ্ছে... ১-২ সেকেন্ড পর আবার চেষ্টা করুন বা ইন্টারনেট কানেকশন চেক করুন।");
+
+                window._lastSearchResults = matched;
+                resultsContainer.innerHTML = "";
+
+                if (matched.length === 0) {
+                    resultsContainer.innerHTML = `<div class="empty-search">😓 দুঃখিত! এই নামের কোনো কনটেন্ট পাওয়া যায়নি।</div>`;
+                    return;
+                }
+
+                // render each with isSearch = true → professional card style
+                matched.forEach(movie => {
+                    renderSingleMovie(movie, "searchResultsContainer", true);
+                });
+
+            } catch (err) {
+                console.error(err);
+                resultsContainer.innerHTML = `<div class="empty-search">সার্চ করতে সমস্যা হয়েছে, আবার চেষ্টা করুন।</div>`;
             }
         }
 
-        async function trackDownload(movieId) {
-            await updateDoc(doc(db, "movies", movieId), {
-                downloads: increment(1)
-            });
+        // ---- ads & download ----
+        function startAd(movieId) {
+            if (!ADSGRAM_BLOCK_ID) return alert("Adsgram Block ID কনফিগার করা নেই!");
+            if (typeof window.Adsgram === "undefined") return alert("Ad SDK লোড হচ্ছে...");
+
+            const AdController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID });
+            AdController.show()
+                .then(async () => {
+                    await updateDoc(doc(db, "movies", movieId), { views: increment(1) });
+                    const progress = getProgress();
+                    progress[movieId] = (progress[movieId] || 0) + 1;
+                    saveProgress(progress);
+                    updateCardDOM(movieId);
+                })
+                .catch(() => alert("অ্যাড পুরোপুরি দেখতে হবে!"));
         }
+
+        async function trackDownload(movieId) {
+            await updateDoc(doc(db, "movies", movieId), { downloads: increment(1) });
+        }
+
+        // start
+        loadMovies();
     </script>
 </body>
 </html>
