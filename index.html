@@ -7,7 +7,7 @@
     <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
-    <!-- Adsgram SDK (সঠিকভাবে ইন্টিগ্রেট করা হয়েছে) -->
+    <!-- Adsgram SDK -->
     <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
     
     <!-- Swiper JS CSS -->
@@ -106,9 +106,14 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // টেলিগ্রাম ইউজার আইডি সংগ্রাহক
+        let userId = "guest_user";
         if (window.Telegram && window.Telegram.WebApp) {
             window.Telegram.WebApp.ready();
             window.Telegram.WebApp.expand();
+            if (window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
+                userId = window.Telegram.WebApp.initDataUnsafe.user.id.toString();
+            }
         }
 
         let REQUIRED_ADS = 3;
@@ -151,13 +156,15 @@
             renderMovies();
         });
 
+        // ইউজার আইডি ভিত্তিক প্রোগ্রেস গেট করা
         function getProgress() {
-            const data = localStorage.getItem("tgmaster_movie_progress");
+            const data = localStorage.getItem(`tgmaster_progress_${userId}`);
             return data ? JSON.parse(data) : {};
         }
 
+        // ইউজার আইডি ভিত্তিক প্রোগ্রেস সেভ করা
         function saveProgress(progress) {
-            localStorage.setItem("tgmaster_movie_progress", JSON.stringify(progress));
+            localStorage.setItem(`tgmaster_progress_${userId}`, JSON.stringify(progress));
         }
 
         function renderMovies() {
@@ -206,7 +213,7 @@
             });
         }
 
-        // ৩. Adsgram অ্যাড প্রদর্শন (সেফটি চেকসহ)
+        // ৩. Adsgram অ্যাড প্রদর্শন
         function startAd(movieId) {
             if (!ADSGRAM_BLOCK_ID) {
                 alert("Adsgram Block ID কনফিগার করা নেই! এডমিন ড্যাশবোর্ডে গিয়ে Block ID বসান।");
@@ -216,12 +223,12 @@
             if (typeof window.Adsgram !== "undefined") {
                 const AdController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID });
                 AdController.show().then(async () => {
-                    // ভিউ বাড়ানো
+                    // ফায়ারবেসে ভিউ বাড়ানো
                     await updateDoc(doc(db, "movies", movieId), {
                         views: increment(1)
                     });
 
-                    // লোকাল প্রোগ্রেস সেভ
+                    // নির্দিষ্ট ইউজার আইডির জন্য প্রোগ্রেস সেভ
                     const progress = getProgress();
                     progress[movieId] = (progress[movieId] || 0) + 1;
                     saveProgress(progress);
