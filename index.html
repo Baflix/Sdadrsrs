@@ -28,25 +28,36 @@
             --muted: #94a3b8;
             --success: #22c55e;
             --radius: 14px;
+            --header-height: 64px;
         }
         body {
             background: var(--bg);
             color: var(--text);
-            padding: 16px 16px 30px;
+            padding: calc(var(--header-height) + 16px) 16px 30px;
             overflow-x: hidden;
         }
-        /* ===== HEADER ===== */
+        /* ===== STICKY HEADER ===== */
         header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--header-height);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin: 10px 0 20px;
+            padding: 0 16px;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
         .app-title {
-            font-size: 28px;
+            font-size: 22px;
             font-weight: 900;
             letter-spacing: 2px;
-            color: #fff;
             text-shadow: 0 0 15px var(--glow);
             background: linear-gradient(180deg, #ffffff 0%, #0088cc 100%);
             -webkit-background-clip: text;
@@ -57,14 +68,20 @@
             background: var(--card-bg);
             border: 1px solid rgba(255,255,255,0.1);
             color: var(--text);
-            padding: 10px 14px;
+            padding: 8px 14px;
             border-radius: 10px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
             display: flex;
             align-items: center;
             gap: 6px;
+            transition: 0.2s;
         }
+        .search-icon-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
         /* ===== CATEGORY CHIPS ===== */
         .category-container {
             display: flex;
@@ -104,6 +121,7 @@
             overflow: hidden;
             box-shadow: 0 8px 20px rgba(0,0,0,0.5);
             border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
         }
         .swiper-slide img { display: block; width: 100%; height: 100%; object-fit: cover; }
         .swiper-pagination-bullet { background: var(--muted); opacity: 0.5; }
@@ -140,6 +158,43 @@
             position: relative;
         }
         .poster-container img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* 🔥 NEW: Poster overlay - title + description inside poster */
+        .poster-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 40px 12px 10px;
+            background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.75) 40%, rgba(0,0,0,0) 100%);
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            pointer-events: none;
+        }
+        .poster-overlay-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+            line-height: 1.25;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .poster-overlay-desc {
+            font-size: 11px;
+            font-weight: 400;
+            color: rgba(255,255,255,0.85);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
         .movie-badge {
             position: absolute;
             top: 10px;
@@ -151,6 +206,7 @@
             font-weight: 600;
             border-radius: 6px;
             color: #fff;
+            z-index: 2;
         }
         .movie-info {
             padding: 14px;
@@ -195,9 +251,7 @@
             display: none;
         }
 
-        /* ======================================================
-               ✨ PROFESSIONAL SEARCH OVERLAY (Only this part updated)
-               ====================================================== */
+        /* ===== SEARCH OVERLAY (Professional) ===== */
         #searchView {
             position: fixed;
             top: 0;
@@ -205,17 +259,27 @@
             width: 100%;
             height: 100%;
             background: var(--bg);
-            z-index: 999;
+            z-index: 1100;
             display: none;
             flex-direction: column;
-            padding: 16px 16px 30px;
             overflow-y: auto;
         }
+        #searchView.active {
+            display: flex;
+        }
         .search-header {
+            position: sticky;
+            top: 0;
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
             align-items: center;
+            padding: 12px 16px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            z-index: 10;
+            min-height: var(--header-height);
         }
         .search-input {
             flex-grow: 1;
@@ -226,6 +290,7 @@
             border-radius: 12px;
             font-size: 15px;
             outline: none;
+            min-width: 0;
         }
         .search-input:focus {
             border-color: var(--accent);
@@ -235,20 +300,27 @@
             background: var(--accent);
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 12px 18px;
             border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
             transition: 0.2s;
+            flex-shrink: 0;
+            font-size: 14px;
         }
         .search-submit-btn:hover { opacity: 0.9; }
         .close-search {
             background: none;
             border: none;
             color: var(--muted);
-            font-size: 24px;
+            font-size: 22px;
             cursor: pointer;
-            padding: 0 5px;
+            padding: 4px 8px;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .search-results-wrapper {
+            padding: 16px;
         }
         .search-results-grid {
             display: grid;
@@ -256,8 +328,6 @@
             gap: 14px;
             margin-top: 4px;
         }
-
-        /* --- upgraded search result cards (professional look) --- */
         .search-result-card {
             background: var(--card-bg);
             border-radius: var(--radius);
@@ -273,7 +343,7 @@
             box-shadow: 0 6px 20px rgba(0,0,0,0.4);
         }
         .search-result-card .poster-container {
-            height: 160px;  /* slightly shorter for search card */
+            height: 160px;
         }
         .search-result-card .movie-info {
             padding: 12px 14px 14px;
@@ -299,7 +369,6 @@
             font-size: 10px;
             padding: 3px 9px;
         }
-        /* empty state */
         .empty-search {
             text-align: center;
             color: var(--muted);
@@ -310,7 +379,6 @@
             border-radius: var(--radius);
             border: 1px dashed rgba(255,255,255,0.08);
         }
-        /* loader inside search */
         .search-loader {
             color: var(--muted);
             text-align: center;
@@ -318,7 +386,6 @@
             font-size: 14px;
         }
 
-        /* ===== responsive fine-tune ===== */
         @media (min-width: 480px) {
             .movie-grid { grid-template-columns: 1fr 1fr; }
             .search-results-grid { grid-template-columns: 1fr 1fr; }
@@ -333,12 +400,12 @@
 
     <header>
         <div class="app-title">TG MASTER</div>
-        <button class="search-icon-btn" id="openSearchBtn">🔍 সার্চ</button>
+        <button class="search-icon-btn" id="openSearchBtn">🔍 Search</button>
     </header>
 
     <!-- category chips -->
     <div class="category-container" id="categoryContainer">
-        <div class="cat-chip active" data-cat="All">সকল কনটেন্ট</div>
+        <div class="cat-chip active" data-cat="All">All Content</div>
     </div>
 
     <!-- banner slider -->
@@ -350,20 +417,22 @@
     </div>
 
     <!-- main grid -->
-    <div class="section-title" id="gridTitle">🎬 Featured Movies</div>
+    <div class="section-title" id="gridTitle">🎬 Featured Video</div>
     <div class="movie-grid" id="movieContainer"></div>
-    <div class="loader-text" id="loaderText">আরো লোড হচ্ছে...</div>
+    <div class="loader-text" id="loaderText">Loading more...</div>
 
-    <!-- ===== SEARCH OVERLAY (updated UI) ===== -->
+    <!-- ===== SEARCH OVERLAY ===== -->
     <div id="searchView">
         <div class="search-header">
             <button class="close-search" id="closeSearchBtn">✕</button>
-            <input type="text" class="search-input" id="searchInput" placeholder="সঠিক মুভি বা কনটেন্টের নাম লিখুন..." />
-            <button class="search-submit-btn" id="searchSubmitBtn">খুঁজুন</button>
+            <input type="text" class="search-input" id="searchInput" placeholder="Search movies or content..." />
+            <button class="search-submit-btn" id="searchSubmitBtn">Search</button>
         </div>
-        <div class="section-title" style="margin-bottom:6px;">🔎 সার্চ রেজাল্ট</div>
-        <div class="search-results-grid" id="searchResultsContainer">
-            <div class="empty-search">নাম লিখে 'খুঁজুন' বাটনে চাপ দিন</div>
+        <div class="search-results-wrapper">
+            <div class="section-title" style="margin-bottom:12px;">🔎 Search Results</div>
+            <div class="search-results-grid" id="searchResultsContainer">
+                <div class="empty-search">Type a name and press 'Search'</div>
+            </div>
         </div>
     </div>
 
@@ -378,7 +447,7 @@
     </script>
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, collection, doc, onSnapshot, getDocs, query, limit, startAfter, where, updateDoc, increment } from "firebase/firestore";
+        import { getFirestore, collection, doc, onSnapshot, getDocs, query, limit, startAfter, where, updateDoc, increment, orderBy } from "firebase/firestore";
 
         // Firebase config
         const firebaseConfig = {
@@ -393,6 +462,17 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // ===== SESSION / UNLOCK TIMEOUT LOGIC =====
+        const UNLOCK_VALIDITY_MINUTES = 15;
+        const UNLOCK_VALIDITY_MS = UNLOCK_VALIDITY_MINUTES * 60 * 1000;
+        const SESSION_STORAGE_KEY = "tgmaster_session_id";
+
+        let SESSION_ID = sessionStorage.getItem(SESSION_STORAGE_KEY);
+        if (!SESSION_ID) {
+            SESSION_ID = "sess_" + Date.now() + "_" + Math.random().toString(36).slice(2, 9);
+            sessionStorage.setItem(SESSION_STORAGE_KEY, SESSION_ID);
+        }
+
         // Telegram user
         let userId = "guest_user";
         if (window.Telegram?.WebApp) {
@@ -402,7 +482,7 @@
             if (u) userId = u.id.toString();
         }
 
-        let REQUIRED_ADS = 3;
+        let REQUIRED_ADS = 0;
         let ADSGRAM_BLOCK_ID = "";
         let currentCategory = "All";
         let moviesData = [];
@@ -418,20 +498,38 @@
                 REQUIRED_ADS = data.requiredAds || 3;
                 ADSGRAM_BLOCK_ID = data.adsgramBlockId || "";
 
-                // banners
+                // ---- banners (support both string URL and object {url,title,description}) ----
                 if (data.banners?.length) {
                     const wrapper = document.getElementById("sliderWrapper");
-                    wrapper.innerHTML = data.banners.map(url =>
-                        `<div class="swiper-slide"><img src="${url}" alt="Banner"></div>`
-                    ).join("");
+                    wrapper.innerHTML = data.banners.map(item => {
+                        // পুরনো ফরম্যাট: শুধু string URL
+                        if (typeof item === "string") {
+                            return `<div class="swiper-slide"><img src="${item}" alt="Banner"></div>`;
+                        }
+                        // নতুন ফরম্যাট: {url, title, description}
+                        const url = item.url || "";
+                        const title = item.title || "";
+                        const desc = item.description || "";
+                        const overlayHTML = (title || desc) ? `
+                            <div class="poster-overlay">
+                                ${title ? `<div class="poster-overlay-title">${title}</div>` : ""}
+                                ${desc ? `<div class="poster-overlay-desc">${desc}</div>` : ""}
+                            </div>
+                        ` : "";
+                        return `
+                            <div class="swiper-slide">
+                                <img src="${url}" alt="Banner">
+                                ${overlayHTML}
+                            </div>
+                        `;
+                    }).join("");
                     initSwiper();
                 }
 
-                // categories from admin
                 if (Array.isArray(data.categories)) {
                     const catContainer = document.getElementById("categoryContainer");
                     catContainer.innerHTML =
-                        `<div class="cat-chip active" data-cat="All">সকল কনটেন্ট</div>`;
+                        `<div class="cat-chip active" data-cat="All">All Content</div>`;
                     data.categories.forEach(cat => {
                         catContainer.innerHTML +=
                             `<div class="cat-chip" data-cat="${cat}">${cat}</div>`;
@@ -464,7 +562,53 @@
             const data = localStorage.getItem(`tgmaster_progress_${userId}`);
             return data ? JSON.parse(data) : {};
         }
-        function saveProgress(p) { localStorage.setItem(`tgmaster_progress_${userId}`, JSON.stringify(p)); }
+        function saveProgress(p) {
+            localStorage.setItem(`tgmaster_progress_${userId}`, JSON.stringify(p));
+        }
+
+        function isMovieUnlocked(movieId) {
+            if (REQUIRED_ADS === 0) return true;
+            const progress = getProgress();
+            const entry = progress[movieId];
+            if (!entry) return false;
+            if (typeof entry === "number") return false;
+
+            const count = entry.count || 0;
+            const sameSession = entry.session === SESSION_ID;
+            const fresh = (Date.now() - (entry.unlockedAt || 0)) < UNLOCK_VALIDITY_MS;
+
+            return count >= REQUIRED_ADS && sameSession && fresh;
+        }
+
+        function getAdCount(movieId) {
+            const progress = getProgress();
+            const entry = progress[movieId];
+            if (!entry) return 0;
+            if (typeof entry === "number") return entry;
+            const sameSession = entry.session === SESSION_ID;
+            const fresh = (Date.now() - (entry.unlockedAt || 0)) < UNLOCK_VALIDITY_MS;
+            if (!sameSession || !fresh) return 0;
+            return entry.count || 0;
+        }
+
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
+                refreshAllCards();
+            }
+        });
+
+        function refreshAllCards() {
+            document.querySelectorAll("#movieContainer .movie-card").forEach(card => {
+                const id = card.id.replace("card-movieContainer-", "");
+                updateCardDOM(id);
+            });
+            document.querySelectorAll("#searchResultsContainer .search-result-card").forEach(card => {
+                const id = card.id.replace("card-searchResultsContainer-", "");
+                updateCardDOM(id);
+            });
+        }
+
+        setInterval(refreshAllCards, 30 * 1000);
 
         function changeCategory(cat) {
             currentCategory = cat;
@@ -472,71 +616,111 @@
             lastVisibleDoc = null;
             hasMore = true;
             document.getElementById("movieContainer").innerHTML = "";
-            document.getElementById("gridTitle").innerText = cat === "All" ? "🎬 Featured Movies" : `🎬 ${cat}`;
+            document.getElementById("gridTitle").innerText = cat === "All" ? "🎬 Featured Video" : `🎬 ${cat}`;
             loadMovies();
         }
 
-        // ---- load movies (infinite) ----
+        // ---- load movies ----
         async function loadMovies() {
             if (isLoading || !hasMore) return;
             isLoading = true;
             document.getElementById("loaderText").style.display = "block";
 
-            let q;
             const colRef = collection(db, "movies");
-            if (currentCategory !== "All") {
-                q = lastVisibleDoc
-                    ? query(colRef, where("category", "==", currentCategory), startAfter(lastVisibleDoc), limit(PAGE_LIMIT))
-                    : query(colRef, where("category", "==", currentCategory), limit(PAGE_LIMIT));
-            } else {
-                q = lastVisibleDoc
-                    ? query(colRef, startAfter(lastVisibleDoc), limit(PAGE_LIMIT))
-                    : query(colRef, limit(PAGE_LIMIT));
-            }
+            let q;
 
-            const snapshot = await getDocs(q);
-            if (snapshot.empty) {
-                hasMore = false;
-                document.getElementById("loaderText").innerText = "আর কোনো কনটেন্ট নেই";
+            try {
+                if (currentCategory !== "All") {
+                    q = lastVisibleDoc
+                        ? query(colRef, where("category", "==", currentCategory), orderBy("createdAt", "desc"), startAfter(lastVisibleDoc), limit(PAGE_LIMIT))
+                        : query(colRef, where("category", "==", currentCategory), orderBy("createdAt", "desc"), limit(PAGE_LIMIT));
+                } else {
+                    q = lastVisibleDoc
+                        ? query(colRef, orderBy("createdAt", "desc"), startAfter(lastVisibleDoc), limit(PAGE_LIMIT))
+                        : query(colRef, orderBy("createdAt", "desc"), limit(PAGE_LIMIT));
+                }
+
+                const snapshot = await getDocs(q);
+                if (snapshot.empty) {
+                    hasMore = false;
+                    document.getElementById("loaderText").innerText = "No more content";
+                    isLoading = false;
+                    return;
+                }
+
+                lastVisibleDoc = snapshot.docs[snapshot.docs.length - 1];
+                snapshot.forEach((docSnap) => {
+                    const item = { id: docSnap.id, ...docSnap.data() };
+                    moviesData.push(item);
+                    renderSingleMovie(item, "movieContainer", false);
+                });
+
                 isLoading = false;
-                return;
+                document.getElementById("loaderText").style.display = "none";
+
+            } catch (err) {
+                console.warn("orderBy createdAt failed, using fallback:", err);
+                let fallbackQ;
+                if (currentCategory !== "All") {
+                    fallbackQ = lastVisibleDoc
+                        ? query(colRef, where("category", "==", currentCategory), startAfter(lastVisibleDoc), limit(PAGE_LIMIT))
+                        : query(colRef, where("category", "==", currentCategory), limit(PAGE_LIMIT));
+                } else {
+                    fallbackQ = lastVisibleDoc
+                        ? query(colRef, startAfter(lastVisibleDoc), limit(PAGE_LIMIT))
+                        : query(colRef, limit(PAGE_LIMIT));
+                }
+                const snapshot = await getDocs(fallbackQ);
+                if (snapshot.empty) {
+                    hasMore = false;
+                    document.getElementById("loaderText").innerText = "No more content";
+                    isLoading = false;
+                    return;
+                }
+                lastVisibleDoc = snapshot.docs[snapshot.docs.length - 1];
+                snapshot.forEach((docSnap) => {
+                    const item = { id: docSnap.id, ...docSnap.data() };
+                    moviesData.push(item);
+                    renderSingleMovie(item, "movieContainer", false);
+                });
+                isLoading = false;
+                document.getElementById("loaderText").style.display = "none";
             }
-
-            lastVisibleDoc = snapshot.docs[snapshot.docs.length - 1];
-            snapshot.forEach((docSnap) => {
-                const item = { id: docSnap.id, ...docSnap.data() };
-                moviesData.push(item);
-                renderSingleMovie(item, "movieContainer", false); // false = not search style
-            });
-
-            isLoading = false;
-            document.getElementById("loaderText").style.display = "none";
         }
 
-        // ---- render helper (isSearch: true → use .search-result-card) ----
+        // ---- render helper ----
         function renderSingleMovie(movie, containerId, isSearch = false) {
             const container = document.getElementById(containerId);
-            const progress = getProgress();
-            const currentAds = progress[movie.id] || 0;
-            const isUnlocked = currentAds >= REQUIRED_ADS;
+            const currentAds = getAdCount(movie.id);
+            const unlocked = isMovieUnlocked(movie.id);
 
             const card = document.createElement("div");
-            // if search container → professional search card class
             card.className = isSearch ? "search-result-card" : "movie-card";
             card.id = `card-${containerId}-${movie.id}`;
 
-            card.innerHTML = getMovieCardHTML(movie, currentAds, isUnlocked, isSearch);
+            card.innerHTML = getMovieCardHTML(movie, currentAds, unlocked, isSearch);
             container.appendChild(card);
             attachCardEvents(card, movie.id);
         }
 
         function getMovieCardHTML(movie, currentAds, isUnlocked, isSearch) {
-            // slightly different layout for search cards (more compact)
             const posterHeight = isSearch ? "160px" : "180px";
+
+            // 🔥 NEW: Poster overlay (title + description admin থেকে সেট হবে)
+            const overlayTitle = movie.posterTitle || "";
+            const overlayDesc = movie.posterDescription || "";
+            const overlayHTML = (overlayTitle || overlayDesc) ? `
+                <div class="poster-overlay">
+                    ${overlayTitle ? `<div class="poster-overlay-title">${overlayTitle}</div>` : ""}
+                    ${overlayDesc ? `<div class="poster-overlay-desc">${overlayDesc}</div>` : ""}
+                </div>
+            ` : "";
+
             return `
                 <div class="poster-container" style="height:${posterHeight};">
                     <span class="movie-badge">${movie.category || 'General'}</span>
                     <img src="${movie.poster}" alt="${movie.title}" loading="lazy">
+                    ${overlayHTML}
                 </div>
                 <div class="movie-info">
                     <div class="movie-title">${movie.title}</div>
@@ -566,16 +750,14 @@
         }
 
         function updateCardDOM(movieId) {
-            // update both main grid and search results if present
             ["movieContainer", "searchResultsContainer"].forEach(containerId => {
                 const card = document.getElementById(`card-${containerId}-${movieId}`);
                 const movie = moviesData.find(m => m.id === movieId) || window._lastSearchResults?.find(m => m.id === movieId);
                 if (card && movie) {
-                    const progress = getProgress();
-                    const currentAds = progress[movieId] || 0;
-                    const isUnlocked = currentAds >= REQUIRED_ADS;
+                    const currentAds = getAdCount(movieId);
+                    const unlocked = isMovieUnlocked(movieId);
                     const isSearch = containerId === "searchResultsContainer";
-                    card.innerHTML = getMovieCardHTML(movie, currentAds, isUnlocked, isSearch);
+                    card.innerHTML = getMovieCardHTML(movie, currentAds, unlocked, isSearch);
                     attachCardEvents(card, movieId);
                 }
             });
@@ -583,32 +765,38 @@
 
         // ---- infinite scroll ----
         window.addEventListener("scroll", () => {
+            if (document.getElementById("searchView").classList.contains("active")) return;
             const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
             if (scrollTop + clientHeight >= scrollHeight - 300) loadMovies();
         });
 
-        // ---- SEARCH (updated: uses professional card style) ----
+        // ---- SEARCH ----
+        const searchView = document.getElementById("searchView");
+        const searchInput = document.getElementById("searchInput");
+
         document.getElementById("openSearchBtn").addEventListener("click", () => {
-            document.getElementById("searchView").style.display = "flex";
-            document.getElementById("searchInput").focus();
+            searchView.classList.add("active");
+            document.body.style.overflow = "hidden";
+            setTimeout(() => searchInput.focus(), 100);
         });
         document.getElementById("closeSearchBtn").addEventListener("click", () => {
-            document.getElementById("searchView").style.display = "none";
+            searchView.classList.remove("active");
+            document.body.style.overflow = "";
         });
         document.getElementById("searchSubmitBtn").addEventListener("click", performSearch);
-        document.getElementById("searchInput").addEventListener("keypress", (e) => { if (e.key === "Enter") performSearch(); });
+        searchInput.addEventListener("keypress", (e) => { if (e.key === "Enter") performSearch(); });
 
         async function performSearch() {
-            const queryText = document.getElementById("searchInput").value.trim().toLowerCase();
+            const queryText = searchInput.value.trim().toLowerCase();
             const resultsContainer = document.getElementById("searchResultsContainer");
             resultsContainer.innerHTML = "";
 
             if (!queryText) {
-                resultsContainer.innerHTML = `<div class="empty-search">দয়া করে কনটেন্টের নাম লিখুন</div>`;
+                resultsContainer.innerHTML = `<div class="empty-search">Please enter a content name</div>`;
                 return;
             }
 
-            resultsContainer.innerHTML = `<div class="search-loader">⏳ অনুসন্ধান করা হচ্ছে...</div>`;
+            resultsContainer.innerHTML = `<div class="search-loader">⏳ Searching...</div>`;
 
             try {
                 const snapshot = await getDocs(collection(db, "movies"));
@@ -619,44 +807,85 @@
                     if (title.includes(queryText)) matched.push({ id: docSnap.id, ...data });
                 });
 
+                matched.sort((a, b) => {
+                    const at = a.createdAt?.seconds || 0;
+                    const bt = b.createdAt?.seconds || 0;
+                    return bt - at;
+                });
+
                 window._lastSearchResults = matched;
                 resultsContainer.innerHTML = "";
 
                 if (matched.length === 0) {
-                    resultsContainer.innerHTML = `<div class="empty-search">😓 দুঃখিত! এই নামের কোনো কনটেন্ট পাওয়া যায়নি।</div>`;
+                    resultsContainer.innerHTML = `<div class="empty-search">😓 Sorry! No content found with this name.</div>`;
                     return;
                 }
 
-                // render each with isSearch = true → professional card style
                 matched.forEach(movie => {
                     renderSingleMovie(movie, "searchResultsContainer", true);
                 });
 
             } catch (err) {
                 console.error(err);
-                resultsContainer.innerHTML = `<div class="empty-search">সার্চ করতে সমস্যা হয়েছে, আবার চেষ্টা করুন।</div>`;
+                resultsContainer.innerHTML = `<div class="empty-search">Search error, please try again.</div>`;
             }
         }
 
         // ---- ads & download ----
         function startAd(movieId) {
-            if (!ADSGRAM_BLOCK_ID) return alert("Adsgram Block ID কনফিগার করা নেই!");
-            if (typeof window.Adsgram === "undefined") return alert("Ad SDK লোড হচ্ছে...");
+            if (REQUIRED_ADS === 0) {
+                const progress = getProgress();
+                progress[movieId] = {
+                    count: 0,
+                    session: SESSION_ID,
+                    unlockedAt: Date.now()
+                };
+                saveProgress(progress);
+                updateCardDOM(movieId);
+                return;
+            }
+
+            if (!ADSGRAM_BLOCK_ID) return alert("Adsgram Block ID not configured!");
+            if (typeof window.Adsgram === "undefined") return alert("Ad SDK is loading...");
 
             const AdController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID });
             AdController.show()
                 .then(async () => {
-                    await updateDoc(doc(db, "movies", movieId), { views: increment(1) });
+                    try {
+                        await updateDoc(doc(db, "movies", movieId), { views: increment(1) });
+                    } catch (e) {
+                        console.warn("Failed to update views:", e);
+                    }
+
                     const progress = getProgress();
-                    progress[movieId] = (progress[movieId] || 0) + 1;
+                    let entry = progress[movieId];
+
+                    if (typeof entry === "number") {
+                        entry = { count: entry, session: SESSION_ID, unlockedAt: Date.now() };
+                    }
+
+                    if (!entry || entry.session !== SESSION_ID ||
+                        (Date.now() - (entry.unlockedAt || 0)) >= UNLOCK_VALIDITY_MS) {
+                        entry = { count: 0, session: SESSION_ID, unlockedAt: Date.now() };
+                    }
+
+                    entry.count = (entry.count || 0) + 1;
+                    entry.session = SESSION_ID;
+                    entry.unlockedAt = Date.now();
+
+                    progress[movieId] = entry;
                     saveProgress(progress);
                     updateCardDOM(movieId);
                 })
-                .catch(() => alert("অ্যাড পুরোপুরি দেখতে হবে!"));
+                .catch(() => alert("You must watch the ad completely!"));
         }
 
         async function trackDownload(movieId) {
-            await updateDoc(doc(db, "movies", movieId), { downloads: increment(1) });
+            try {
+                await updateDoc(doc(db, "movies", movieId), { downloads: increment(1) });
+            } catch (e) {
+                console.warn("Failed to update downloads:", e);
+            }
         }
 
         // start
