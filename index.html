@@ -4,11 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TG MASTER</title>
-    <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Adsgram SDK -->
     <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
-    <!-- Swiper JS CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <style>
         /* ===== ROOT ===== */
@@ -36,6 +33,212 @@
             padding: calc(var(--header-height) + 16px) 16px 30px;
             overflow-x: hidden;
         }
+
+        /* ===================== 🔥 PREMIUM LOADERS START ===================== */
+
+        #initialLoader {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            background: radial-gradient(circle at 50% 40%, #16233d 0%, #0f172a 70%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 26px;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        #initialLoader.hide {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .brand-loader-title {
+            font-size: 30px;
+            font-weight: 900;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            background: linear-gradient(180deg, #ffffff 0%, #0088cc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 22px var(--glow);
+            animation: brandPulse 2.2s ease-in-out infinite;
+        }
+        @keyframes brandPulse {
+            0%, 100% { opacity: 1; filter: drop-shadow(0 0 6px rgba(0,136,204,0.5)); }
+            50% { opacity: 0.7; filter: drop-shadow(0 0 18px rgba(0,136,204,0.9)); }
+        }
+        .orbit-loader {
+            position: relative;
+            width: 74px;
+            height: 74px;
+        }
+        .orbit-loader span {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            margin: -5px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 12px var(--accent), 0 0 22px var(--glow);
+            animation: orbitSpin 1.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+        }
+        .orbit-loader span:nth-child(2) { animation-delay: 0.2s; background: #38bdf8; box-shadow: 0 0 12px #38bdf8, 0 0 22px rgba(56,189,248,0.5); }
+        .orbit-loader span:nth-child(3) { animation-delay: 0.4s; background: #7dd3fc; box-shadow: 0 0 12px #7dd3fc, 0 0 22px rgba(125,211,252,0.5); }
+        .orbit-loader span:nth-child(4) { animation-delay: 0.6s; background: #bae6fd; box-shadow: 0 0 12px #bae6fd, 0 0 22px rgba(186,230,253,0.5); }
+        @keyframes orbitSpin {
+            0%   { transform: rotate(0deg)   translateX(28px) rotate(0deg);   }
+            100% { transform: rotate(360deg) translateX(28px) rotate(-360deg); }
+        }
+        .initial-loader-text {
+            font-size: 12px;
+            letter-spacing: 3px;
+            color: var(--muted);
+            text-transform: uppercase;
+            animation: textBlink 1.6s ease-in-out infinite;
+        }
+        @keyframes textBlink {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        .skeleton-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .skeleton-poster {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            background: #263449;
+            overflow: hidden;
+        }
+        .skeleton-info {
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .skeleton-line {
+            position: relative;
+            height: 12px;
+            border-radius: 6px;
+            background: #263449;
+            overflow: hidden;
+        }
+        .skeleton-line.title { width: 65%; height: 15px; }
+        .skeleton-line.meta  { width: 40%; height: 11px; }
+        .skeleton-line.btn   { width: 100%; height: 40px; border-radius: 8px; margin-top: 4px; }
+        .skeleton-poster::after,
+        .skeleton-line::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            transform: translateX(-100%);
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255,255,255,0.06) 20%,
+                rgba(255,255,255,0.14) 50%,
+                rgba(255,255,255,0.06) 80%,
+                transparent 100%);
+            animation: shimmer 1.4s infinite;
+        }
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+
+        .inline-loader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            padding: 28px 0 20px;
+            color: var(--muted);
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+        .spinner-ring {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 3px solid rgba(0,136,204,0.15);
+            border-top-color: var(--accent);
+            border-right-color: #38bdf8;
+            animation: ringSpin 0.9s linear infinite;
+            box-shadow: 0 0 14px rgba(0,136,204,0.35);
+        }
+        @keyframes ringSpin {
+            to { transform: rotate(360deg); }
+        }
+        .dots-loader {
+            display: flex;
+            gap: 6px;
+        }
+        .dots-loader span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: dotBounce 1.2s infinite ease-in-out;
+            box-shadow: 0 0 8px var(--glow);
+        }
+        .dots-loader span:nth-child(2) { animation-delay: 0.15s; background:#38bdf8; }
+        .dots-loader span:nth-child(3) { animation-delay: 0.3s; background:#7dd3fc; }
+        @keyframes dotBounce {
+            0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
+            40%           { transform: translateY(-9px); opacity: 1; }
+        }
+
+        .end-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 26px 0 22px;
+            color: var(--muted);
+            font-size: 13px;
+            letter-spacing: 0.6px;
+        }
+        .end-state .end-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            background: rgba(0,136,204,0.08);
+            border: 1px solid rgba(0,136,204,0.25);
+            box-shadow: 0 0 16px rgba(0,136,204,0.15) inset;
+        }
+
+        .fade-in-card {
+            animation: cardFadeIn 0.45s ease both;
+        }
+        @keyframes cardFadeIn {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0);    }
+        }
+
+        .search-loader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            padding: 40px 20px;
+            color: var(--muted);
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+        /* ===================== 🔥 PREMIUM LOADERS END ===================== */
+
+
         /* ===== STICKY HEADER ===== */
         header {
             position: fixed;
@@ -159,7 +362,6 @@
         }
         .poster-container img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* 🔥 NEW: Poster overlay - title + description inside poster */
         .poster-overlay {
             position: absolute;
             bottom: 0;
@@ -243,15 +445,8 @@
             background: var(--success);
             text-decoration: none;
         }
-        .loader-text {
-            text-align: center;
-            color: var(--muted);
-            font-size: 14px;
-            margin: 20px 0;
-            display: none;
-        }
 
-        /* ===== SEARCH OVERLAY (Professional) ===== */
+        /* ===== SEARCH OVERLAY ===== */
         #searchView {
             position: fixed;
             top: 0;
@@ -379,16 +574,139 @@
             border-radius: var(--radius);
             border: 1px dashed rgba(255,255,255,0.08);
         }
-        .search-loader {
+
+        /* ===== HISTORY OVERLAY ===== */
+        #historyView {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            z-index: 1100;
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        #historyView.active { display: flex; }
+        .history-header {
+            position: sticky;
+            top: 0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            z-index: 10;
+            min-height: var(--header-height);
+        }
+        .history-header-title {
+            flex-grow: 1;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .close-history {
+            background: none;
+            border: none;
             color: var(--muted);
+            font-size: 22px;
+            cursor: pointer;
+            padding: 4px 8px;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .clear-history-btn {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .clear-history-btn:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
+        .history-wrapper {
+            padding: 16px;
+        }
+        .history-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            margin-top: 4px;
+        }
+        .history-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.06);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+            display: flex;
+            flex-direction: column;
+        }
+        .history-card .poster-container { height: 150px; }
+        .history-card .movie-info { padding: 12px 14px 14px; }
+        .history-card .movie-title { font-size: 15px; font-weight: 600; }
+        .history-card .movie-meta { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+        .history-action-badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 5px;
+            margin-right: 6px;
+        }
+        .history-action-badge.watched { background: rgba(0,136,204,0.2); color: #38bdf8; }
+        .history-action-badge.downloaded { background: rgba(34,197,94,0.2); color: #22c55e; }
+        .history-time {
+            font-size: 10px;
+            color: var(--muted);
+            margin-top: 6px;
+            display: block;
+        }
+        .history-action-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 9px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            width: 100%;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .empty-history {
             text-align: center;
-            padding: 20px;
-            font-size: 14px;
+            color: var(--muted);
+            margin-top: 40px;
+            font-size: 15px;
+            padding: 30px 20px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px dashed rgba(255,255,255,0.08);
+            line-height: 1.8;
+        }
+        .empty-history .empty-icon {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 10px;
         }
 
         @media (min-width: 480px) {
             .movie-grid { grid-template-columns: 1fr 1fr; }
             .search-results-grid { grid-template-columns: 1fr 1fr; }
+            .history-grid { grid-template-columns: 1fr 1fr; }
         }
         @media (min-width: 768px) {
             .movie-grid { grid-template-columns: 1fr 1fr 1fr; }
@@ -398,17 +716,27 @@
 </head>
 <body>
 
+    <!-- 🔥 INITIAL BRANDED LOADER -->
+    <div id="initialLoader">
+        <div class="brand-loader-title">TG MASTER</div>
+        <div class="orbit-loader">
+            <span></span><span></span><span></span><span></span>
+        </div>
+        <div class="initial-loader-text">Loading Experience…</div>
+    </div>
+
     <header>
         <div class="app-title">TG MASTER</div>
-        <button class="search-icon-btn" id="openSearchBtn">🔍 Search</button>
+        <div style="display:flex; gap:8px;">
+            <button class="search-icon-btn" id="openHistoryBtn">📜 History</button>
+            <button class="search-icon-btn" id="openSearchBtn">🔍 Search</button>
+        </div>
     </header>
 
-    <!-- category chips -->
     <div class="category-container" id="categoryContainer">
         <div class="cat-chip active" data-cat="All">All Content</div>
     </div>
 
-    <!-- banner slider -->
     <div class="slider-section" id="sliderSectionWrapper">
         <div class="swiper mySwiper">
             <div class="swiper-wrapper" id="sliderWrapper"></div>
@@ -416,12 +744,16 @@
         </div>
     </div>
 
-    <!-- main grid -->
     <div class="section-title" id="gridTitle">🎬 Featured Video</div>
     <div class="movie-grid" id="movieContainer"></div>
-    <div class="loader-text" id="loaderText">Loading more...</div>
 
-    <!-- ===== SEARCH OVERLAY ===== -->
+    <!-- 🔥 BOTTOM INLINE LOADER (skeleton + spinner) -->
+    <div id="bottomLoader" class="inline-loader">
+        <div class="spinner-ring"></div>
+        <div class="dots-loader"><span></span><span></span><span></span></div>
+        <div>Fetching more content…</div>
+    </div>
+
     <div id="searchView">
         <div class="search-header">
             <button class="close-search" id="closeSearchBtn">✕</button>
@@ -432,6 +764,24 @@
             <div class="section-title" style="margin-bottom:12px;">🔎 Search Results</div>
             <div class="search-results-grid" id="searchResultsContainer">
                 <div class="empty-search">Type a name and press 'Search'</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔥 HISTORY VIEW -->
+    <div id="historyView">
+        <div class="history-header">
+            <button class="close-history" id="closeHistoryBtn">✕</button>
+            <div class="history-header-title">📜 Your History</div>
+            <button class="clear-history-btn" id="clearHistoryBtn">🗑️ Clear</button>
+        </div>
+        <div class="history-wrapper">
+            <div class="section-title" style="margin-bottom:12px;">Recently Watched & Unlocked</div>
+            <div class="history-grid" id="historyResultsContainer">
+                <div class="empty-history" style="grid-column:1/-1;">
+                    <span class="empty-icon">📭</span>
+                    No history yet.<br>Watch or unlock a video to see it here.
+                </div>
             </div>
         </div>
     </div>
@@ -449,7 +799,6 @@
         import { initializeApp } from "firebase/app";
         import { getFirestore, collection, doc, onSnapshot, getDocs, query, limit, startAfter, where, updateDoc, increment, orderBy } from "firebase/firestore";
 
-        // Firebase config
         const firebaseConfig = {
             apiKey: "AIzaSyA3okSnZJrF9ooUp12KihKISR2VRZq5Ju8",
             authDomain: "baflix-man.firebaseapp.com",
@@ -462,7 +811,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // ===== SESSION / UNLOCK TIMEOUT LOGIC =====
         const UNLOCK_VALIDITY_MINUTES = 15;
         const UNLOCK_VALIDITY_MS = UNLOCK_VALIDITY_MINUTES * 60 * 1000;
         const SESSION_STORAGE_KEY = "tgmaster_session_id";
@@ -473,12 +821,13 @@
             sessionStorage.setItem(SESSION_STORAGE_KEY, SESSION_ID);
         }
 
-        // Telegram user
         let userId = "guest_user";
+        let tg = null;
         if (window.Telegram?.WebApp) {
-            window.Telegram.WebApp.ready();
-            window.Telegram.WebApp.expand();
-            const u = window.Telegram.WebApp.initDataUnsafe?.user;
+            tg = window.Telegram.WebApp;
+            tg.ready();
+            tg.expand();
+            const u = tg.initDataUnsafe?.user;
             if (u) userId = u.id.toString();
         }
 
@@ -491,22 +840,275 @@
         let hasMore = true;
         const PAGE_LIMIT = 20;
 
-        // ---- settings + categories ----
+        // ===== Loader DOM refs =====
+        const bottomLoader = document.getElementById("bottomLoader");
+        const initialLoader = document.getElementById("initialLoader");
+        let initialLoaderHidden = false;
+        let skeletonElements = [];
+
+        /* =====================================================
+           🔥 SKELETON + LOADER HELPERS
+           ===================================================== */
+        function showSkeletons(count = 4) {
+            const container = document.getElementById("movieContainer");
+            clearSkeletons();
+            const frag = document.createDocumentFragment();
+            for (let i = 0; i < count; i++) {
+                const sk = document.createElement("div");
+                sk.className = "skeleton-card";
+                sk.innerHTML = `
+                    <div class="skeleton-poster"></div>
+                    <div class="skeleton-info">
+                        <div class="skeleton-line title"></div>
+                        <div class="skeleton-line meta"></div>
+                        <div class="skeleton-line btn"></div>
+                    </div>
+                `;
+                frag.appendChild(sk);
+            }
+            container.appendChild(frag);
+            skeletonElements = Array.from(container.querySelectorAll(".skeleton-card"));
+        }
+
+        function clearSkeletons() {
+            skeletonElements.forEach(el => el.remove());
+            skeletonElements = [];
+        }
+
+        function showBottomLoader() {
+            bottomLoader.style.display = "flex";
+        }
+        function hideBottomLoader() {
+            bottomLoader.style.display = "none";
+        }
+        function showEndState(msg = "You've reached the end 🎉") {
+            bottomLoader.innerHTML = `
+                <div class="end-state">
+                    <div class="end-icon">✔️</div>
+                    <div>${msg}</div>
+                </div>
+            `;
+            bottomLoader.style.display = "flex";
+        }
+
+        function hideInitialLoader() {
+            if (initialLoaderHidden) return;
+            initialLoaderHidden = true;
+            initialLoader.classList.add("hide");
+            setTimeout(() => { initialLoader.style.display = "none"; }, 550);
+        }
+        /* ===================================================== */
+
+        /* =====================================================
+           🔥 TELEGRAM NATIVE BACK BUTTON SYSTEM
+           ===================================================== */
+        let backButtonVisible = false;
+
+        function showTgBackButton() {
+            if (!tg?.BackButton) return;
+            tg.BackButton.show();
+            backButtonVisible = true;
+        }
+
+        function hideTgBackButton() {
+            if (!tg?.BackButton) return;
+            tg.BackButton.hide();
+            backButtonVisible = false;
+        }
+
+        /**
+         * Telegram Back Button চাপলে এই ফাংশন চলবে।
+         * - Search খোলা থাকলে Search বন্ধ
+         * - History খোলা থাকলে History বন্ধ
+         * - কিছুই খোলা না থাকলে Telegram অ্যাপ বন্ধ
+         */
+        function handleTgBack() {
+            // Priority 1: History View
+            if (document.getElementById("historyView").classList.contains("active")) {
+                closeHistoryView();
+                return;
+            }
+
+            // Priority 2: Search View
+            if (document.getElementById("searchView").classList.contains("active")) {
+                closeSearchView();
+                return;
+            }
+
+            // কিছুই খোলা না থাকলে Telegram অ্যাপ বন্ধ
+            if (tg?.close) {
+                tg.close();
+            }
+        }
+
+        if (tg?.BackButton) {
+            tg.BackButton.onClick(handleTgBack);
+        }
+
+        // Browser-এর (falls outside Telegram) back button handling
+        window.addEventListener("popstate", () => {
+            if (document.getElementById("historyView").classList.contains("active")) {
+                closeHistoryView();
+                history.pushState(null, "", location.href);
+                return;
+            }
+            if (document.getElementById("searchView").classList.contains("active")) {
+                closeSearchView();
+                history.pushState(null, "", location.href);
+                return;
+            }
+        });
+
+        // initial state push (so popstate fires first time)
+        history.pushState(null, "", location.href);
+        /* ===================================================== */
+
+        /* =====================================================
+           🔥 HISTORY SYSTEM (সর্বোচ্চ ২০টি আইটেম)
+           ===================================================== */
+        const HISTORY_MAX_ITEMS = 20;
+
+        function getHistory() {
+            try {
+                const data = localStorage.getItem(`tgmaster_history_${userId}`);
+                return data ? JSON.parse(data) : [];
+            } catch (e) {
+                console.warn("History parse error:", e);
+                return [];
+            }
+        }
+
+        function saveHistory(history) {
+            try {
+                if (history.length > HISTORY_MAX_ITEMS) {
+                    history = history.slice(0, HISTORY_MAX_ITEMS);
+                }
+                localStorage.setItem(`tgmaster_history_${userId}`, JSON.stringify(history));
+            } catch (e) {
+                console.warn("History save error:", e);
+            }
+        }
+
+        function addToHistory(movie, actionType = "watched") {
+            if (!movie || !movie.id) return;
+
+            let history = getHistory();
+            const now = Date.now();
+
+            history = history.filter(item => item.id !== movie.id);
+
+            history.unshift({
+                id: movie.id,
+                title: movie.title || "Untitled",
+                poster: movie.poster || "",
+                category: movie.category || "General",
+                quality: movie.quality || "HD",
+                link: movie.link || "",
+                posterTitle: movie.posterTitle || "",
+                posterDescription: movie.posterDescription || "",
+                actionType: actionType,
+                timestamp: now
+            });
+
+            saveHistory(history);
+
+            if (document.getElementById("historyView")?.classList.contains("active")) {
+                renderHistory();
+            }
+        }
+
+        function getTimeAgo(timestamp) {
+            const diff = Date.now() - timestamp;
+            const mins = Math.floor(diff / 60000);
+            if (mins < 1) return "Just now";
+            if (mins < 60) return `${mins} min ago`;
+            const hours = Math.floor(mins / 60);
+            if (hours < 24) return `${hours} hr ago`;
+            const days = Math.floor(hours / 24);
+            if (days < 30) return `${days} day${days > 1 ? 's' : ''} ago`;
+            const months = Math.floor(days / 30);
+            return `${months} month${months > 1 ? 's' : ''} ago`;
+        }
+
+        function renderHistory() {
+            const container = document.getElementById("historyResultsContainer");
+            const history = getHistory();
+
+            if (!history.length) {
+                container.innerHTML = `
+                    <div class="empty-history" style="grid-column:1/-1;">
+                        <span class="empty-icon">📭</span>
+                        No history yet.<br>Watch or unlock a video to see it here.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = "";
+            history.forEach(item => {
+                const actionLabel = item.actionType === "downloaded"
+                    ? `<span class="history-action-badge downloaded">📥 Downloaded</span>`
+                    : `<span class="history-action-badge watched">👁️ Unlocked</span>`;
+
+                const overlayTitle = item.posterTitle || "";
+                const overlayDesc = item.posterDescription || "";
+                const overlayHTML = (overlayTitle || overlayDesc) ? `
+                    <div class="poster-overlay">
+                        ${overlayTitle ? `<div class="poster-overlay-title">${overlayTitle}</div>` : ""}
+                        ${overlayDesc ? `<div class="poster-overlay-desc">${overlayDesc}</div>` : ""}
+                    </div>
+                ` : "";
+
+                const card = document.createElement("div");
+                card.className = "history-card fade-in-card";
+                card.innerHTML = `
+                    <div class="poster-container">
+                        <span class="movie-badge">${item.category}</span>
+                        <img src="${item.poster}" alt="${item.title}" loading="lazy">
+                        ${overlayHTML}
+                    </div>
+                    <div class="movie-info">
+                        <div class="movie-title">${item.title}</div>
+                        <div class="movie-meta">
+                            <span>${item.quality}</span>
+                        </div>
+                        <div style="margin-bottom:10px;">
+                            ${actionLabel}
+                            <span class="history-time">${getTimeAgo(item.timestamp)}</span>
+                        </div>
+                        <a href="${item.link}" target="_blank" class="history-action-btn" data-id="${item.id}">
+                            ▶️ Open Again
+                        </a>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            container.querySelectorAll(".history-action-btn").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const id = btn.dataset.id;
+                    const movie = history.find(h => h.id === id);
+                    if (movie) {
+                        trackDownload(id);
+                        addToHistory(movie, "downloaded");
+                    }
+                });
+            });
+        }
+        /* ===================================================== */
+
         onSnapshot(doc(db, "settings", "config"), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 REQUIRED_ADS = data.requiredAds || 3;
                 ADSGRAM_BLOCK_ID = data.adsgramBlockId || "";
 
-                // ---- banners (support both string URL and object {url,title,description}) ----
                 if (data.banners?.length) {
                     const wrapper = document.getElementById("sliderWrapper");
                     wrapper.innerHTML = data.banners.map(item => {
-                        // পুরনো ফরম্যাট: শুধু string URL
                         if (typeof item === "string") {
                             return `<div class="swiper-slide"><img src="${item}" alt="Banner"></div>`;
                         }
-                        // নতুন ফরম্যাট: {url, title, description}
                         const url = item.url || "";
                         const title = item.title || "";
                         const desc = item.description || "";
@@ -572,11 +1174,9 @@
             const entry = progress[movieId];
             if (!entry) return false;
             if (typeof entry === "number") return false;
-
             const count = entry.count || 0;
             const sameSession = entry.session === SESSION_ID;
             const fresh = (Date.now() - (entry.unlockedAt || 0)) < UNLOCK_VALIDITY_MS;
-
             return count >= REQUIRED_ADS && sameSession && fresh;
         }
 
@@ -620,11 +1220,16 @@
             loadMovies();
         }
 
-        // ---- load movies ----
         async function loadMovies() {
             if (isLoading || !hasMore) return;
             isLoading = true;
-            document.getElementById("loaderText").style.display = "block";
+
+            if (moviesData.length === 0) {
+                showSkeletons(4);
+                hideBottomLoader();
+            } else {
+                showBottomLoader();
+            }
 
             const colRef = collection(db, "movies");
             let q;
@@ -641,10 +1246,14 @@
                 }
 
                 const snapshot = await getDocs(q);
+                clearSkeletons();
+
                 if (snapshot.empty) {
                     hasMore = false;
-                    document.getElementById("loaderText").innerText = "No more content";
+                    hideBottomLoader();
+                    showEndState("🎉 All content loaded");
                     isLoading = false;
+                    hideInitialLoader();
                     return;
                 }
 
@@ -656,7 +1265,8 @@
                 });
 
                 isLoading = false;
-                document.getElementById("loaderText").style.display = "none";
+                hideBottomLoader();
+                hideInitialLoader();
 
             } catch (err) {
                 console.warn("orderBy createdAt failed, using fallback:", err);
@@ -671,10 +1281,13 @@
                         : query(colRef, limit(PAGE_LIMIT));
                 }
                 const snapshot = await getDocs(fallbackQ);
+                clearSkeletons();
                 if (snapshot.empty) {
                     hasMore = false;
-                    document.getElementById("loaderText").innerText = "No more content";
+                    hideBottomLoader();
+                    showEndState("🎉 All content loaded");
                     isLoading = false;
+                    hideInitialLoader();
                     return;
                 }
                 lastVisibleDoc = snapshot.docs[snapshot.docs.length - 1];
@@ -684,18 +1297,18 @@
                     renderSingleMovie(item, "movieContainer", false);
                 });
                 isLoading = false;
-                document.getElementById("loaderText").style.display = "none";
+                hideBottomLoader();
+                hideInitialLoader();
             }
         }
 
-        // ---- render helper ----
         function renderSingleMovie(movie, containerId, isSearch = false) {
             const container = document.getElementById(containerId);
             const currentAds = getAdCount(movie.id);
             const unlocked = isMovieUnlocked(movie.id);
 
             const card = document.createElement("div");
-            card.className = isSearch ? "search-result-card" : "movie-card";
+            card.className = (isSearch ? "search-result-card" : "movie-card") + " fade-in-card";
             card.id = `card-${containerId}-${movie.id}`;
 
             card.innerHTML = getMovieCardHTML(movie, currentAds, unlocked, isSearch);
@@ -706,7 +1319,6 @@
         function getMovieCardHTML(movie, currentAds, isUnlocked, isSearch) {
             const posterHeight = isSearch ? "160px" : "180px";
 
-            // 🔥 NEW: Poster overlay (title + description admin থেকে সেট হবে)
             const overlayTitle = movie.posterTitle || "";
             const overlayDesc = movie.posterDescription || "";
             const overlayHTML = (overlayTitle || overlayDesc) ? `
@@ -763,28 +1375,64 @@
             });
         }
 
-        // ---- infinite scroll ----
         window.addEventListener("scroll", () => {
             if (document.getElementById("searchView").classList.contains("active")) return;
+            if (document.getElementById("historyView").classList.contains("active")) return;
             const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
             if (scrollTop + clientHeight >= scrollHeight - 300) loadMovies();
         });
 
-        // ---- SEARCH ----
         const searchView = document.getElementById("searchView");
         const searchInput = document.getElementById("searchInput");
 
-        document.getElementById("openSearchBtn").addEventListener("click", () => {
+        // 🔥 SEARCH OPEN/CLOSE (Telegram Back Button সহ)
+        function openSearchView() {
             searchView.classList.add("active");
             document.body.style.overflow = "hidden";
+            showTgBackButton();
             setTimeout(() => searchInput.focus(), 100);
-        });
-        document.getElementById("closeSearchBtn").addEventListener("click", () => {
+        }
+        function closeSearchView() {
             searchView.classList.remove("active");
             document.body.style.overflow = "";
-        });
+            // History খোলা না থাকলে Back Button লুকাবো
+            if (!document.getElementById("historyView").classList.contains("active")) {
+                hideTgBackButton();
+            }
+        }
+
+        document.getElementById("openSearchBtn").addEventListener("click", openSearchView);
+        document.getElementById("closeSearchBtn").addEventListener("click", closeSearchView);
         document.getElementById("searchSubmitBtn").addEventListener("click", performSearch);
         searchInput.addEventListener("keypress", (e) => { if (e.key === "Enter") performSearch(); });
+
+        // ===== HISTORY VIEW EVENTS (Telegram Back Button সহ) =====
+        const historyView = document.getElementById("historyView");
+
+        function openHistoryView() {
+            historyView.classList.add("active");
+            document.body.style.overflow = "hidden";
+            showTgBackButton();
+            renderHistory();
+        }
+        function closeHistoryView() {
+            historyView.classList.remove("active");
+            document.body.style.overflow = "";
+            // Search খোলা না থাকলে Back Button লুকাবো
+            if (!document.getElementById("searchView").classList.contains("active")) {
+                hideTgBackButton();
+            }
+        }
+
+        document.getElementById("openHistoryBtn").addEventListener("click", openHistoryView);
+        document.getElementById("closeHistoryBtn").addEventListener("click", closeHistoryView);
+
+        document.getElementById("clearHistoryBtn").addEventListener("click", () => {
+            if (confirm("আপনি কি নিশ্চিত যে সব হিস্টোরি মুছে ফেলতে চান?")) {
+                localStorage.removeItem(`tgmaster_history_${userId}`);
+                renderHistory();
+            }
+        });
 
         async function performSearch() {
             const queryText = searchInput.value.trim().toLowerCase();
@@ -796,7 +1444,13 @@
                 return;
             }
 
-            resultsContainer.innerHTML = `<div class="search-loader">⏳ Searching...</div>`;
+            resultsContainer.innerHTML = `
+                <div class="search-loader" style="grid-column:1/-1;">
+                    <div class="spinner-ring"></div>
+                    <div class="dots-loader"><span></span><span></span><span></span></div>
+                    <div>Searching the archive…</div>
+                </div>
+            `;
 
             try {
                 const snapshot = await getDocs(collection(db, "movies"));
@@ -831,7 +1485,6 @@
             }
         }
 
-        // ---- ads & download ----
         function startAd(movieId) {
             if (REQUIRED_ADS === 0) {
                 const progress = getProgress();
@@ -842,6 +1495,10 @@
                 };
                 saveProgress(progress);
                 updateCardDOM(movieId);
+
+                const unlockedMovie = moviesData.find(m => m.id === movieId)
+                    || window._lastSearchResults?.find(m => m.id === movieId);
+                if (unlockedMovie) addToHistory(unlockedMovie, "watched");
                 return;
             }
 
@@ -876,6 +1533,12 @@
                     progress[movieId] = entry;
                     saveProgress(progress);
                     updateCardDOM(movieId);
+
+                    const unlockedMovie = moviesData.find(m => m.id === movieId)
+                        || window._lastSearchResults?.find(m => m.id === movieId);
+                    if (unlockedMovie) {
+                        addToHistory(unlockedMovie, "watched");
+                    }
                 })
                 .catch(() => alert("You must watch the ad completely!"));
         }
@@ -886,10 +1549,20 @@
             } catch (e) {
                 console.warn("Failed to update downloads:", e);
             }
+
+            const movie = moviesData.find(m => m.id === movieId)
+                || window._lastSearchResults?.find(m => m.id === movieId)
+                || getHistory().find(h => h.id === movieId);
+            if (movie) {
+                addToHistory(movie, "downloaded");
+            }
         }
 
         // start
         loadMovies();
+
+        // safety: hide initial loader after 4s max
+        setTimeout(hideInitialLoader, 4000);
     </script>
 </body>
 </html>
