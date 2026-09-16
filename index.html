@@ -440,11 +440,77 @@
             gap: 8px;
             transition: 0.2s;
             text-decoration: none;
+            min-height: 44px;
+            position: relative;
+            overflow: hidden;
         }
         .action-btn.unlocked {
             background: var(--success);
             text-decoration: none;
         }
+
+        /* ===================== 🔥 IN-BUTTON LOADING STATE START ===================== */
+        .action-btn.loading {
+            background: linear-gradient(90deg, #0f2a42 0%, #1a4971 50%, #0f2a42 100%);
+            background-size: 200% 100%;
+            animation: btnShimmer 1.5s linear infinite;
+            cursor: wait;
+            pointer-events: none;
+        }
+        @keyframes btnShimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .btn-inline-loader {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            height: 100%;
+        }
+        .btn-spinner {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.25);
+            border-top-color: #ffffff;
+            border-right-color: #7dd3fc;
+            animation: btnSpin 0.8s linear infinite;
+            flex-shrink: 0;
+        }
+        @keyframes btnSpin {
+            to { transform: rotate(360deg); }
+        }
+        .btn-loading-text {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            color: #ffffff;
+            white-space: nowrap;
+        }
+        .btn-ad-dots {
+            display: flex;
+            gap: 4px;
+            margin-left: 2px;
+        }
+        .btn-ad-dots span {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+        }
+        .btn-ad-dots span.active {
+            background: #38bdf8;
+            box-shadow: 0 0 8px #38bdf8;
+            transform: scale(1.15);
+        }
+        .btn-ad-dots span.done {
+            background: #22c55e;
+            box-shadow: 0 0 6px #22c55e;
+        }
+        /* ===================== 🔥 IN-BUTTON LOADING STATE END ===================== */
 
         /* ===== SEARCH OVERLAY ===== */
         #searchView {
@@ -557,6 +623,7 @@
             padding: 10px;
             font-size: 13px;
             border-radius: 6px;
+            min-height: 40px;
         }
         .search-result-card .movie-badge {
             top: 8px;
@@ -703,6 +770,47 @@
             margin-bottom: 10px;
         }
 
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1e293b;
+            color: #fff;
+            padding: 14px 22px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 4000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-width: 90%;
+            pointer-events: none;
+            text-align: center;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        .toast.success {
+            border-color: rgba(34, 197, 94, 0.4);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(34,197,94,0.2);
+        }
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.4);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(239,68,68,0.2);
+        }
+        .toast.info {
+            border-color: rgba(0, 136, 204, 0.4);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(0,136,204,0.2);
+        }
+
         @media (min-width: 480px) {
             .movie-grid { grid-template-columns: 1fr 1fr; }
             .search-results-grid { grid-template-columns: 1fr 1fr; }
@@ -786,6 +894,9 @@
         </div>
     </div>
 
+    <!-- 🔥 TOAST NOTIFICATION -->
+    <div class="toast" id="toast"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script type="importmap">
         {
@@ -797,7 +908,7 @@
     </script>
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, collection, doc, onSnapshot, getDocs, query, limit, startAfter, where, updateDoc, increment, orderBy } from "firebase/firestore";
+        import { getFirestore, collection, doc, onSnapshot, getDocs, query, limit, startAfter, where, updateDoc, increment, orderBy, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA3okSnZJrF9ooUp12KihKISR2VRZq5Ju8",
@@ -831,6 +942,41 @@
             if (u) userId = u.id.toString();
         }
 
+        /* =====================================================
+           🔥 VISIT TRACKING SYSTEM (NEW)
+           Telegram Mini App ওপেন হলেই প্রতি ইউজারের জন্য
+           Firestore-এ একটি ডকুমেন্ট তৈরি/আপডেট হবে।
+           - firstVisit: প্রথমবার ওপেনের সময়
+           - lastVisit: সর্বশেষ ওপেনের সময়
+           - totalOpens: কতবার ওপেন করেছে (visit count)
+           ===================================================== */
+        async function trackVisit() {
+            if (!userId || userId === "guest_user") return;
+            try {
+                const visitRef = doc(db, "visits", userId);
+                const snap = await getDoc(visitRef);
+
+                if (snap.exists()) {
+                    await updateDoc(visitRef, {
+                        lastVisit: serverTimestamp(),
+                        totalOpens: increment(1)
+                    });
+                } else {
+                    await setDoc(visitRef, {
+                        userId: userId,
+                        firstVisit: serverTimestamp(),
+                        lastVisit: serverTimestamp(),
+                        totalOpens: 1
+                    });
+                }
+            } catch (e) {
+                console.warn("Visit tracking failed:", e);
+            }
+        }
+        // অ্যাপ ওপেন হলেই একবার ট্র্যাক করি
+        trackVisit();
+        /* ===================================================== */
+
         let REQUIRED_ADS = 0;
         let ADSGRAM_BLOCK_ID = "";
         let currentCategory = "All";
@@ -839,6 +985,9 @@
         let isLoading = false;
         let hasMore = true;
         const PAGE_LIMIT = 20;
+
+        // Track which buttons are currently in loading state
+        const loadingButtons = new Set();
 
         // ===== Loader DOM refs =====
         const bottomLoader = document.getElementById("bottomLoader");
@@ -916,26 +1065,15 @@
             backButtonVisible = false;
         }
 
-        /**
-         * Telegram Back Button চাপলে এই ফাংশন চলবে।
-         * - Search খোলা থাকলে Search বন্ধ
-         * - History খোলা থাকলে History বন্ধ
-         * - কিছুই খোলা না থাকলে Telegram অ্যাপ বন্ধ
-         */
         function handleTgBack() {
-            // Priority 1: History View
             if (document.getElementById("historyView").classList.contains("active")) {
                 closeHistoryView();
                 return;
             }
-
-            // Priority 2: Search View
             if (document.getElementById("searchView").classList.contains("active")) {
                 closeSearchView();
                 return;
             }
-
-            // কিছুই খোলা না থাকলে Telegram অ্যাপ বন্ধ
             if (tg?.close) {
                 tg.close();
             }
@@ -945,7 +1083,6 @@
             tg.BackButton.onClick(handleTgBack);
         }
 
-        // Browser-এর (falls outside Telegram) back button handling
         window.addEventListener("popstate", () => {
             if (document.getElementById("historyView").classList.contains("active")) {
                 closeHistoryView();
@@ -959,7 +1096,6 @@
             }
         });
 
-        // initial state push (so popstate fires first time)
         history.pushState(null, "", location.href);
         /* ===================================================== */
 
@@ -1200,10 +1336,13 @@
         function refreshAllCards() {
             document.querySelectorAll("#movieContainer .movie-card").forEach(card => {
                 const id = card.id.replace("card-movieContainer-", "");
+                // Skip if currently loading
+                if (loadingButtons.has(id)) return;
                 updateCardDOM(id);
             });
             document.querySelectorAll("#searchResultsContainer .search-result-card").forEach(card => {
                 const id = card.id.replace("card-searchResultsContainer-", "");
+                if (loadingButtons.has(id)) return;
                 updateCardDOM(id);
             });
         }
@@ -1328,6 +1467,41 @@
                 </div>
             ` : "";
 
+            // If loading, show loading state HTML inside button
+            const isCurrentlyLoading = loadingButtons.has(movie.id);
+            const loadingAdNumber = getAdCount(movie.id) + 1;
+
+            let buttonHTML;
+            if (isUnlocked) {
+                buttonHTML = `
+                    <a href="${movie.link}" target="_blank" data-id="${movie.id}" class="action-btn unlocked download-link">
+                        📥 Download / Stream
+                    </a>
+                `;
+            } else if (isCurrentlyLoading) {
+                buttonHTML = `
+                    <button class="action-btn loading" data-id="${movie.id}" disabled>
+                        <div class="btn-inline-loader">
+                            <div class="btn-spinner"></div>
+                            <span class="btn-loading-text">Loading Ad…</span>
+                            <div class="btn-ad-dots">
+                                ${Array.from({ length: REQUIRED_ADS }).map((_, i) => {
+                                    if (i < loadingAdNumber - 1) return `<span class="done"></span>`;
+                                    if (i === loadingAdNumber - 1) return `<span class="active"></span>`;
+                                    return `<span></span>`;
+                                }).join("")}
+                            </div>
+                        </div>
+                    </button>
+                `;
+            } else {
+                buttonHTML = `
+                    <button class="action-btn ad-btn" data-id="${movie.id}">
+                        🔒 Unlock (${currentAds}/${REQUIRED_ADS})
+                    </button>
+                `;
+            }
+
             return `
                 <div class="poster-container" style="height:${posterHeight};">
                     <span class="movie-badge">${movie.category || 'General'}</span>
@@ -1340,15 +1514,7 @@
                         <span>${movie.quality || 'HD'}</span>
                         <span>👁️ ${movie.views || 0} | 📥 ${movie.downloads || 0}</span>
                     </div>
-                    ${isUnlocked ? `
-                        <a href="${movie.link}" target="_blank" data-id="${movie.id}" class="action-btn unlocked download-link">
-                            📥 Download / Stream
-                        </a>
-                    ` : `
-                        <button class="action-btn ad-btn" data-id="${movie.id}">
-                            🔒 Unlock (${currentAds}/${REQUIRED_ADS})
-                        </button>
-                    `}
+                    ${buttonHTML}
                 </div>
             `;
         }
@@ -1362,6 +1528,9 @@
         }
 
         function updateCardDOM(movieId) {
+            // Skip update if currently loading
+            if (loadingButtons.has(movieId)) return;
+
             ["movieContainer", "searchResultsContainer"].forEach(containerId => {
                 const card = document.getElementById(`card-${containerId}-${movieId}`);
                 const movie = moviesData.find(m => m.id === movieId) || window._lastSearchResults?.find(m => m.id === movieId);
@@ -1375,6 +1544,68 @@
             });
         }
 
+        // Update ALL button instances (main grid + search results)
+        function updateAllButtonsForMovie(movieId) {
+            ["movieContainer", "searchResultsContainer"].forEach(containerId => {
+                const card = document.getElementById(`card-${containerId}-${movieId}`);
+                const movie = moviesData.find(m => m.id === movieId) || window._lastSearchResults?.find(m => m.id === movieId);
+                if (card && movie) {
+                    const currentAds = getAdCount(movieId);
+                    const unlocked = isMovieUnlocked(movieId);
+                    const isSearch = containerId === "searchResultsContainer";
+
+                    // Only replace the button, keep rest of card intact
+                    const infoDiv = card.querySelector(".movie-info");
+                    if (infoDiv) {
+                        const oldBtn = infoDiv.querySelector(".action-btn");
+                        const newBtnHTML = getButtonHTMLOnly(movie, currentAds, unlocked, isSearch);
+                        if (oldBtn) {
+                            const temp = document.createElement("div");
+                            temp.innerHTML = newBtnHTML;
+                            const newBtn = temp.firstElementChild;
+                            oldBtn.replaceWith(newBtn);
+                            attachCardEvents(card, movieId);
+                        }
+                    }
+                }
+            });
+        }
+
+        function getButtonHTMLOnly(movie, currentAds, isUnlocked) {
+            const isCurrentlyLoading = loadingButtons.has(movie.id);
+            const loadingAdNumber = getAdCount(movie.id) + 1;
+
+            if (isUnlocked) {
+                return `
+                    <a href="${movie.link}" target="_blank" data-id="${movie.id}" class="action-btn unlocked download-link">
+                        📥 Download / Stream
+                    </a>
+                `;
+            }
+            if (isCurrentlyLoading) {
+                return `
+                    <button class="action-btn loading" data-id="${movie.id}" disabled>
+                        <div class="btn-inline-loader">
+                            <div class="btn-spinner"></div>
+                            <span class="btn-loading-text">Loading Ad…</span>
+                            <div class="btn-ad-dots">
+                                ${Array.from({ length: REQUIRED_ADS }).map((_, i) => {
+                                    if (i < loadingAdNumber - 1) return `<span class="done"></span>`;
+                                    if (i === loadingAdNumber - 1) return `<span class="active"></span>`;
+                                    return `<span></span>`;
+                                }).join("")}
+                            </div>
+                        </div>
+                    </button>
+                `;
+            }
+            return `
+                <button class="action-btn ad-btn" data-id="${movie.id}">
+                    🔒 Unlock (${currentAds}/${REQUIRED_ADS})
+                </button>
+            `;
+        }
+
         window.addEventListener("scroll", () => {
             if (document.getElementById("searchView").classList.contains("active")) return;
             if (document.getElementById("historyView").classList.contains("active")) return;
@@ -1385,7 +1616,6 @@
         const searchView = document.getElementById("searchView");
         const searchInput = document.getElementById("searchInput");
 
-        // 🔥 SEARCH OPEN/CLOSE (Telegram Back Button সহ)
         function openSearchView() {
             searchView.classList.add("active");
             document.body.style.overflow = "hidden";
@@ -1395,7 +1625,6 @@
         function closeSearchView() {
             searchView.classList.remove("active");
             document.body.style.overflow = "";
-            // History খোলা না থাকলে Back Button লুকাবো
             if (!document.getElementById("historyView").classList.contains("active")) {
                 hideTgBackButton();
             }
@@ -1406,7 +1635,6 @@
         document.getElementById("searchSubmitBtn").addEventListener("click", performSearch);
         searchInput.addEventListener("keypress", (e) => { if (e.key === "Enter") performSearch(); });
 
-        // ===== HISTORY VIEW EVENTS (Telegram Back Button সহ) =====
         const historyView = document.getElementById("historyView");
 
         function openHistoryView() {
@@ -1418,7 +1646,6 @@
         function closeHistoryView() {
             historyView.classList.remove("active");
             document.body.style.overflow = "";
-            // Search খোলা না থাকলে Back Button লুকাবো
             if (!document.getElementById("searchView").classList.contains("active")) {
                 hideTgBackButton();
             }
@@ -1485,7 +1712,38 @@
             }
         }
 
+        /* =====================================================
+           🔥 TOAST NOTIFICATION
+           ===================================================== */
+        const toastEl = document.getElementById("toast");
+        let toastTimeout = null;
+        function showToast(message, type = "info", duration = 2500) {
+            toastEl.textContent = message;
+            toastEl.className = "toast show " + type;
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toastEl.classList.remove("show");
+            }, duration);
+        }
+
+        /* =====================================================
+           🔥 IN-BUTTON LOADING + START AD FUNCTION
+           ===================================================== */
+        function setButtonLoading(movieId, loading) {
+            if (loading) {
+                loadingButtons.add(movieId);
+            } else {
+                loadingButtons.delete(movieId);
+            }
+            // Update all visible instances of this movie's button
+            updateAllButtonsForMovie(movieId);
+        }
+
         function startAd(movieId) {
+            // Prevent double-clicking
+            if (loadingButtons.has(movieId)) return;
+
+            // Case 1: No ads required
             if (REQUIRED_ADS === 0) {
                 const progress = getProgress();
                 progress[movieId] = {
@@ -1495,6 +1753,7 @@
                 };
                 saveProgress(progress);
                 updateCardDOM(movieId);
+                showToast("✅ Content unlocked successfully!", "success");
 
                 const unlockedMovie = moviesData.find(m => m.id === movieId)
                     || window._lastSearchResults?.find(m => m.id === movieId);
@@ -1502,45 +1761,92 @@
                 return;
             }
 
-            if (!ADSGRAM_BLOCK_ID) return alert("Adsgram Block ID not configured!");
-            if (typeof window.Adsgram === "undefined") return alert("Ad SDK is loading...");
+            // Case 2: Adsgram not configured
+            if (!ADSGRAM_BLOCK_ID) {
+                showToast("⚠️ Adsgram Block ID not configured!", "error");
+                return;
+            }
 
-            const AdController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID });
-            AdController.show()
-                .then(async () => {
-                    try {
-                        await updateDoc(doc(db, "movies", movieId), { views: increment(1) });
-                    } catch (e) {
-                        console.warn("Failed to update views:", e);
-                    }
+            // Case 3: Ad SDK not loaded yet
+            if (typeof window.Adsgram === "undefined") {
+                showToast("⏳ Ad SDK is still loading, please wait...", "error");
+                return;
+            }
 
-                    const progress = getProgress();
-                    let entry = progress[movieId];
+            // 🔥 Immediately set button to loading state
+            setButtonLoading(movieId, true);
+            showToast("⏳ Loading ad, please wait…", "info", 2000);
 
-                    if (typeof entry === "number") {
-                        entry = { count: entry, session: SESSION_ID, unlockedAt: Date.now() };
-                    }
+            const nextAdNumber = getAdCount(movieId) + 1;
 
-                    if (!entry || entry.session !== SESSION_ID ||
-                        (Date.now() - (entry.unlockedAt || 0)) >= UNLOCK_VALIDITY_MS) {
-                        entry = { count: 0, session: SESSION_ID, unlockedAt: Date.now() };
-                    }
+            // Small delay so user can SEE the loading state in the button
+            setTimeout(() => {
+                let AdController;
+                try {
+                    AdController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID });
+                } catch (initErr) {
+                    setButtonLoading(movieId, false);
+                    showToast("❌ Failed to initialize ad. Try again.", "error");
+                    return;
+                }
 
-                    entry.count = (entry.count || 0) + 1;
-                    entry.session = SESSION_ID;
-                    entry.unlockedAt = Date.now();
+                AdController.show()
+                    .then(async () => {
+                        // ✅ Ad watched successfully
+                        try {
+                            await updateDoc(doc(db, "movies", movieId), { views: increment(1) });
+                        } catch (e) {
+                            console.warn("Failed to update views:", e);
+                        }
 
-                    progress[movieId] = entry;
-                    saveProgress(progress);
-                    updateCardDOM(movieId);
+                        const progress = getProgress();
+                        let entry = progress[movieId];
 
-                    const unlockedMovie = moviesData.find(m => m.id === movieId)
-                        || window._lastSearchResults?.find(m => m.id === movieId);
-                    if (unlockedMovie) {
-                        addToHistory(unlockedMovie, "watched");
-                    }
-                })
-                .catch(() => alert("You must watch the ad completely!"));
+                        if (typeof entry === "number") {
+                            entry = { count: entry, session: SESSION_ID, unlockedAt: Date.now() };
+                        }
+
+                        if (!entry || entry.session !== SESSION_ID ||
+                            (Date.now() - (entry.unlockedAt || 0)) >= UNLOCK_VALIDITY_MS) {
+                            entry = { count: 0, session: SESSION_ID, unlockedAt: Date.now() };
+                        }
+
+                        entry.count = (entry.count || 0) + 1;
+                        entry.session = SESSION_ID;
+                        entry.unlockedAt = Date.now();
+
+                        progress[movieId] = entry;
+                        saveProgress(progress);
+
+                        // Clear loading state FIRST, then update button
+                        loadingButtons.delete(movieId);
+                        updateCardDOM(movieId);
+                        // Also update search results if visible
+                        updateAllButtonsForMovie(movieId);
+
+                        // Show success message based on remaining ads
+                        if (entry.count >= REQUIRED_ADS) {
+                            showToast("🎉 Unlocked! Content is ready", "success", 3000);
+                        } else {
+                            const remaining = REQUIRED_ADS - entry.count;
+                            showToast(`✅ Ad ${entry.count}/${REQUIRED_ADS} done — ${remaining} more to unlock`, "success", 2800);
+                        }
+
+                        const unlockedMovie = moviesData.find(m => m.id === movieId)
+                            || window._lastSearchResults?.find(m => m.id === movieId);
+                        if (unlockedMovie) {
+                            addToHistory(unlockedMovie, "watched");
+                        }
+                    })
+                    .catch((err) => {
+                        // ❌ Ad failed / skipped
+                        loadingButtons.delete(movieId);
+                        updateCardDOM(movieId);
+                        updateAllButtonsForMovie(movieId);
+                        showToast("⚠️ You must watch the full ad to unlock!", "error", 3000);
+                        console.warn("Ad error:", err);
+                    });
+            }, 600); // 600ms delay to show loading state clearly
         }
 
         async function trackDownload(movieId) {
