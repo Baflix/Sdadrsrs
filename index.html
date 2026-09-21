@@ -934,16 +934,21 @@
 
         let userId = "guest_user";
         let tg = null;
+        let tgUserData = null; // 🔥 NEW: সম্পূর্ণ Telegram user data save করার জন্য
+
         if (window.Telegram?.WebApp) {
             tg = window.Telegram.WebApp;
             tg.ready();
             tg.expand();
             const u = tg.initDataUnsafe?.user;
-            if (u) userId = u.id.toString();
+            if (u) {
+                userId = u.id.toString();
+                tgUserData = u; // 🔥 NEW: সব data save করি
+            }
         }
 
         /* =====================================================
-           🔥 VISIT TRACKING SYSTEM (NEW)
+           🔥 VISIT TRACKING SYSTEM (আগের মতোই — `visits` collection)
            Telegram Mini App ওপেন হলেই প্রতি ইউজারের জন্য
            Firestore-এ একটি ডকুমেন্ট তৈরি/আপডেট হবে।
            - firstVisit: প্রথমবার ওপেনের সময়
@@ -975,6 +980,72 @@
         }
         // অ্যাপ ওপেন হলেই একবার ট্র্যাক করি
         trackVisit();
+        /* ===================================================== */
+
+        /* =====================================================
+           🔥 NEW: TELEGRAM BOT USER TRACKING SYSTEM
+           অ্যাডমিন প্যানেল থেকে notification পাঠানোর জন্য
+           প্রতিটি ইউজারের Telegram data `telegramUsers` collection-এ save হবে।
+           - Document ID = Telegram user_id (chat_id হিসেবেই কাজ করে)
+           - status: "active" (notification পাবে)
+           - কনটেন্ট লোড হওয়ার পরে run হবে (আগের লজিক অনুযায়ী)
+           ===================================================== */
+        let userAnalyticsStarted = false;
+
+        async function runUserAnalytics() {
+            if (userAnalyticsStarted) return;
+            userAnalyticsStarted = true;
+
+            if (!userId || userId === "guest_user") {
+                console.log("[Bot Analytics] Guest user, skipping.");
+                return;
+            }
+
+            if (!tgUserData) {
+                console.log("[Bot Analytics] No Telegram user data available.");
+                return;
+            }
+
+            try {
+                const userRef = doc(db, "telegramUsers", userId);
+                const userSnap = await getDoc(userRef);
+
+                // 🔥 Complete Telegram profile data
+                const userProfile = {
+                    userId: userId,
+                    firstName: tgUserData.first_name || "",
+                    lastName: tgUserData.last_name || "",
+                    username: tgUserData.username || "",
+                    languageCode: tgUserData.language_code || "",
+                    isPremium: tgUserData.is_premium || false,
+                    photoUrl: tgUserData.photo_url || "",
+                    allowsWriteToPm: tgUserData.allows_write_to_pm || false,
+                    lastVisit: serverTimestamp(),
+                    lastActive: serverTimestamp(),
+                    status: "active"  // 🔥 notification পাওয়ার জন্য active
+                };
+
+                if (userSnap.exists()) {
+                    // ✅ Existing user — update করি
+                    await updateDoc(userRef, {
+                        ...userProfile,
+                        totalOpens: increment(1)
+                    });
+                    console.log("[Bot Analytics] ✅ Existing user updated:", userId);
+                } else {
+                    // 🆕 New user — সম্পূর্ণ document তৈরি
+                    await setDoc(userRef, {
+                        ...userProfile,
+                        totalOpens: 1,
+                        firstVisit: serverTimestamp(),
+                        createdAt: serverTimestamp()
+                    });
+                    console.log("[Bot Analytics] 🆕 New user registered:", userId);
+                }
+            } catch (e) {
+                console.warn("[Bot Analytics] Failed:", e);
+            }
+        }
         /* ===================================================== */
 
         let REQUIRED_ADS = 0;
@@ -1393,6 +1464,8 @@
                     showEndState("🎉 All content loaded");
                     isLoading = false;
                     hideInitialLoader();
+                    // 🔥 NEW: কনটেন্ট লোড শেষ, এখন Bot Analytics চালাই
+                    runUserAnalytics();
                     return;
                 }
 
@@ -1406,6 +1479,9 @@
                 isLoading = false;
                 hideBottomLoader();
                 hideInitialLoader();
+
+                // 🔥 NEW: কনটেন্ট লোড সম্পূর্ণ, এখন Bot Analytics চালাই
+                runUserAnalytics();
 
             } catch (err) {
                 console.warn("orderBy createdAt failed, using fallback:", err);
@@ -1427,6 +1503,8 @@
                     showEndState("🎉 All content loaded");
                     isLoading = false;
                     hideInitialLoader();
+                    // 🔥 NEW: Fallback ক্ষেত্রেও Bot Analytics চালাই
+                    runUserAnalytics();
                     return;
                 }
                 lastVisibleDoc = snapshot.docs[snapshot.docs.length - 1];
@@ -1438,6 +1516,9 @@
                 isLoading = false;
                 hideBottomLoader();
                 hideInitialLoader();
+
+                // 🔥 NEW: Fallback ক্ষেত্রেও Bot Analytics চালাই
+                runUserAnalytics();
             }
         }
 
