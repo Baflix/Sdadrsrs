@@ -15,6 +15,9 @@
             box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
         }
         :root {
             --bg: #0f172a;
@@ -32,6 +35,22 @@
             color: var(--text);
             padding: calc(var(--header-height) + 16px) 16px 30px;
             overflow-x: hidden;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* 🔥 GLOBAL LINK PROTECTION */
+        a, a * {
+            -webkit-user-drag: none;
+            user-drag: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+        img {
+            -webkit-user-drag: none;
+            user-drag: none;
+            pointer-events: none;
         }
 
         /* ===================== 🔥 PREMIUM LOADERS START ===================== */
@@ -443,6 +462,10 @@
             min-height: 44px;
             position: relative;
             overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-user-drag: none;
         }
         .action-btn.unlocked {
             background: var(--success);
@@ -552,6 +575,8 @@
             font-size: 15px;
             outline: none;
             min-width: 0;
+            user-select: text;
+            -webkit-user-select: text;
         }
         .search-input:focus {
             border-color: var(--accent);
@@ -752,6 +777,14 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-user-drag: none;
+            transition: 0.2s;
+        }
+        .history-action-btn.unlocked-history {
+            background: var(--success);
         }
         .empty-history {
             text-align: center;
@@ -934,7 +967,7 @@
 
         let userId = "guest_user";
         let tg = null;
-        let tgUserData = null; // 🔥 NEW: সম্পূর্ণ Telegram user data save করার জন্য
+        let tgUserData = null;
 
         if (window.Telegram?.WebApp) {
             tg = window.Telegram.WebApp;
@@ -943,17 +976,93 @@
             const u = tg.initDataUnsafe?.user;
             if (u) {
                 userId = u.id.toString();
-                tgUserData = u; // 🔥 NEW: সব data save করি
+                tgUserData = u;
             }
         }
 
         /* =====================================================
-           🔥 VISIT TRACKING SYSTEM (আগের মতোই — `visits` collection)
-           Telegram Mini App ওপেন হলেই প্রতি ইউজারের জন্য
-           Firestore-এ একটি ডকুমেন্ট তৈরি/আপডেট হবে।
-           - firstVisit: প্রথমবার ওপেনের সময়
-           - lastVisit: সর্বশেষ ওপেনের সময়
-           - totalOpens: কতবার ওপেন করেছে (visit count)
+           🔥 GLOBAL LINK COPY PROTECTION
+           ===================================================== */
+        // Disable right-click / context menu everywhere
+        document.addEventListener("contextmenu", (e) => {
+            const target = e.target;
+            // allow on input fields
+            if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
+            e.preventDefault();
+        });
+
+        // Disable drag start
+        document.addEventListener("dragstart", (e) => {
+            e.preventDefault();
+        });
+
+        // Disable copy event globally except in inputs
+        document.addEventListener("copy", (e) => {
+            const active = document.activeElement;
+            if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) return;
+            e.preventDefault();
+            e.clipboardData?.setData("text/plain", "");
+        });
+
+        // Disable cut too
+        document.addEventListener("cut", (e) => {
+            const active = document.activeElement;
+            if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) return;
+            e.preventDefault();
+        });
+
+        // Disable selectstart globally except inputs
+        document.addEventListener("selectstart", (e) => {
+            const target = e.target;
+            if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
+            // allow inside search input
+            if (target.closest && target.closest(".search-input")) return;
+            e.preventDefault();
+        });
+
+        // Keyboard shortcut protection (Ctrl+C, Ctrl+A, Ctrl+U, F12, Ctrl+Shift+I, Ctrl+S)
+        document.addEventListener("keydown", (e) => {
+            const active = document.activeElement;
+            const isInput = active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA");
+
+            // Ctrl/Cmd + C, A, U, S
+            if ((e.ctrlKey || e.metaKey) && ["c", "a", "u", "s"].includes(e.key.toLowerCase())) {
+                if (isInput && e.key.toLowerCase() === "a") return;
+                if (isInput && e.key.toLowerCase() === "c") return;
+                e.preventDefault();
+                return false;
+            }
+            // F12
+            if (e.key === "F12") { e.preventDefault(); return false; }
+            // Ctrl+Shift+I / J / C
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && ["i", "j", "c"].includes(e.key.toLowerCase())) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Disable long-press context menu on mobile for links and images
+        let longPressTimer = null;
+        document.addEventListener("touchstart", (e) => {
+            const t = e.target;
+            if (t.tagName === "INPUT" || t.tagName === "TEXTAREA") return;
+            longPressTimer = setTimeout(() => {
+                // fire a no-op to prevent native menu
+            }, 500);
+        }, { passive: true });
+        document.addEventListener("touchend", () => {
+            if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+        }, { passive: true });
+        document.addEventListener("touchcancel", () => {
+            if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+        }, { passive: true });
+        document.addEventListener("touchmove", () => {
+            if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+        }, { passive: true });
+        /* ===================================================== */
+
+        /* =====================================================
+           🔥 VISIT TRACKING SYSTEM
            ===================================================== */
         async function trackVisit() {
             if (!userId || userId === "guest_user") return;
@@ -978,17 +1087,11 @@
                 console.warn("Visit tracking failed:", e);
             }
         }
-        // অ্যাপ ওপেন হলেই একবার ট্র্যাক করি
         trackVisit();
         /* ===================================================== */
 
         /* =====================================================
-           🔥 NEW: TELEGRAM BOT USER TRACKING SYSTEM
-           অ্যাডমিন প্যানেল থেকে notification পাঠানোর জন্য
-           প্রতিটি ইউজারের Telegram data `telegramUsers` collection-এ save হবে।
-           - Document ID = Telegram user_id (chat_id হিসেবেই কাজ করে)
-           - status: "active" (notification পাবে)
-           - কনটেন্ট লোড হওয়ার পরে run হবে (আগের লজিক অনুযায়ী)
+           🔥 TELEGRAM BOT USER TRACKING SYSTEM
            ===================================================== */
         let userAnalyticsStarted = false;
 
@@ -996,21 +1099,13 @@
             if (userAnalyticsStarted) return;
             userAnalyticsStarted = true;
 
-            if (!userId || userId === "guest_user") {
-                console.log("[Bot Analytics] Guest user, skipping.");
-                return;
-            }
-
-            if (!tgUserData) {
-                console.log("[Bot Analytics] No Telegram user data available.");
-                return;
-            }
+            if (!userId || userId === "guest_user") return;
+            if (!tgUserData) return;
 
             try {
                 const userRef = doc(db, "telegramUsers", userId);
                 const userSnap = await getDoc(userRef);
 
-                // 🔥 Complete Telegram profile data
                 const userProfile = {
                     userId: userId,
                     firstName: tgUserData.first_name || "",
@@ -1022,25 +1117,21 @@
                     allowsWriteToPm: tgUserData.allows_write_to_pm || false,
                     lastVisit: serverTimestamp(),
                     lastActive: serverTimestamp(),
-                    status: "active"  // 🔥 notification পাওয়ার জন্য active
+                    status: "active"
                 };
 
                 if (userSnap.exists()) {
-                    // ✅ Existing user — update করি
                     await updateDoc(userRef, {
                         ...userProfile,
                         totalOpens: increment(1)
                     });
-                    console.log("[Bot Analytics] ✅ Existing user updated:", userId);
                 } else {
-                    // 🆕 New user — সম্পূর্ণ document তৈরি
                     await setDoc(userRef, {
                         ...userProfile,
                         totalOpens: 1,
                         firstVisit: serverTimestamp(),
                         createdAt: serverTimestamp()
                     });
-                    console.log("[Bot Analytics] 🆕 New user registered:", userId);
                 }
             } catch (e) {
                 console.warn("[Bot Analytics] Failed:", e);
@@ -1057,10 +1148,8 @@
         let hasMore = true;
         const PAGE_LIMIT = 20;
 
-        // Track which buttons are currently in loading state
         const loadingButtons = new Set();
 
-        // ===== Loader DOM refs =====
         const bottomLoader = document.getElementById("bottomLoader");
         const initialLoader = document.getElementById("initialLoader");
         let initialLoaderHidden = false;
@@ -1266,8 +1355,38 @@
                     </div>
                 ` : "";
 
+                // 🔥 চেক করি এই আইটেমটি এখনো আনলক অবস্থায় আছে কিনা
+                const stillUnlocked = isMovieUnlocked(item.id);
+                const currentAds = getAdCount(item.id);
+                const isCurrentlyLoading = loadingButtons.has(item.id);
+
+                let btnHTML;
+                if (stillUnlocked) {
+                    btnHTML = `
+                        <button class="history-action-btn unlocked-history" data-id="${item.id}">
+                            📥 Download / Stream
+                        </button>
+                    `;
+                } else if (isCurrentlyLoading) {
+                    btnHTML = `
+                        <button class="history-action-btn loading" data-id="${item.id}" disabled style="background:linear-gradient(90deg,#0f2a42,#1a4971,#0f2a42);background-size:200% 100%;animation:btnShimmer 1.5s linear infinite;cursor:wait;">
+                            <div class="btn-inline-loader">
+                                <div class="btn-spinner"></div>
+                                <span class="btn-loading-text">Loading Ad…</span>
+                            </div>
+                        </button>
+                    `;
+                } else {
+                    btnHTML = `
+                        <button class="history-action-btn" data-id="${item.id}">
+                            🔒 Unlock (${currentAds}/${REQUIRED_ADS})
+                        </button>
+                    `;
+                }
+
                 const card = document.createElement("div");
                 card.className = "history-card fade-in-card";
+                card.id = `history-card-${item.id}`;
                 card.innerHTML = `
                     <div class="poster-container">
                         <span class="movie-badge">${item.category}</span>
@@ -1283,24 +1402,161 @@
                             ${actionLabel}
                             <span class="history-time">${getTimeAgo(item.timestamp)}</span>
                         </div>
-                        <a href="${item.link}" target="_blank" class="history-action-btn" data-id="${item.id}">
-                            ▶️ Open Again
-                        </a>
+                        ${btnHTML}
                     </div>
                 `;
                 container.appendChild(card);
             });
 
+            // 🔥 প্রতিটি history বাটনে ইভেন্ট
             container.querySelectorAll(".history-action-btn").forEach(btn => {
-                btn.addEventListener("click", () => {
-                    const id = btn.dataset.id;
-                    const movie = history.find(h => h.id === id);
-                    if (movie) {
-                        trackDownload(id);
-                        addToHistory(movie, "downloaded");
-                    }
+                const id = btn.dataset.id;
+
+                // প্রোটেকশন
+                btn.addEventListener("contextmenu", (e) => e.preventDefault());
+                btn.addEventListener("dragstart", (e) => e.preventDefault());
+                btn.addEventListener("copy", (e) => e.preventDefault());
+                btn.addEventListener("selectstart", (e) => e.preventDefault());
+
+                // ক্লিক
+                btn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleHistoryAction(id);
                 });
             });
+        }
+
+        /* =====================================================
+           🔥 HISTORY ACTION — নতুন করে আনলক/ডাউনলোড
+           ===================================================== */
+        function handleHistoryAction(movieId) {
+            // loading থাকলে ignore
+            if (loadingButtons.has(movieId)) return;
+
+            const history = getHistory();
+            const histItem = history.find(h => h.id === movieId);
+            const movie = moviesData.find(m => m.id === movieId)
+                || window._lastSearchResults?.find(m => m.id === movieId)
+                || histItem;
+
+            if (!movie || !movie.link) {
+                showToast("⚠️ Content not available!", "error");
+                return;
+            }
+
+            // যদি এখনো unlocked থাকে (১৫ মিনিটের মধ্যে এবং ad count পূরণ হয়েছে)
+            if (isMovieUnlocked(movieId)) {
+                // সরাসরি ওপেন
+                trackDownload(movieId);
+                addToHistory(movie, "downloaded");
+                openSafeLink(movie.link);
+                return;
+            }
+
+            // অন্যথায় অ্যাড দেখতে হবে
+            if (REQUIRED_ADS === 0) {
+                // কোনো ad লাগে না — সরাসরি unlocked
+                const progress = getProgress();
+                progress[movieId] = {
+                    count: 0,
+                    session: SESSION_ID,
+                    unlockedAt: Date.now()
+                };
+                saveProgress(progress);
+                updateCardDOM(movieId);
+                renderHistory();
+                showToast("✅ Content unlocked successfully!", "success");
+                trackDownload(movieId);
+                addToHistory(movie, "downloaded");
+                openSafeLink(movie.link);
+                return;
+            }
+
+            if (!ADSGRAM_BLOCK_ID) {
+                showToast("⚠️ Adsgram Block ID not configured!", "error");
+                return;
+            }
+
+            if (typeof window.Adsgram === "undefined") {
+                showToast("⏳ Ad SDK is still loading, please wait...", "error");
+                return;
+            }
+
+            // লোডিং শুরু
+            setButtonLoading(movieId, true);
+            renderHistory(); // history UI refresh
+            showToast("⏳ Loading ad, please wait…", "info", 2000);
+
+            setTimeout(() => {
+                let AdController;
+                try {
+                    AdController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID });
+                } catch (initErr) {
+                    setButtonLoading(movieId, false);
+                    renderHistory();
+                    showToast("❌ Failed to initialize ad. Try again.", "error");
+                    return;
+                }
+
+                AdController.show()
+                    .then(async () => {
+                        try {
+                            await updateDoc(doc(db, "movies", movieId), { views: increment(1) });
+                        } catch (e) { console.warn("Failed to update views:", e); }
+
+                        const progress = getProgress();
+                        let entry = progress[movieId];
+
+                        if (typeof entry === "number") {
+                            entry = { count: entry, session: SESSION_ID, unlockedAt: Date.now() };
+                        }
+
+                        if (!entry || entry.session !== SESSION_ID ||
+                            (Date.now() - (entry.unlockedAt || 0)) >= UNLOCK_VALIDITY_MS) {
+                            entry = { count: 0, session: SESSION_ID, unlockedAt: Date.now() };
+                        }
+
+                        entry.count = (entry.count || 0) + 1;
+                        entry.session = SESSION_ID;
+                        entry.unlockedAt = Date.now();
+
+                        progress[movieId] = entry;
+                        saveProgress(progress);
+
+                        loadingButtons.delete(movieId);
+                        updateCardDOM(movieId);
+                        updateAllButtonsForMovie(movieId);
+                        renderHistory();
+
+                        if (entry.count >= REQUIRED_ADS) {
+                            showToast("🎉 Unlocked! Content is ready", "success", 3000);
+                        } else {
+                            const remaining = REQUIRED_ADS - entry.count;
+                            showToast(`✅ Ad ${entry.count}/${REQUIRED_ADS} done — ${remaining} more to unlock`, "success", 2800);
+                        }
+
+                        addToHistory(movie, "watched");
+                    })
+                    .catch((err) => {
+                        loadingButtons.delete(movieId);
+                        updateCardDOM(movieId);
+                        updateAllButtonsForMovie(movieId);
+                        renderHistory();
+                        showToast("⚠️ You must watch the full ad to unlock!", "error", 3000);
+                        console.warn("Ad error:", err);
+                    });
+            }, 600);
+        }
+
+        /* 🔥 Safe open link (Telegram এর ভিতরে খুলবে) */
+        function openSafeLink(url) {
+            if (!url) return;
+            if (window.Telegram?.WebApp?.openLink) {
+                window.Telegram.WebApp.openLink(url);
+            } else {
+                window.open(url, "_blank", "noopener,noreferrer");
+            }
         }
         /* ===================================================== */
 
@@ -1407,7 +1663,6 @@
         function refreshAllCards() {
             document.querySelectorAll("#movieContainer .movie-card").forEach(card => {
                 const id = card.id.replace("card-movieContainer-", "");
-                // Skip if currently loading
                 if (loadingButtons.has(id)) return;
                 updateCardDOM(id);
             });
@@ -1416,6 +1671,9 @@
                 if (loadingButtons.has(id)) return;
                 updateCardDOM(id);
             });
+            if (document.getElementById("historyView")?.classList.contains("active")) {
+                renderHistory();
+            }
         }
 
         setInterval(refreshAllCards, 30 * 1000);
@@ -1464,7 +1722,6 @@
                     showEndState("🎉 All content loaded");
                     isLoading = false;
                     hideInitialLoader();
-                    // 🔥 NEW: কনটেন্ট লোড শেষ, এখন Bot Analytics চালাই
                     runUserAnalytics();
                     return;
                 }
@@ -1479,8 +1736,6 @@
                 isLoading = false;
                 hideBottomLoader();
                 hideInitialLoader();
-
-                // 🔥 NEW: কনটেন্ট লোড সম্পূর্ণ, এখন Bot Analytics চালাই
                 runUserAnalytics();
 
             } catch (err) {
@@ -1503,7 +1758,6 @@
                     showEndState("🎉 All content loaded");
                     isLoading = false;
                     hideInitialLoader();
-                    // 🔥 NEW: Fallback ক্ষেত্রেও Bot Analytics চালাই
                     runUserAnalytics();
                     return;
                 }
@@ -1516,8 +1770,6 @@
                 isLoading = false;
                 hideBottomLoader();
                 hideInitialLoader();
-
-                // 🔥 NEW: Fallback ক্ষেত্রেও Bot Analytics চালাই
                 runUserAnalytics();
             }
         }
@@ -1548,16 +1800,15 @@
                 </div>
             ` : "";
 
-            // If loading, show loading state HTML inside button
             const isCurrentlyLoading = loadingButtons.has(movie.id);
             const loadingAdNumber = getAdCount(movie.id) + 1;
 
             let buttonHTML;
             if (isUnlocked) {
                 buttonHTML = `
-                    <a href="${movie.link}" target="_blank" data-id="${movie.id}" class="action-btn unlocked download-link">
+                    <button data-id="${movie.id}" class="action-btn unlocked download-link">
                         📥 Download / Stream
-                    </a>
+                    </button>
                 `;
             } else if (isCurrentlyLoading) {
                 buttonHTML = `
@@ -1605,11 +1856,41 @@
             if (adBtn) adBtn.addEventListener("click", () => startAd(movieId));
 
             const dl = card.querySelector(".download-link");
-            if (dl) dl.addEventListener("click", () => trackDownload(movieId));
+            if (dl) {
+                // 🔥 সম্পূর্ণ কপি প্রোটেকশন
+                dl.addEventListener("contextmenu", (e) => e.preventDefault());
+                dl.addEventListener("dragstart", (e) => e.preventDefault());
+                dl.addEventListener("copy", (e) => e.preventDefault());
+                dl.addEventListener("selectstart", (e) => e.preventDefault());
+
+                let touchTimer = null;
+                dl.addEventListener("touchstart", () => {
+                    touchTimer = setTimeout(() => {
+                        dl.dataset.longPressBlocked = "1";
+                    }, 400);
+                }, { passive: true });
+                dl.addEventListener("touchend", () => {
+                    if (touchTimer) clearTimeout(touchTimer);
+                });
+                dl.addEventListener("touchmove", () => {
+                    if (touchTimer) clearTimeout(touchTimer);
+                });
+
+                dl.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const movie = moviesData.find(m => m.id === movieId)
+                        || window._lastSearchResults?.find(m => m.id === movieId);
+                    if (movie) {
+                        trackDownload(movieId);
+                        addToHistory(movie, "downloaded");
+                        openSafeLink(movie.link);
+                    }
+                });
+            }
         }
 
         function updateCardDOM(movieId) {
-            // Skip update if currently loading
             if (loadingButtons.has(movieId)) return;
 
             ["movieContainer", "searchResultsContainer"].forEach(containerId => {
@@ -1625,7 +1906,6 @@
             });
         }
 
-        // Update ALL button instances (main grid + search results)
         function updateAllButtonsForMovie(movieId) {
             ["movieContainer", "searchResultsContainer"].forEach(containerId => {
                 const card = document.getElementById(`card-${containerId}-${movieId}`);
@@ -1633,13 +1913,10 @@
                 if (card && movie) {
                     const currentAds = getAdCount(movieId);
                     const unlocked = isMovieUnlocked(movieId);
-                    const isSearch = containerId === "searchResultsContainer";
-
-                    // Only replace the button, keep rest of card intact
                     const infoDiv = card.querySelector(".movie-info");
                     if (infoDiv) {
                         const oldBtn = infoDiv.querySelector(".action-btn");
-                        const newBtnHTML = getButtonHTMLOnly(movie, currentAds, unlocked, isSearch);
+                        const newBtnHTML = getButtonHTMLOnly(movie, currentAds, unlocked);
                         if (oldBtn) {
                             const temp = document.createElement("div");
                             temp.innerHTML = newBtnHTML;
@@ -1658,9 +1935,9 @@
 
             if (isUnlocked) {
                 return `
-                    <a href="${movie.link}" target="_blank" data-id="${movie.id}" class="action-btn unlocked download-link">
+                    <button data-id="${movie.id}" class="action-btn unlocked download-link">
                         📥 Download / Stream
-                    </a>
+                    </button>
                 `;
             }
             if (isCurrentlyLoading) {
@@ -1816,12 +2093,10 @@
             } else {
                 loadingButtons.delete(movieId);
             }
-            // Update all visible instances of this movie's button
             updateAllButtonsForMovie(movieId);
         }
 
         function startAd(movieId) {
-            // Prevent double-clicking
             if (loadingButtons.has(movieId)) return;
 
             // Case 1: No ads required
@@ -1838,29 +2113,27 @@
 
                 const unlockedMovie = moviesData.find(m => m.id === movieId)
                     || window._lastSearchResults?.find(m => m.id === movieId);
-                if (unlockedMovie) addToHistory(unlockedMovie, "watched");
+                if (unlockedMovie) {
+                    addToHistory(unlockedMovie, "watched");
+                }
                 return;
             }
 
-            // Case 2: Adsgram not configured
             if (!ADSGRAM_BLOCK_ID) {
                 showToast("⚠️ Adsgram Block ID not configured!", "error");
                 return;
             }
 
-            // Case 3: Ad SDK not loaded yet
             if (typeof window.Adsgram === "undefined") {
                 showToast("⏳ Ad SDK is still loading, please wait...", "error");
                 return;
             }
 
-            // 🔥 Immediately set button to loading state
             setButtonLoading(movieId, true);
             showToast("⏳ Loading ad, please wait…", "info", 2000);
 
             const nextAdNumber = getAdCount(movieId) + 1;
 
-            // Small delay so user can SEE the loading state in the button
             setTimeout(() => {
                 let AdController;
                 try {
@@ -1873,7 +2146,6 @@
 
                 AdController.show()
                     .then(async () => {
-                        // ✅ Ad watched successfully
                         try {
                             await updateDoc(doc(db, "movies", movieId), { views: increment(1) });
                         } catch (e) {
@@ -1899,13 +2171,13 @@
                         progress[movieId] = entry;
                         saveProgress(progress);
 
-                        // Clear loading state FIRST, then update button
                         loadingButtons.delete(movieId);
                         updateCardDOM(movieId);
-                        // Also update search results if visible
                         updateAllButtonsForMovie(movieId);
+                        if (document.getElementById("historyView")?.classList.contains("active")) {
+                            renderHistory();
+                        }
 
-                        // Show success message based on remaining ads
                         if (entry.count >= REQUIRED_ADS) {
                             showToast("🎉 Unlocked! Content is ready", "success", 3000);
                         } else {
@@ -1920,14 +2192,16 @@
                         }
                     })
                     .catch((err) => {
-                        // ❌ Ad failed / skipped
                         loadingButtons.delete(movieId);
                         updateCardDOM(movieId);
                         updateAllButtonsForMovie(movieId);
+                        if (document.getElementById("historyView")?.classList.contains("active")) {
+                            renderHistory();
+                        }
                         showToast("⚠️ You must watch the full ad to unlock!", "error", 3000);
                         console.warn("Ad error:", err);
                     });
-            }, 600); // 600ms delay to show loading state clearly
+            }, 600);
         }
 
         async function trackDownload(movieId) {
