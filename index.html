@@ -14,10 +14,6 @@
             padding: 0;
             box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-            -webkit-tap-highlight-color: transparent;
         }
         :root {
             --bg: #0f172a;
@@ -35,22 +31,45 @@
             color: var(--text);
             padding: calc(var(--header-height) + 16px) 16px 30px;
             overflow-x: hidden;
-            -webkit-user-select: none;
-            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* 🔥 GLOBAL LINK PROTECTION */
-        a, a * {
-            -webkit-user-drag: none;
-            user-drag: none;
-            -webkit-user-select: none;
-            user-select: none;
-            -webkit-touch-callout: none;
-        }
+        /* 🔥 GLOBAL PROTECTION — শুধু non-interactive এলিমেন্টের জন্য */
         img {
             -webkit-user-drag: none;
             user-drag: none;
             pointer-events: none;
+        }
+        .poster-container,
+        .poster-container *,
+        .movie-title,
+        .movie-meta,
+        .poster-overlay,
+        .poster-overlay *,
+        .movie-badge,
+        .app-title,
+        .section-title,
+        .cat-chip,
+        .history-time,
+        .history-action-badge {
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+        .poster-container,
+        .movie-title,
+        .movie-meta,
+        .movie-badge {
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        /* Input fields এ select চালু থাকবে */
+        input, textarea {
+            user-select: text !important;
+            -webkit-user-select: text !important;
+            -webkit-touch-callout: default !important;
         }
 
         /* ===================== 🔥 PREMIUM LOADERS START ===================== */
@@ -466,6 +485,7 @@
             -webkit-user-select: none;
             -webkit-touch-callout: none;
             -webkit-user-drag: none;
+            -webkit-tap-highlight-color: transparent;
         }
         .action-btn.unlocked {
             background: var(--success);
@@ -575,8 +595,9 @@
             font-size: 15px;
             outline: none;
             min-width: 0;
-            user-select: text;
-            -webkit-user-select: text;
+            user-select: text !important;
+            -webkit-user-select: text !important;
+            -webkit-touch-callout: default !important;
         }
         .search-input:focus {
             border-color: var(--accent);
@@ -981,84 +1002,94 @@
         }
 
         /* =====================================================
-           🔥 GLOBAL LINK COPY PROTECTION
+           🔥 GLOBAL LINK PROTECTION (SAFE VERSION)
+           - input field এ select/copy কাজ করবে
+           - শুধু non-interactive এলিমেন্টে block হবে
            ===================================================== */
-        // Disable right-click / context menu everywhere
+        function isInputElement(el) {
+            if (!el) return false;
+            const tag = el.tagName;
+            return tag === "INPUT" || tag === "TEXTAREA" || el.isContentEditable;
+        }
+
+        // Right-click protection
         document.addEventListener("contextmenu", (e) => {
-            const target = e.target;
-            // allow on input fields
-            if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
+            if (isInputElement(e.target)) return;
             e.preventDefault();
-        });
+        }, false);
 
-        // Disable drag start
+        // Drag protection
         document.addEventListener("dragstart", (e) => {
+            if (isInputElement(e.target)) return;
             e.preventDefault();
-        });
+        }, false);
 
-        // Disable copy event globally except in inputs
+        // Copy protection
         document.addEventListener("copy", (e) => {
-            const active = document.activeElement;
-            if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) return;
+            if (isInputElement(e.target) || isInputElement(document.activeElement)) return;
             e.preventDefault();
-            e.clipboardData?.setData("text/plain", "");
-        });
+            if (e.clipboardData) {
+                e.clipboardData.setData("text/plain", "");
+            }
+        }, false);
 
-        // Disable cut too
+        // Cut protection
         document.addEventListener("cut", (e) => {
-            const active = document.activeElement;
-            if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) return;
+            if (isInputElement(e.target) || isInputElement(document.activeElement)) return;
             e.preventDefault();
-        });
+        }, false);
 
-        // Disable selectstart globally except inputs
+        // Select start protection
         document.addEventListener("selectstart", (e) => {
-            const target = e.target;
-            if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
-            // allow inside search input
-            if (target.closest && target.closest(".search-input")) return;
+            if (isInputElement(e.target)) return;
+            if (e.target.closest && e.target.closest("input, textarea")) return;
             e.preventDefault();
-        });
+        }, false);
 
-        // Keyboard shortcut protection (Ctrl+C, Ctrl+A, Ctrl+U, F12, Ctrl+Shift+I, Ctrl+S)
+        // Keyboard shortcuts
         document.addEventListener("keydown", (e) => {
             const active = document.activeElement;
-            const isInput = active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA");
+            const inInput = isInputElement(active);
 
-            // Ctrl/Cmd + C, A, U, S
-            if ((e.ctrlKey || e.metaKey) && ["c", "a", "u", "s"].includes(e.key.toLowerCase())) {
-                if (isInput && e.key.toLowerCase() === "a") return;
-                if (isInput && e.key.toLowerCase() === "c") return;
-                e.preventDefault();
-                return false;
-            }
+            const key = (e.key || "").toLowerCase();
+            const ctrlOrCmd = e.ctrlKey || e.metaKey;
+
             // F12
-            if (e.key === "F12") { e.preventDefault(); return false; }
-            // Ctrl+Shift+I / J / C
-            if ((e.ctrlKey || e.metaKey) && e.shiftKey && ["i", "j", "c"].includes(e.key.toLowerCase())) {
+            if (e.key === "F12") {
                 e.preventDefault();
                 return false;
             }
-        });
 
-        // Disable long-press context menu on mobile for links and images
-        let longPressTimer = null;
-        document.addEventListener("touchstart", (e) => {
-            const t = e.target;
-            if (t.tagName === "INPUT" || t.tagName === "TEXTAREA") return;
-            longPressTimer = setTimeout(() => {
-                // fire a no-op to prevent native menu
-            }, 500);
-        }, { passive: true });
-        document.addEventListener("touchend", () => {
-            if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
-        }, { passive: true });
-        document.addEventListener("touchcancel", () => {
-            if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
-        }, { passive: true });
-        document.addEventListener("touchmove", () => {
-            if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
-        }, { passive: true });
+            // Ctrl+Shift+I / J / C (DevTools)
+            if (ctrlOrCmd && e.shiftKey && ["i", "j", "c"].includes(key)) {
+                e.preventDefault();
+                return false;
+            }
+
+            // Ctrl+U (view source)
+            if (ctrlOrCmd && key === "u") {
+                e.preventDefault();
+                return false;
+            }
+
+            // Ctrl+S (save page)
+            if (ctrlOrCmd && key === "s") {
+                e.preventDefault();
+                return false;
+            }
+
+            // Ctrl+A (select all) — only block outside inputs
+            if (ctrlOrCmd && key === "a" && !inInput) {
+                e.preventDefault();
+                return false;
+            }
+
+            // Ctrl+C / Ctrl+X — only block outside inputs
+            if (ctrlOrCmd && (key === "c" || key === "x") && !inInput) {
+                e.preventDefault();
+                return false;
+            }
+        }, false);
         /* ===================================================== */
 
         /* =====================================================
@@ -1355,7 +1386,6 @@
                     </div>
                 ` : "";
 
-                // 🔥 চেক করি এই আইটেমটি এখনো আনলক অবস্থায় আছে কিনা
                 const stillUnlocked = isMovieUnlocked(item.id);
                 const currentAds = getAdCount(item.id);
                 const isCurrentlyLoading = loadingButtons.has(item.id);
@@ -1408,17 +1438,14 @@
                 container.appendChild(card);
             });
 
-            // 🔥 প্রতিটি history বাটনে ইভেন্ট
             container.querySelectorAll(".history-action-btn").forEach(btn => {
                 const id = btn.dataset.id;
 
-                // প্রোটেকশন
                 btn.addEventListener("contextmenu", (e) => e.preventDefault());
                 btn.addEventListener("dragstart", (e) => e.preventDefault());
                 btn.addEventListener("copy", (e) => e.preventDefault());
                 btn.addEventListener("selectstart", (e) => e.preventDefault());
 
-                // ক্লিক
                 btn.addEventListener("click", (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -1431,7 +1458,6 @@
            🔥 HISTORY ACTION — নতুন করে আনলক/ডাউনলোড
            ===================================================== */
         function handleHistoryAction(movieId) {
-            // loading থাকলে ignore
             if (loadingButtons.has(movieId)) return;
 
             const history = getHistory();
@@ -1445,18 +1471,14 @@
                 return;
             }
 
-            // যদি এখনো unlocked থাকে (১৫ মিনিটের মধ্যে এবং ad count পূরণ হয়েছে)
             if (isMovieUnlocked(movieId)) {
-                // সরাসরি ওপেন
                 trackDownload(movieId);
                 addToHistory(movie, "downloaded");
                 openSafeLink(movie.link);
                 return;
             }
 
-            // অন্যথায় অ্যাড দেখতে হবে
             if (REQUIRED_ADS === 0) {
-                // কোনো ad লাগে না — সরাসরি unlocked
                 const progress = getProgress();
                 progress[movieId] = {
                     count: 0,
@@ -1483,9 +1505,8 @@
                 return;
             }
 
-            // লোডিং শুরু
             setButtonLoading(movieId, true);
-            renderHistory(); // history UI refresh
+            renderHistory();
             showToast("⏳ Loading ad, please wait…", "info", 2000);
 
             setTimeout(() => {
@@ -1549,7 +1570,7 @@
             }, 600);
         }
 
-        /* 🔥 Safe open link (Telegram এর ভিতরে খুলবে) */
+        /* 🔥 Safe open link */
         function openSafeLink(url) {
             if (!url) return;
             if (window.Telegram?.WebApp?.openLink) {
@@ -1857,7 +1878,6 @@
 
             const dl = card.querySelector(".download-link");
             if (dl) {
-                // 🔥 সম্পূর্ণ কপি প্রোটেকশন
                 dl.addEventListener("contextmenu", (e) => e.preventDefault());
                 dl.addEventListener("dragstart", (e) => e.preventDefault());
                 dl.addEventListener("copy", (e) => e.preventDefault());
@@ -2099,7 +2119,6 @@
         function startAd(movieId) {
             if (loadingButtons.has(movieId)) return;
 
-            // Case 1: No ads required
             if (REQUIRED_ADS === 0) {
                 const progress = getProgress();
                 progress[movieId] = {
@@ -2222,7 +2241,6 @@
         // start
         loadMovies();
 
-        // safety: hide initial loader after 4s max
         setTimeout(hideInitialLoader, 4000);
     </script>
 </body>
