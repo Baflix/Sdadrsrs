@@ -555,6 +555,112 @@
         }
         /* ===================== 🔥 IN-BUTTON LOADING STATE END ===================== */
 
+        /* ===================== 🔥 AD BLOCK MODAL START ===================== */
+        .adblock-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 5000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeInModal 0.3s ease;
+        }
+        .adblock-modal-overlay.active { display: flex; }
+        @keyframes fadeInModal {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .adblock-modal-box {
+            background: linear-gradient(160deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            border-radius: 18px;
+            padding: 26px 22px 22px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 30px rgba(239,68,68,0.25);
+            text-align: center;
+            animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes modalPop {
+            from { transform: scale(0.85); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .adblock-icon {
+            font-size: 46px;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 12px rgba(239,68,68,0.6));
+        }
+        .adblock-title {
+            font-size: 19px;
+            font-weight: 800;
+            color: #f87171;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+        .adblock-desc {
+            font-size: 13.5px;
+            color: #cbd5e1;
+            line-height: 1.7;
+            margin-bottom: 18px;
+            text-align: left;
+        }
+        .adblock-list {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+            background: rgba(0,0,0,0.25);
+            border-radius: 10px;
+            padding: 12px 14px;
+            border-left: 3px solid #ef4444;
+        }
+        .adblock-list li {
+            font-size: 12.5px;
+            color: #94a3b8;
+            padding: 4px 0;
+            line-height: 1.5;
+        }
+        .adblock-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 6px;
+        }
+        .adblock-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+        }
+        .adblock-btn.retry {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 4px 14px rgba(0,136,204,0.4);
+        }
+        .adblock-btn.retry:hover { background: #0099e6; }
+        .adblock-btn.close {
+            background: rgba(255,255,255,0.06);
+            color: #94a3b8;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .adblock-btn.close:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+        .action-btn.blocked {
+            background: linear-gradient(90deg, #3b0f0f, #7f1d1d, #3b0f0f);
+            background-size: 200% 100%;
+            animation: btnShimmer 2s linear infinite;
+            color: #fca5a5;
+            cursor: not-allowed;
+            border: 1px solid rgba(239,68,68,0.35);
+        }
+        /* ===================== 🔥 AD BLOCK MODAL END ===================== */
+
         /* ===== SEARCH OVERLAY ===== */
         #searchView {
             position: fixed;
@@ -807,6 +913,13 @@
         .history-action-btn.unlocked-history {
             background: var(--success);
         }
+        .history-action-btn.blocked {
+            background: linear-gradient(90deg, #3b0f0f, #7f1d1d, #3b0f0f);
+            background-size: 200% 100%;
+            animation: btnShimmer 2s linear infinite;
+            color: #fca5a5;
+            border: 1px solid rgba(239,68,68,0.35);
+        }
         .empty-history {
             text-align: center;
             color: var(--muted);
@@ -948,6 +1061,28 @@
         </div>
     </div>
 
+    <!-- 🔥 AD BLOCK WARNING MODAL -->
+    <div id="adBlockModal" class="adblock-modal-overlay">
+        <div class="adblock-modal-box">
+            <div class="adblock-icon">🚫</div>
+            <div class="adblock-title">Ad Blocker Detected!</div>
+            <div class="adblock-desc">
+                আপনি <b>Private DNS</b> বা <b>Ad Blocker</b> ব্যবহার করছেন।<br><br>
+                ভিডিও আনলক বা ডাউনলোড করতে হলে অনুগ্রহ করে:
+                <ul class="adblock-list">
+                    <li>📱 Settings → Network → Private DNS → <b>Off / Automatic</b></li>
+                    <li>🛡️ Ad Blocker App বন্ধ করুন</li>
+                    <li>🌐 Browser-এর Ad Block এক্সটেনশন অফ করুন</li>
+                </ul>
+                এরপর <b>"Retry"</b> বাটনে ক্লিক করুন।
+            </div>
+            <div class="adblock-actions">
+                <button class="adblock-btn retry" id="adBlockRetryBtn">🔄 Retry</button>
+                <button class="adblock-btn close" id="adBlockCloseBtn">✕ Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 🔥 TOAST NOTIFICATION -->
     <div class="toast" id="toast"></div>
 
@@ -1003,8 +1138,6 @@
 
         /* =====================================================
            🔥 GLOBAL LINK PROTECTION (SAFE VERSION)
-           - input field এ select/copy কাজ করবে
-           - শুধু non-interactive এলিমেন্টে block হবে
            ===================================================== */
         function isInputElement(el) {
             if (!el) return false;
@@ -1012,19 +1145,16 @@
             return tag === "INPUT" || tag === "TEXTAREA" || el.isContentEditable;
         }
 
-        // Right-click protection
         document.addEventListener("contextmenu", (e) => {
             if (isInputElement(e.target)) return;
             e.preventDefault();
         }, false);
 
-        // Drag protection
         document.addEventListener("dragstart", (e) => {
             if (isInputElement(e.target)) return;
             e.preventDefault();
         }, false);
 
-        // Copy protection
         document.addEventListener("copy", (e) => {
             if (isInputElement(e.target) || isInputElement(document.activeElement)) return;
             e.preventDefault();
@@ -1033,20 +1163,17 @@
             }
         }, false);
 
-        // Cut protection
         document.addEventListener("cut", (e) => {
             if (isInputElement(e.target) || isInputElement(document.activeElement)) return;
             e.preventDefault();
         }, false);
 
-        // Select start protection
         document.addEventListener("selectstart", (e) => {
             if (isInputElement(e.target)) return;
             if (e.target.closest && e.target.closest("input, textarea")) return;
             e.preventDefault();
         }, false);
 
-        // Keyboard shortcuts
         document.addEventListener("keydown", (e) => {
             const active = document.activeElement;
             const inInput = isInputElement(active);
@@ -1054,37 +1181,31 @@
             const key = (e.key || "").toLowerCase();
             const ctrlOrCmd = e.ctrlKey || e.metaKey;
 
-            // F12
             if (e.key === "F12") {
                 e.preventDefault();
                 return false;
             }
 
-            // Ctrl+Shift+I / J / C (DevTools)
             if (ctrlOrCmd && e.shiftKey && ["i", "j", "c"].includes(key)) {
                 e.preventDefault();
                 return false;
             }
 
-            // Ctrl+U (view source)
             if (ctrlOrCmd && key === "u") {
                 e.preventDefault();
                 return false;
             }
 
-            // Ctrl+S (save page)
             if (ctrlOrCmd && key === "s") {
                 e.preventDefault();
                 return false;
             }
 
-            // Ctrl+A (select all) — only block outside inputs
             if (ctrlOrCmd && key === "a" && !inInput) {
                 e.preventDefault();
                 return false;
             }
 
-            // Ctrl+C / Ctrl+X — only block outside inputs
             if (ctrlOrCmd && (key === "c" || key === "x") && !inInput) {
                 e.preventDefault();
                 return false;
@@ -1168,6 +1289,102 @@
                 console.warn("[Bot Analytics] Failed:", e);
             }
         }
+        /* ===================================================== */
+
+        /* =====================================================
+           🔥 AD BLOCK DETECTION SYSTEM (Private DNS / Ad Blocker)
+           ===================================================== */
+        let isAdBlocked = false;
+        let adBlockCheckInProgress = false;
+
+        function detectAdBlocker() {
+            return new Promise((resolve) => {
+                const testScript = document.createElement("script");
+                testScript.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js";
+                testScript.async = true;
+                testScript.onload = () => {
+                    const blocked = typeof window.adsbygoogle === "undefined";
+                    testScript.remove();
+                    resolve(blocked);
+                };
+                testScript.onerror = () => {
+                    testScript.remove();
+                    resolve(true);
+                };
+                document.head.appendChild(testScript);
+
+                setTimeout(() => {
+                    if (testScript.parentNode) {
+                        testScript.remove();
+                        resolve(true);
+                    }
+                }, 3000);
+            });
+        }
+
+        async function updateAdBlockStatus(showModal = false) {
+            if (adBlockCheckInProgress) return;
+            adBlockCheckInProgress = true;
+
+            try {
+                const blocked = await detectAdBlocker();
+                const changed = (blocked !== isAdBlocked);
+                isAdBlocked = blocked;
+
+                if (changed) {
+                    refreshAllCards();
+                    if (document.getElementById("historyView")?.classList.contains("active")) {
+                        renderHistory();
+                    }
+                }
+
+                if (isAdBlocked && showModal) {
+                    showAdBlockModal();
+                }
+            } catch (e) {
+                console.warn("Ad block detection error:", e);
+            } finally {
+                adBlockCheckInProgress = false;
+            }
+        }
+
+        function showAdBlockModal() {
+            document.getElementById("adBlockModal").classList.add("active");
+        }
+
+        function hideAdBlockModal() {
+            document.getElementById("adBlockModal").classList.remove("active");
+        }
+
+        document.getElementById("adBlockRetryBtn").addEventListener("click", async () => {
+            const btn = document.getElementById("adBlockRetryBtn");
+            btn.textContent = "⏳ Checking…";
+            btn.disabled = true;
+
+            await updateAdBlockStatus(false);
+
+            btn.textContent = "🔄 Retry";
+            btn.disabled = false;
+
+            if (!isAdBlocked) {
+                hideAdBlockModal();
+                showToast("✅ Ad Blocker removed! You can now unlock videos.", "success", 3000);
+            } else {
+                showToast("❌ Ad Blocker still active. Please disable it.", "error", 3000);
+            }
+        });
+
+        document.getElementById("adBlockCloseBtn").addEventListener("click", hideAdBlockModal);
+
+        setInterval(() => updateAdBlockStatus(false), 30 * 1000);
+
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
+                updateAdBlockStatus(false);
+            }
+        });
+
+        updateAdBlockStatus(true);
         /* ===================================================== */
 
         let REQUIRED_ADS = 0;
@@ -1391,7 +1608,13 @@
                 const isCurrentlyLoading = loadingButtons.has(item.id);
 
                 let btnHTML;
-                if (stillUnlocked) {
+                if (isAdBlocked && !stillUnlocked) {
+                    btnHTML = `
+                        <button class="history-action-btn blocked" data-id="${item.id}">
+                            🚫 Ad Blocker Detected — Tap to Fix
+                        </button>
+                    `;
+                } else if (stillUnlocked) {
                     btnHTML = `
                         <button class="history-action-btn unlocked-history" data-id="${item.id}">
                             📥 Download / Stream
@@ -1449,6 +1672,10 @@
                 btn.addEventListener("click", (e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    if (btn.classList.contains("blocked")) {
+                        showAdBlockModal();
+                        return;
+                    }
                     handleHistoryAction(id);
                 });
             });
@@ -1459,6 +1686,13 @@
            ===================================================== */
         function handleHistoryAction(movieId) {
             if (loadingButtons.has(movieId)) return;
+
+            // 🔥 AD BLOCK CHECK
+            if (isAdBlocked && !isMovieUnlocked(movieId)) {
+                showAdBlockModal();
+                showToast("🚫 Ad Blocker detected! Please disable it first.", "error", 3000);
+                return;
+            }
 
             const history = getHistory();
             const histItem = history.find(h => h.id === movieId);
@@ -1825,7 +2059,13 @@
             const loadingAdNumber = getAdCount(movie.id) + 1;
 
             let buttonHTML;
-            if (isUnlocked) {
+            if (isAdBlocked && !isUnlocked) {
+                buttonHTML = `
+                    <button class="action-btn blocked" data-id="${movie.id}">
+                        🚫 Ad Blocker Detected — Tap to Fix
+                    </button>
+                `;
+            } else if (isUnlocked) {
                 buttonHTML = `
                     <button data-id="${movie.id}" class="action-btn unlocked download-link">
                         📥 Download / Stream
@@ -1873,6 +2113,16 @@
         }
 
         function attachCardEvents(card, movieId) {
+            // 🔥 Blocked button handler
+            const blockedBtn = card.querySelector(".action-btn.blocked");
+            if (blockedBtn) {
+                blockedBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showAdBlockModal();
+                });
+            }
+
             const adBtn = card.querySelector(".ad-btn");
             if (adBtn) adBtn.addEventListener("click", () => startAd(movieId));
 
@@ -1953,6 +2203,13 @@
             const isCurrentlyLoading = loadingButtons.has(movie.id);
             const loadingAdNumber = getAdCount(movie.id) + 1;
 
+            if (isAdBlocked && !isUnlocked) {
+                return `
+                    <button class="action-btn blocked" data-id="${movie.id}">
+                        🚫 Ad Blocker Detected — Tap to Fix
+                    </button>
+                `;
+            }
             if (isUnlocked) {
                 return `
                     <button data-id="${movie.id}" class="action-btn unlocked download-link">
@@ -2118,6 +2375,13 @@
 
         function startAd(movieId) {
             if (loadingButtons.has(movieId)) return;
+
+            // 🔥 AD BLOCK CHECK
+            if (isAdBlocked) {
+                showAdBlockModal();
+                showToast("🚫 Ad Blocker detected! Please disable it first.", "error", 3000);
+                return;
+            }
 
             if (REQUIRED_ADS === 0) {
                 const progress = getProgress();
