@@ -2149,6 +2149,13 @@
                 dl.addEventListener("click", (e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    
+                    // 🔥 FIX: অ্যাড না দেখে বা আনলক না করে ডাউনলোড ক্লিক করলে ব্লক করুন
+                    if (!isMovieUnlocked(movieId)) {
+                        showToast("⚠️ Please unlock the video first by watching ads!", "error", 3000);
+                        return; 
+                    }
+
                     const movie = moviesData.find(m => m.id === movieId)
                         || window._lastSearchResults?.find(m => m.id === movieId);
                     if (movie) {
