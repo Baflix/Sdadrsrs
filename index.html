@@ -1990,7 +1990,6 @@
 </head>
 <body>
 
-    <!-- INITIAL LOADER -->
     <div id="initialLoader">
         <div class="brand-loader-title">TG MASTER</div>
         <div class="orbit-loader">
@@ -2010,7 +2009,6 @@
         </div>
     </header>
 
-    <!-- TAB VIEW: HOME -->
     <div id="homeTab" class="tab-view active">
         <div class="admin-tips-container" id="adminTipsContainer">
             <div class="admin-tips-card">
@@ -2043,7 +2041,6 @@
         </div>
     </div>
 
-    <!-- TAB VIEW: REFERRAL -->
     <div id="referralTab" class="tab-view">
         <div class="referral-tips-container" id="referralTipsContainer">
             <div class="referral-tips-card">
@@ -2091,7 +2088,6 @@
         </div>
     </div>
 
-    <!-- TAB VIEW: PREMIUM -->
     <div id="premiumTab" class="tab-view">
         <div class="premium-title-large">
             <span class="crown">👑</span>
@@ -2100,7 +2096,6 @@
         <div id="premiumContentContainer"></div>
     </div>
 
-    <!-- BOTTOM NAV -->
     <nav class="bottom-nav" id="bottomNav">
         <button class="nav-tab active" data-tab="home" id="navHomeBtn">
             <span class="nav-icon">🏠</span>
@@ -2119,7 +2114,6 @@
         </button>
     </nav>
 
-    <!-- SEARCH VIEW -->
     <div id="searchView">
         <div class="search-header">
             <button class="close-search" id="closeSearchBtn">✕</button>
@@ -2134,7 +2128,6 @@
         </div>
     </div>
 
-    <!-- HISTORY VIEW -->
     <div id="historyView">
         <div class="history-header">
             <button class="close-history" id="closeHistoryBtn">✕</button>
@@ -2152,7 +2145,6 @@
         </div>
     </div>
 
-    <!-- AD BLOCK MODAL -->
     <div id="adBlockModal" class="adblock-modal-overlay">
         <div class="adblock-modal-box">
             <div class="adblock-icon">🚫</div>
@@ -2173,7 +2165,6 @@
         </div>
     </div>
 
-    <!-- PREMIUM UNLOCK MODAL -->
     <div class="premium-modal-overlay" id="premiumModal">
         <div class="premium-modal-box">
             <div class="premium-modal-icon">👑</div>
@@ -2189,10 +2180,7 @@
         </div>
     </div>
 
-    <!-- TOAST -->
     <div class="toast" id="toast"></div>
-
-    <!-- CONFETTI -->
     <div class="confetti-container" id="confettiContainer"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
@@ -2220,10 +2208,14 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        /* =====================================================
+           ✅ CONSTANTS
+           ===================================================== */
         const UNLOCK_VALIDITY_MINUTES = 15;
         const UNLOCK_VALIDITY_MS = UNLOCK_VALIDITY_MINUTES * 60 * 1000;
         const SESSION_STORAGE_KEY = "tgmaster_session_id";
         const BOT_LINK = "https://t.me/TGmasterTVbot";
+        const MINIAPP_DIRECT_LINK = "https://t.me/TGmasterTVbot/TG_MASTER";
         const MIN_ACTIVITY_MS = 5000;
         const REFERRAL_VERIFY_KEY = "tgmaster_verified_referrals";
 
@@ -2234,13 +2226,66 @@
         }
 
         /* =====================================================
-           TELEGRAM USER DETECTION
+           ✅ TELEGRAM USER DETECTION - TRIPLE FALLBACK
            ===================================================== */
         let userId = "guest_user";
         let tg = null;
         let tgUserData = null;
         let startParam = null;
         let IS_TELEGRAM_ENV = false;
+
+        function extractStartParam() {
+            let param = null;
+
+            try {
+                param = tg?.initDataUnsafe?.start_param || null;
+            } catch(e) {}
+            if (param) {
+                console.log("🎯 [Param] Found in initDataUnsafe.start_param:", param);
+                return param;
+            }
+
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                param = urlParams.get("startapp") 
+                     || urlParams.get("start_param") 
+                     || urlParams.get("start") 
+                     || null;
+            } catch(e) {}
+            if (param) {
+                console.log("🎯 [Param] Found in URL query:", param);
+                return param;
+            }
+
+            try {
+                if (window.location.hash && window.location.hash.length > 1) {
+                    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+                    param = hashParams.get("startapp") 
+                         || hashParams.get("start_param") 
+                         || hashParams.get("start") 
+                         || null;
+                }
+            } catch(e) {}
+            if (param) {
+                console.log("🎯 [Param] Found in URL hash:", param);
+                return param;
+            }
+
+            try {
+                if (tg?.initData) {
+                    const initParams = new URLSearchParams(tg.initData);
+                    param = initParams.get("start_param") 
+                         || initParams.get("startapp") 
+                         || null;
+                }
+            } catch(e) {}
+            if (param) {
+                console.log("🎯 [Param] Found in raw initData:", param);
+                return param;
+            }
+
+            return null;
+        }
 
         function detectAndInitUser() {
             if (!window.Telegram || !window.Telegram.WebApp) return false;
@@ -2258,9 +2303,10 @@
             if (u && u.id && hasRealInitData) {
                 userId = u.id.toString();
                 tgUserData = u;
-                startParam = tg.initDataUnsafe?.start_param || null;
+                startParam = extractStartParam();
                 IS_TELEGRAM_ENV = true;
-                console.log("✅ [TG] User:", userId, u.first_name, "| start_param:", startParam);
+                console.log("✅ [TG] User:", userId, u.first_name);
+                console.log("🔗 [TG] Start param:", startParam);
                 return true;
             }
             return false;
@@ -2311,24 +2357,17 @@
             setTimeout(runStartupSystems, 300);
         }
 
-        // ✅ IMPROVED: runStartupSystems with proper checks
         function runStartupSystems() {
             console.log("🚀 [Startup] Running all systems...");
             
             const isRealUser = userId && userId !== "guest_user" && /^\d+$/.test(userId);
             
-            // Start tips listener
             startTipsListener();
-            
-            // Load movies (this also calls runUserAnalytics internally)
             loadMovies();
             
-            // Init user-specific systems
             if (isRealUser) {
                 initReferralSystem();
                 initPremiumSystem();
-                
-                // Run user analytics
                 setTimeout(runUserAnalytics, 100);
             }
         }
@@ -2465,7 +2504,7 @@
         }
 
         /* =====================================================
-           REFERRAL SYSTEM
+           ✅ REFERRAL SYSTEM
            ===================================================== */
         let referralData = {
             code: "",
@@ -2497,22 +2536,38 @@
         }
 
         function detectReferralFromStartParam() {
-            if (!startParam || !startParam.startsWith("ref_")) {
-                console.log("ℹ️ [Referral] No referral param");
+            console.log("🔍 [Referral Detect] startParam:", startParam);
+            
+            if (!startParam) {
+                console.log("ℹ️ [Referral] No referral param found");
                 return;
             }
 
-            const referrerId = startParam.substring(4).trim();
+            let referrerId = "";
             
-            console.log("🎁 [Referral] Detected:", referrerId);
+            if (startParam.startsWith("ref_")) {
+                referrerId = startParam.substring(4).trim();
+            } else if (startParam.startsWith("ref-")) {
+                referrerId = startParam.substring(4).trim();
+            } else if (/^\d+$/.test(startParam)) {
+                referrerId = startParam.trim();
+            } else {
+                console.warn("⚠️ [Referral] Unknown param format:", startParam);
+                return;
+            }
             
-            if (!referrerId) return;
+            console.log("🎁 [Referral] Extracted referrerId:", referrerId);
+            
+            if (!referrerId) {
+                console.warn("⚠️ [Referral] Empty referrerId");
+                return;
+            }
             if (referrerId === userId) {
                 console.warn("⚠️ [Referral] Self-referral blocked");
                 return;
             }
             if (!/^\d+$/.test(referrerId)) {
-                console.warn("⚠️ [Referral] Invalid referrer format");
+                console.warn("⚠️ [Referral] Invalid referrer format (not numeric)");
                 return;
             }
             if (!userId || userId === "guest_user" || !/^\d+$/.test(userId)) {
@@ -2523,7 +2578,7 @@
             try {
                 const verifiedSet = JSON.parse(sessionStorage.getItem(REFERRAL_VERIFY_KEY) || "[]");
                 if (verifiedSet.includes(referrerId)) {
-                    console.log("ℹ️ [Referral] Already verified this session");
+                    console.log("ℹ️ [Referral] Already verified this referrer in this session");
                     return;
                 }
             } catch (e) {}
@@ -2531,6 +2586,7 @@
             pendingReferralId = referrerId;
             userActivityStartTime = Date.now();
             
+            console.log("⏱️ [Referral] Will verify after", MIN_ACTIVITY_MS, "ms");
             setTimeout(verifyAndProcessReferral, MIN_ACTIVITY_MS + 500);
         }
 
@@ -2551,6 +2607,13 @@
             await processVerifiedReferral(pendingReferralId);
         }
 
+        /**
+         * ✅ আপডেটেড লজিক:
+         * - নতুন ইউজার → রেফার হবে
+         * - পুরনো ইউজার (আগে refer হয়নি) → রেফার হবে
+         * - আগে refer হয়ে থাকলে → আর রেফার হবে না
+         * - Referrer-এর count +1 বাড়বে
+         */
         async function processVerifiedReferral(referrerId) {
             if (!referrerId || referralProcessing) return;
             referralProcessing = true;
@@ -2558,12 +2621,20 @@
             try {
                 console.log("🎁 [Referral] Processing:", referrerId, "←", userId);
 
+                if (referrerId === userId) {
+                    console.warn("⚠️ [Referral] Self-referral blocked");
+                    referralProcessing = false;
+                    return;
+                }
+
                 const newUserRef = doc(db, "telegramUsers", userId);
                 const newUserSnap = await getDoc(newUserRef);
                 const newUserData = newUserSnap.exists() ? newUserSnap.data() : {};
 
-                if (newUserData.referredBy) {
-                    console.log("ℹ️ [Referral] Already referred");
+                // ✅ CRITICAL: আগে refer হয়েছিল কিনা চেক
+                if (newUserData.referredBy && newUserData.referredBy !== "" && newUserData.referredBy !== null) {
+                    console.log("ℹ️ [Referral] User already referred by:", newUserData.referredBy);
+                    console.log("ℹ️ [Referral] Skipping — user can only be referred ONCE");
                     referralProcessing = false;
                     return;
                 }
@@ -2572,27 +2643,32 @@
                 const referrerSnap = await getDoc(referrerRef);
                 
                 if (!referrerSnap.exists()) {
-                    console.warn("⚠️ [Referral] Referrer not found");
+                    console.warn("⚠️ [Referral] Referrer not found:", referrerId);
                     referralProcessing = false;
                     return;
                 }
 
                 const referrerData = referrerSnap.data();
-                const newUserName = `${tgUserData?.first_name || ""} ${tgUserData?.last_name || ""}`.trim() || "User";
-                const newUserUsername = tgUserData?.username || "";
-                const newUserPhotoUrl = tgUserData?.photo_url || "";
+                const newUserName = `${tgUserData?.first_name || ""} ${tgUserData?.last_name || ""}`.trim() 
+                    || newUserData.firstName 
+                    || "User";
+                const newUserUsername = tgUserData?.username || newUserData.username || "";
+                const newUserPhotoUrl = tgUserData?.photo_url || newUserData.photoUrl || "";
 
-                await updateDoc(newUserRef, {
+                // ✅ নতুন/পুরনো ইউজারকে refer হিসেবে MARK করুন (একবারই)
+                await setDoc(newUserRef, {
                     referredBy: referrerId,
                     referredAt: serverTimestamp(),
                     referralVerified: true,
                     activityVerifiedAt: serverTimestamp()
-                });
+                }, { merge: true });
 
+                // ✅ Referrer-এর count +1 বাড়ান
                 await updateDoc(referrerRef, {
                     referralCount: increment(1)
                 });
 
+                // ✅ Referral Event log
                 await addDoc(collection(db, "referralEvents"), {
                     referrerId: referrerId,
                     referrerName: `${referrerData.firstName || ""} ${referrerData.lastName || ""}`.trim(),
@@ -2600,6 +2676,8 @@
                     newUserName: newUserName,
                     newUserUsername: newUserUsername,
                     newUserPhotoUrl: newUserPhotoUrl,
+                    countAdded: 1,
+                    isNewUser: !newUserSnap.exists(),
                     verified: true,
                     verifiedAt: serverTimestamp(),
                     timestamp: serverTimestamp(),
@@ -2608,12 +2686,14 @@
 
                 try {
                     const verifiedSet = JSON.parse(sessionStorage.getItem(REFERRAL_VERIFY_KEY) || "[]");
-                    verifiedSet.push(referrerId);
-                    sessionStorage.setItem(REFERRAL_VERIFY_KEY, JSON.stringify(verifiedSet));
+                    if (!verifiedSet.includes(referrerId)) {
+                        verifiedSet.push(referrerId);
+                        sessionStorage.setItem(REFERRAL_VERIFY_KEY, JSON.stringify(verifiedSet));
+                    }
                 } catch (e) {}
 
                 showToast("🎉 Welcome! Referral activated.", "success", 4000);
-                console.log("✅ [Referral] Complete!");
+                console.log("✅ [Referral] Complete! Count +1 for referrer", referrerId);
 
             } catch (e) {
                 console.error("❌ [Referral] Error:", e);
@@ -2951,7 +3031,8 @@
             if (coinsEl) coinsEl.textContent = referralData.coins;
 
             if (userId && userId !== "guest_user" && /^\d+$/.test(userId)) {
-                currentReferralLink = `${BOT_LINK}?start=ref_${userId}`;
+                currentReferralLink = `${MINIAPP_DIRECT_LINK}?startapp=ref_${userId}`;
+                console.log("🎁 [Referral Link]:", currentReferralLink);
             } else {
                 currentReferralLink = "";
             }
@@ -3082,14 +3163,20 @@
                 showToast("⚠️ Open in Telegram", "error", 3000);
                 return;
             }
-            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(currentReferralLink)}&text=${encodeURIComponent("🎬 TG MASTER এ যোগ দিন! প্রিমিয়াম কন্টেন্ট সবার আগে দেখুন!")}`;
-            if (window.Telegram?.WebApp?.openTelegramLink) {
-                try { window.Telegram.WebApp.openTelegramLink(shareUrl); }
-                catch(e) { window.open(shareUrl, "_blank"); }
-            } else if (window.Telegram?.WebApp?.openLink) {
-                try { window.Telegram.WebApp.openLink(shareUrl); }
-                catch(e) { window.open(shareUrl, "_blank"); }
-            } else window.open(shareUrl, "_blank");
+            const shareText = "🎬 TG MASTER এ যোগ দিন! প্রিমিয়াম কন্টেন্ট সবার আগে দেখুন!";
+            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(currentReferralLink)}&text=${encodeURIComponent(shareText)}`;
+            
+            try {
+                if (window.Telegram?.WebApp?.openTelegramLink) {
+                    window.Telegram.WebApp.openTelegramLink(shareUrl);
+                } else if (window.Telegram?.WebApp?.openLink) {
+                    window.Telegram.WebApp.openLink(shareUrl);
+                } else {
+                    window.open(shareUrl, "_blank");
+                }
+            } catch(e) {
+                window.open(shareUrl, "_blank");
+            }
         }
 
         async function claimMilestone(milestoneId, coins) {
@@ -3750,35 +3837,29 @@
             try { tg.BackButton.hide(); } catch(e) {}
         }
 
-        // ✅ IMPROVED: handleTgBack with all modals
         function handleTgBack() {
-            // 1. Close Premium Modal if open
             const premiumModal = document.getElementById("premiumModal");
             if (premiumModal && premiumModal.classList.contains("active")) { 
                 closePremiumModal(); 
                 return; 
             }
             
-            // 2. Close Ad Block Modal if open
             const adBlockModal = document.getElementById("adBlockModal");
             if (adBlockModal && adBlockModal.classList.contains("active")) {
                 hideAdBlockModal();
                 return;
             }
             
-            // 3. Close History View if open
             if (document.getElementById("historyView").classList.contains("active")) { 
                 closeHistoryView(); 
                 return; 
             }
             
-            // 4. Close Search View if open
             if (document.getElementById("searchView").classList.contains("active")) { 
                 closeSearchView(); 
                 return; 
             }
             
-            // 5. If on Referral or Premium tab → go to Home
             const referralTab = document.getElementById("referralTab");
             const premiumTab = document.getElementById("premiumTab");
             
@@ -3787,16 +3868,13 @@
                 return;
             }
             
-            // 6. Close app
             if (tg?.close) tg.close();
         }
         if (tg?.BackButton) {
             try { tg.BackButton.onClick(handleTgBack); } catch(e) {}
         }
 
-        // ✅ IMPROVED: popstate with all modals
         window.addEventListener("popstate", () => {
-            // Premium modal
             const premiumModal = document.getElementById("premiumModal");
             if (premiumModal?.classList.contains("active")) {
                 closePremiumModal();
@@ -3804,7 +3882,6 @@
                 return;
             }
             
-            // Ad Block modal
             const adBlockModal = document.getElementById("adBlockModal");
             if (adBlockModal && adBlockModal.classList.contains("active")) {
                 hideAdBlockModal();
@@ -3812,21 +3889,18 @@
                 return;
             }
             
-            // History view
             if (document.getElementById("historyView").classList.contains("active")) {
                 closeHistoryView();
                 history.pushState(null, "", location.href);
                 return;
             }
             
-            // Search view
             if (document.getElementById("searchView").classList.contains("active")) {
                 closeSearchView();
                 history.pushState(null, "", location.href);
                 return;
             }
             
-            // Referral/Premium tab
             const referralTab = document.getElementById("referralTab");
             const premiumTab = document.getElementById("premiumTab");
             
@@ -4569,6 +4643,7 @@
         console.log("✅ [TG MASTER] User Panel loaded successfully!");
         console.log("📱 User ID:", userId);
         console.log("🔗 Start Param:", startParam);
+        console.log("🎁 Referral Link Format:", MINIAPP_DIRECT_LINK + "?startapp=ref_" + userId);
     </script>
 </body>
 </html>
