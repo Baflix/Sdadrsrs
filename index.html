@@ -2314,13 +2314,12 @@
         }
 
         /* =====================================================
-           ✅ BOT START CHECK - বাধ্যতামূলক
+           ✅ BOT START CHECK (Simple initData logic)
            ===================================================== */
 
         /**
-         * ✅ Bot Start Check
-         * চেক করে ইউজার বটে /start দিয়েছে কিনা
-         * না দিলে মিনি অ্যাপ ব্লক করে বটে পাঠায়
+         * ✅ Bot Start Check (Simple & Reliable)
+         * শুধু initData চেক করে — কোনো Firebase বা Bot API লাগবে না
          */
         async function checkBotStartAndBlock() {
             if (!window.Telegram || !window.Telegram.WebApp) {
@@ -2330,54 +2329,28 @@
 
             const tgApp = window.Telegram.WebApp;
             const initData = tgApp.initData || "";
-            const initDataUnsafe = tgApp.initDataUnsafe || {};
-            const user = initDataUnsafe.user;
+            const user = tgApp.initDataUnsafe?.user;
 
             console.log("🔍 [Bot Check] initData length:", initData.length);
-            console.log("🔍 [Bot Check] User:", user?.id);
+            console.log("🔍 [Bot Check] User ID:", user?.id);
 
-            // ✅ ধাপ ১: initData খালি → /start দেওয়া হয়নি
+            // ✅ কেস ১: initData খালি → বটে /start দেওয়া হয়নি
             if (!initData || initData.length === 0) {
-                console.warn("⚠️ [Bot Check] Empty initData — user hasn't started bot");
+                console.warn("⚠️ [Bot Check] Empty initData — showing bot screen");
                 showBotStartRequiredScreen();
                 return true;
             }
 
-            // ✅ ধাপ ২: user নেই → /start দেওয়া হয়নি
+            // ✅ কেস ২: user নেই → বটে /start দেওয়া হয়নি
             if (!user || !user.id) {
-                console.warn("⚠️ [Bot Check] No user data — user hasn't started bot");
+                console.warn("⚠️ [Bot Check] No user data — showing bot screen");
                 showBotStartRequiredScreen();
                 return true;
             }
 
-            // ✅ ধাপ ৩: Firestore-এ user আছে কিনা চেক
-            // (বটে /start দিলে আমাদের বট botStarted: true সেভ করে)
-            try {
-                console.log("🔍 [Bot Check] Checking Firestore for user:", user.id);
-                const userRef = doc(db, "telegramUsers", user.id.toString());
-                const userSnap = await getDoc(userRef);
-
-                if (userSnap.exists()) {
-                    const userData = userSnap.data();
-                    
-                    // ✅ botStarted বা firstVisit আছে কিনা
-                    if (userData.botStarted === true || userData.firstVisit || userData.createdAt) {
-                        console.log("✅ [Bot Check] User verified — has started bot");
-                        return false;
-                    }
-                }
-
-                // ❌ Firestore-এ user নেই → /start দেয়নি
-                console.warn("⚠️ [Bot Check] User not in Firestore — never started bot");
-                showBotStartRequiredScreen();
-                return true;
-
-            } catch (err) {
-                console.error("❌ [Bot Check] Firestore error:", err);
-                // Network error হলে block করব না (grace mode)
-                console.log("⚠️ [Bot Check] Network error — allowing access (grace mode)");
-                return false;
-            }
+            // ✅ সব ঠিক আছে → মিনি অ্যাপ চলবে
+            console.log("✅ [Bot Check] User verified via initData");
+            return false;
         }
 
         /**
